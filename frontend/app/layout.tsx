@@ -19,8 +19,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geist.className}`}>
         <AuthProvider>
-          <div className="max-w-6xl mx-auto px-4">
-            <main className="mt-8">{children}</main>
+          <div className="max-w">
+            <main>{children}</main>
           </div>
         </AuthProvider>
       </body>

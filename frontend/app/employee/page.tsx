@@ -47,12 +47,13 @@ export default function EmployeeDatabase() {
       gender: "Laki-Laki",
       phone: "081280331012",
       branch: "Jakarta",
-      position: "OB",
+      position: "Manager",
       grade: "Staff",
       status: "active",
     },
   ]);
 
+  const [isFilterActive, setIsFilterActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -121,21 +122,27 @@ export default function EmployeeDatabase() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 border rounded focus:outline-none focus:border-[#1E3A5F]"
               />
-              <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
-                <Filter size={12} className="mr-1" /> Filter
+              <button
+                onClick={() => setIsFilterActive(!isFilterActive)}
+                className="px-4 py-2 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb]"
+              >
+                <Filter
+                  size={12}
+                  className="mr-1 transition-colors group-hover:text-[#2563eb]"
+                /> Filter
               </button>
               <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
                 <Download size={12} className="mr-1" /> Export
               </button>
-                <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
+              <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
                 <Upload size={12} className="mr-1" /> Import
-                </button>
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              </button>
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                   <button
-                  className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition flex items-center"
+                    className="px-4 py-2 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]"
                   >
-                  <Plus size={12} className="mr-1" /> Tambah Data
+                    <Plus size={12} className="mr-1" /> Tambah Data
                   </button>
                 </SheetTrigger>
                 <SheetContent
@@ -144,11 +151,14 @@ export default function EmployeeDatabase() {
                   style={{ width: "85vw", maxWidth: "none" }}
                 >
                   <SheetHeader>
-                    <h1 className="font-bold text-2xl mb-6">Add new Employee</h1>
+                    <SheetTitle className="text-lg font-semibold">Tambah Karyawan</SheetTitle>
+                    <SheetDescription className="text-sm text-muted-foreground">
+                      Silahkan isi data karyawan baru di bawah ini.
+                    </SheetDescription>
                   </SheetHeader>
                   <AddEmployeeForm onSubmit={handleAddEmployee} onCancel={() => setIsSheetOpen(false)} />
                 </SheetContent>
-                </Sheet>
+              </Sheet>
             </div>
           </section>
 
