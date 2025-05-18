@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Input } from "./input";
-import { Button } from "./button";
-import { Label } from "./label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
 
 export function SuccessResetPassword({
   className,
