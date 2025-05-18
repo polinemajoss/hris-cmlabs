@@ -21,10 +21,10 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import { NavDocuments } from "../../components/ui/nav-document"
-import { NavMain } from "../../components/ui/nav-main"
-import { NavSecondary } from "../..//components/ui/nav-secondary"
-import { NavUser } from "../../components/ui/nav-user"
+import { NavDocuments } from "./nav-document"
+import { NavMain } from "./nav-main"
+import { NavSecondary } from "./nav-secondary"
+import { NavUser } from "./nav-user"
 import { useAuth } from "../../lib/authContext"
 
 import {
@@ -35,7 +35,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "../../components/ui/sidebar"
+} from "./sidebar"
 
 const data = {
   

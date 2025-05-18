@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Checkbox } from "../ui/checkbox";
+import { Input } from "./input";
+import { Button } from "./button";
+import { Label } from "./label";
+import { Checkbox } from "./checkbox";
 import router from "next/router";
 
 export function SignInEmployee({

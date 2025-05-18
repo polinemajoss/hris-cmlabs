@@ -15,41 +15,18 @@ export default function EmployeeDatabase() {
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-  // Simulasi loading
-  setTimeout(() => {
-    setEmployees([
-      {
-        id: 1,
-        firstName: "Budi",
-        lastName: "Santoso",
-        gender: "M",
-        user: {
-          phone: "08123456789",
-          branch: "Jakarta",
-          position: "Developer",
-          grade: "A",
-          status: "active"
-        }
-      },
-      {
-        id: 2,
-        firstName: "Siti",
-        lastName: "Nurhaliza",
-        gender: "F",
-        user: {
-          phone: "08987654321",
-          branch: "Bandung",
-          position: "Designer",
-          grade: "B",
-          status: "inactive"
-        }
-      }
-    ])
-    setLoading(false)
-  }, 1000)
-  }, [])
-
+  // useEffect(() => {
+  //   fetch("http://localhost:8000/api/employees", {
+  //     headers: { "Accept": "application/json" }
+  //   })
+  //     .then(res => {
+  //       if (!res.ok) throw new Error("Failed to fetch")
+  //       return res.json()
+  //     })
+  //     .then(data => setEmployees(data))
+  //     .catch(err => console.error("Fetch error:", err))
+  //     .finally(() => setLoading(false))
+  // }, [])
 
   const currentMonthYear = new Date().toLocaleDateString("id-ID", {
     month: "long",

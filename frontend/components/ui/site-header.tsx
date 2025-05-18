@@ -20,7 +20,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator
-} from "../../components/ui/dropdown-menu"; // sesuaikan path komponen dropdown-menu
+} from "./dropdown-menu"; // sesuaikan path komponen dropdown-menu
 import { SidebarTrigger } from "./sidebar";
 
 const pageTitles: Record<string, string> = {

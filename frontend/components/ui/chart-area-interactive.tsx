@@ -10,24 +10,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card"
+} from "./card"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../../components/ui/chart"
+} from "./chart"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select"
+} from "./select"
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "../../components/ui/toggle-group"
+} from "./toggle-group"
 const chartData = [
   { date: "2024-04-01", desktop: 222, mobile: 150 },
   { date: "2024-04-02", desktop: 97, mobile: 180 },

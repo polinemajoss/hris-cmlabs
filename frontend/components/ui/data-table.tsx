@@ -55,15 +55,15 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { useIsMobile } from "../../hooks/use-mobile"
-import { Badge } from "../../components/ui/badge"
-import { Button } from "../../components/ui/button"
+import { Badge } from "./badge"
+import { Button } from "./button"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../../components/ui/chart"
-import { Checkbox } from "../../components/ui/checkbox"
+} from "./chart"
+import { Checkbox } from "./checkbox"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -71,17 +71,17 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu"
-import { Input } from "../../components/ui/input"
-import { Label } from "../../components/ui/label"
+} from "./dropdown-menu"
+import { Input } from "./input"
+import { Label } from "./label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select"
-import { Separator } from "../../components/ui/separator"
+} from "./select"
+import { Separator } from "./separator"
 import {
   Sheet,
   SheetClose,
@@ -91,7 +91,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../../components/ui/sheet"
+} from "./sheet"
 import {
   Table,
   TableBody,
@@ -99,13 +99,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table"
+} from "./table"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs"
+} from "./tabs"
 
 export const schema = z.object({
   id: z.number(),
