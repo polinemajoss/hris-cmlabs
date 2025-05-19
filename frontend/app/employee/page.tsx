@@ -26,32 +26,111 @@ import { AppSidebar } from "../../components/ui/app-sidebar";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "../../components/ui/select";
 import { Label } from "../../components/ui/label";
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group";
+import { SectionCardsEmployee } from "../../components/ui/section-card-employee";
+import { data } from "jquery";
+import { ChartAreaInteractive } from "../../components/ui/chart-area-interactive";
+import { DataTable } from "../../components/ui/data-table";
 
 export default function EmployeeDatabase() {
-  const [employees] = useState([
-    {
-      id: 1,
-      firstName: "Juanita",
-      lastName: "Doe",
-      gender: "Perempuan",
-      phone: "081280331011",
-      branch: "Malang",
-      position: "CEO",
-      grade: "Management",
-      status: "active",
-    },
-    {
-      id: 2,
-      firstName: "Shane",
-      lastName: "Smith",
-      gender: "Laki-Laki",
-      phone: "081280331012",
-      branch: "Jakarta",
-      position: "Manager",
-      grade: "Staff",
-      status: "active",
-    },
-  ]);
+  // Mock data generator functions
+
+  // generateAvatar: show image if url provided, else fallback to initials
+  // Avatar generator: icon user tanpa outline, warna random, icon sedikit transparan
+  const generateAvatar = (name: string, imageUrl?: string) => {
+    // Fallback: initials with pastel bg and profile icon (simple user icon, no outline)
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = Math.abs(hash) % 360;
+    const bgColor = `hsl(${h}, 70%, 80%)`;
+
+    return (
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs relative overflow-hidden bg-[hsl(var(--avatar-bg))] text-[#1E3A5F]"
+        title={name}
+        style={{ ["--avatar-bg" as any]: `${h},70%,80%` }}
+      >
+        {/* Simple user icon, no outline, sedikit transparan */}
+        <svg width={24} height={24} viewBox="0 0 24 24" fill="#000" style={{ opacity: 0.3 }}>
+          <circle cx="12" cy="8" r="4" />
+          <ellipse cx="12" cy="17" rx="7" ry="5" />
+        </svg>
+      </div>
+    );
+  };
+
+  const getRandomFirstName = () => {
+    const firstNames = [
+      "Juanita", "Shane", "Miles", "Flores", "Henry", "Marvin", "Black", "Ralph", "Timothy", "Johnny",
+      "Emily", "David", "Sophia", "William", "Olivia", "James", "Ava", "Benjamin", "Isabella", "Ethan",
+      "Charlotte", "Lucas", "Amelia", "Noah", "Harper", "Logan", "Mia", "Liam", "Evelyn", "Daniel",
+      "Grace", "Matthew", "Victoria", "Joseph", "Elizabeth", "Samuel", "Sofia", "Sebastian", "Chloe", "Jacob",
+      "Abigail", "Julian", "Madison", "Eli", "Avery", "Lincoln", "Hannah", "Carter", "Ellie", "Owen"
+    ];
+    return firstNames[Math.floor(Math.random() * firstNames.length)];
+  };
+
+  const getRandomLastName = () => {
+    const lastNames = [
+      "Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez",
+      "Martinez", "Hernandez", "Lopez", "Gonzalez", "Perez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore",
+      "Jackson", "Martin", "Lee", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis",
+      "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill",
+      "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Evans", "Davis"
+    ];
+    return lastNames[Math.floor(Math.random() * lastNames.length)];
+  };
+
+  const getRandomGender = () => {
+    return Math.random() < 0.5 ? "Laki-Laki" : "Perempuan";
+  };
+
+  const getRandomPhone = () => {
+    const prefix = ["0812", "0813", "0814", "0815", "0816", "0817", "0818", "0819"];
+    return `${prefix[Math.floor(Math.random() * prefix.length)]}${Math.floor(10000000 + Math.random() * 90000000)}`;
+  };
+
+  const getRandomBranch = () => {
+    const branches = ["Malang", "Jakarta", "Surabaya", "Bandung", "Yogyakarta", "Semarang", "Medan", "Palembang", "Denpasar", "Balikpapan"];
+    return branches[Math.floor(Math.random() * branches.length)];
+  };
+
+  const getRandomPosition = () => {
+    const positions = ["CEO", "Manager", "Supervisor", "Staff", "Intern", "HR", "Accountant", "Developer", "Designer", "Sales"];
+    return positions[Math.floor(Math.random() * positions.length)];
+  };
+
+  const getRandomGrade = () => {
+    const grades = ["Management", "Executive", "Professional", "Support", "Operational"];
+    return grades[Math.floor(Math.random() * grades.length)];
+  };
+  // Helper to randomly set employee status as active or not
+  const getRandomStatus = () => (Math.random() < 0.5 ? "active" : "inactive");
+  
+  // Generate 50 mock employees
+  const generateMockEmployees = () => {
+    const employees = [];
+    for (let i = 1; i <= 100; i++) {
+      const firstName = getRandomFirstName();
+      const lastName = getRandomLastName();
+      employees.push({
+        id: i,
+        avatarUrl: undefined, // Simpan url jika ada, undefined jika tidak ada
+        firstName,
+        lastName,
+        gender: getRandomGender(),
+        phone: getRandomPhone(),
+        branch: getRandomBranch(),
+        position: getRandomPosition(),
+        grade: getRandomGrade(),
+        status: getRandomStatus(),
+      });
+    }
+    return employees;
+  }
+
+  const [employees] = useState(generateMockEmployees());
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,6 +145,18 @@ export default function EmployeeDatabase() {
     `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default: 10 items per page
+  
+  // Calculate pagination data
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // Initialize employees with mock data
+  const currentEmployees = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
+  // Total pages
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  
   // Dummy add employee function
   const handleAddEmployee = (e) => {
     e.preventDefault();
@@ -81,155 +172,412 @@ export default function EmployeeDatabase() {
       <SidebarInset>
         <div className="flex flex-col h-full bg-white">
           <SiteHeader />
-          {/* Summary Cards */}
-          <section className="px-6 py-4 border-b border-gray-200">
-            <div className="grid grid-cols-4 gap-6 mb-8">
-              <Card className="w-full">
-                <CardContent className="py-4 px-6">
-                  <h3 className="text-sm text-muted-foreground">Periode</h3>
-                  <p className="text-lg font-semibold">{currentMonthYear}</p>
-                </CardContent>
-              </Card>
-              <Card className="w-full">
-                <CardContent className="py-4 px-6">
-                  <h3 className="text-sm text-muted-foreground">Total Employee</h3>
-                  <p className="text-lg font-semibold">208</p>
-                </CardContent>
-              </Card>
-              <Card className="w-full">
-                <CardContent className="py-4 px-6">
-                  <h3 className="text-sm text-muted-foreground">Total New Hire</h3>
-                  <p className="text-lg font-semibold">20</p>
-                </CardContent>
-              </Card>
-              <Card className="w-full">
-                <CardContent className="py-4 px-6">
-                  <h3 className="text-sm text-muted-foreground">Full Time Employee</h3>
-                  <p className="text-lg font-semibold">20</p>
-                </CardContent>
-              </Card>
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <SectionCardsEmployee />
             </div>
-          </section>
+          </div>
 
           {/* Table Controls */}
-          <section className="flex flex-col md:flex-row justify-between items-center gap-4 px-6 py-4">
-            <h2 className="font-semibold text-lg whitespace-nowrap">All Employees Information</h2>
-            <div className="flex gap-3">
+            <section className="flex flex-col md:flex-row justify-between items-center gap-4 px-10 py-4">
+            <h2 className="font-semibold text-lg whitespace-nowrap">Informasi Seluruh Karyawan</h2>
+            <div className="flex gap-3 flex-1">
               <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-4 py-2 border rounded focus:outline-none focus:border-[#1E3A5F]"
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
+              style={{ minHeight: "2rem" }}
               />
               <button
-                onClick={() => setIsFilterActive(!isFilterActive)}
-                className="px-4 py-2 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb]"
+              onClick={() => setIsFilterActive(!isFilterActive)}
+              className="px-3 py-1 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb] text-xs h-8"
+              style={{ minHeight: "2rem" }}
               >
-                <Filter
-                  size={12}
-                  className="mr-1 transition-colors group-hover:text-[#2563eb]"
-                /> Filter
+              <Filter
+                size={12}
+                className="mr-1 transition-colors group-hover:text-[#2563eb]"
+              /> Filter
               </button>
-              <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
-                <Download size={12} className="mr-1" /> Export
-              </button>
-              <button className="px-4 py-2 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition">
-                <Upload size={12} className="mr-1" /> Import
+                <button
+                className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center"
+                style={{ minHeight: "2rem" }}
+                onClick={() => {
+                  import("jspdf").then(jsPDFModule => {
+                  const jsPDF = jsPDFModule.default;
+                  import("jspdf-autotable").then(() => {
+                    const doc = new jsPDF();
+                    // Table columns
+                    const columns = [
+                    "No",
+                    "Nama",
+                    "Jenis Kelamin",
+                    "Nomor Telepon",
+                    "Cabang",
+                    "Jabatan",
+                    "Grade",
+                    "Status"
+                    ];
+                    // Table rows
+                    const rows = currentEmployees.map((emp, i) => [
+                    indexOfFirstItem + i + 1,
+                    `${emp.firstName} ${emp.lastName}`,
+                    emp.gender,
+                    emp.phone,
+                    emp.branch,
+                    emp.position,
+                    emp.grade,
+                    emp.status === "active" ? "Aktif" : "Tidak Aktif"
+                    ]);
+                    // @ts-ignore
+                    doc.autoTable({
+                    head: [columns],
+                    body: rows,
+                    styles: { font: "helvetica", fontSize: 10 },
+                    headStyles: { fillColor: [30, 58, 95] }
+                    });
+                    doc.save("employee-table.pdf");
+                  });
+                  });
+                }}
+                >
+                <Upload size={12} className="mr-1" /> Export PDF
+                </button>
+              <button className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center"
+              style={{ minHeight: "2rem" }}>
+              <Download size={12} className="mr-1" /> Import
               </button>
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    className="px-4 py-2 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]"
-                  >
-                    <Plus size={12} className="mr-1" /> Tambah Data
-                  </button>
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="!w-[85vw] max-w-none p-6 overflow-y-auto"
-                  style={{ width: "85vw", maxWidth: "none" }}
+              <SheetTrigger asChild>
+                <button
+                className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
+                style={{ minHeight: "2rem" }}
                 >
-                  <SheetHeader>
-                    <SheetTitle className="text-lg font-semibold">Tambah Karyawan</SheetTitle>
-                    <SheetDescription className="text-sm text-muted-foreground">
-                      Silahkan isi data karyawan baru di bawah ini.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <AddEmployeeForm onSubmit={handleAddEmployee} onCancel={() => setIsSheetOpen(false)} />
-                </SheetContent>
+                <Plus size={12} className="mr-1" /> Tambah Data
+                </button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="!w-[85vw] max-w-none p-6 overflow-y-auto"
+                style={{ width: "85vw", maxWidth: "none" }}
+              >
+                <SheetHeader>
+                <SheetTitle className="text-lg font-semibold">Tambah Karyawan</SheetTitle>
+                <SheetDescription className="text-sm text-muted-foreground">
+                  Silahkan isi data karyawan baru di bawah ini.
+                </SheetDescription>
+                </SheetHeader>
+                <AddEmployeeForm onSubmit={handleAddEmployee} onCancel={() => setIsSheetOpen(false)} />
+              </SheetContent>
               </Sheet>
             </div>
-          </section>
+            </section>
 
           {/* Table */}
           <section className="px-6 pb-6 overflow-x-auto">
             <Table className="min-w-full">
-              <TableCaption>A list of your recent employees.</TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead>No</TableHead>
-                  <TableHead>Avatar</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Jenis Kelamin</TableHead>
-                  <TableHead>Nomor Telepon</TableHead>
-                  <TableHead>Cabang</TableHead>
-                  <TableHead>Jabatan</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Action</TableHead>
+                    <TableHead
+                      style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                      className="text-center whitespace-nowrap"
+                    >
+                      <div className="text-center w-full">No</div>
+                    </TableHead>
+                    <TableHead className="w-[4%] text-center">
+                      <div className="text-center w-full">Avatar</div>
+                    </TableHead>
+                    <TableHead className="w-[16%]">
+                      <div className="w-full">Nama</div>
+                    </TableHead>
+                    <TableHead className="w-[10%] text-center">
+                      <div className="text-center w-full">Jenis Kelamin</div>
+                    </TableHead>
+                    <TableHead className="w-[10%]">
+                      <div className="w-full">Nomor Telepon</div>
+                    </TableHead>
+                    <TableHead className="w-[13%]">
+                      <div className="w-full">Cabang</div>
+                    </TableHead>
+                    <TableHead className="w-[13%]">
+                      <div className="w-full">Jabatan</div>
+                    </TableHead>
+                    <TableHead className="w-[13%]">
+                      <div className="w-full">Grade</div>
+                    </TableHead>
+                    <TableHead className="w-[8%] text-center">
+                      <div className="text-center w-full">Status</div>
+                    </TableHead>
+                    <TableHead className="w-[12%] text-center">
+                      <div className="text-center w-full">Action</div>
+                    </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {filteredEmployees.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
-                      Tidak ada data ditemukan
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredEmployees.map((emp, i) => (
-                    <TableRow key={emp.id}>
-                      <TableCell>{i + 1}</TableCell>
-                      <TableCell>
-                        <div className="w-8 h-8 rounded-full bg-gray-300" />
+                <TableBody>
+                  {filteredEmployees.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={10} className="text-center py-8">
+                        Tidak ada data ditemukan
+                      </TableCell>
+                    </TableRow>
+                  ) : currentEmployees.map((emp, i) => (
+                    <TableRow key={emp.id} className="border-b-[6px] border-white">
+                      <TableCell
+                        style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                        className="text-center whitespace-nowrap"
+                      >
+                        {indexOfFirstItem + i + 1}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {generateAvatar(`${emp.firstName} ${emp.lastName}`, emp.avatarUrl)}
                       </TableCell>
                       <TableCell>{emp.firstName} {emp.lastName}</TableCell>
-                      <TableCell>
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                          emp.gender === 'Laki-Laki' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
-                        }`}>
+                        <TableCell className="text-center">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold justify-center`}
+                          style={{
+                          minWidth: 90,
+                          width: 90,
+                          display: "inline-flex",
+                          background:
+                            emp.gender === "Laki-Laki"
+                            ? "#DBEAFE"
+                            : "#FCE7F3",
+                          color:
+                            emp.gender === "Laki-Laki"
+                            ? "#1D4ED8"
+                            : "#BE185D",
+                          }}
+                        >
+                          {emp.gender === "Laki-Laki" ? (
+                          // Male icon (simple SVG)
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                            strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
+                            <circle cx="10" cy="14" r="6" />
+                            <path d="M19 5v5M19 5h-5M19 5l-7 7" />
+                          </svg>
+                          ) : (
+                          // Female icon (simple SVG)
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                            strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
+                            <circle cx="12" cy="8" r="5" />
+                            <line x1="12" y1="13" x2="12" y2="21" />
+                            <line x1="9" y1="18" x2="15" y2="18" />
+                          </svg>
+                          )}
                           {emp.gender}
                         </span>
-                      </TableCell>
-                      <TableCell>-</TableCell>
+                        </TableCell>
+                      <TableCell>{emp.phone}</TableCell>
                       <TableCell>{emp.branch}</TableCell>
                       <TableCell>{emp.position}</TableCell>
                       <TableCell>{emp.grade}</TableCell>
-                      <TableCell>
-                        <Toggle defaultChecked={emp.status === 'active'} />
+                      <TableCell className="text-center">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+                            emp.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-200 text-gray-500"
+                          }`}
+                        >
+                          {emp.status === "active" ? "Aktif" : "Tidak Aktif"}
+                        </span>
                       </TableCell>
-                      <TableCell className="flex gap-2">
-                        <button className="p-1 rounded hover:bg-gray-100" title="View">👁️</button>
-                        <button className="p-1 rounded hover:bg-gray-100" title="Edit">✏️</button>
-                        <button className="p-1 rounded hover:bg-gray-100" title="Delete">❌</button>
+                      <TableCell className="flex gap-2 justify-center">
+                        <button
+                          className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition"
+                          title="Download"
+                        >
+                          {/* UI SVG Document Download Icon */}
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#2563eb"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <path d="M12 18v-6" />
+                            <path d="M9 15l3 3 3-3" />
+                          </svg>
+                        </button>
+                        <button
+                          className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition"
+                          title="Edit"
+                        >
+                          {/* UI SVG Edit Icon */}
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#eab308"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition"
+                          title="Delete"
+                        >
+                          {/* UI SVG Trash Icon */}
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="red"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                          </svg>
+                        </button>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
+                  ))}
+                </TableBody>
             </Table>
 
             {/* Pagination */}
-            <div className="mt-6 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                Showing 1 to 10 out of {filteredEmployees.length} records
-              </div>
+            <div className="mt-4 flex justify-between items-center">
+              {/* Items per page dropdown */}
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">Menampilkan</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                    <SelectTrigger id="items-per-page">
+                      {itemsPerPage}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="text-sm text-gray-700">
+                Menampilkan {indexOfFirstItem + 1} sampai {Math.min(indexOfLastItem, filteredEmployees.length)} dari {filteredEmployees.length} karyawan
+                </div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button className="px-3 py-1 border rounded-l text-gray-600 hover:bg-gray-100">Previous</button>
-                <button className="px-3 py-1 border bg-[#1E3A5F] text-white">1</button>
-                <button className="px-3 py-1 border text-gray-600 hover:bg-gray-100">2</button>
-                <button className="px-3 py-1 border rounded-r text-gray-600 hover:bg-gray-100">Next</button>
+
+                {/* Previous button */}
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  className="px-3 py-1 border rounded-l text-gray-600 hover:bg-gray-100"
+                >
+                  Previous
+                </button>
+
+                {/* Page numbers: only 1 before and 1 after current page, with ellipsis if needed */}
+                {totalPages > 1 && (() => {
+                  const pageNumbers = [];
+                  const showLeftEllipsis = currentPage > 3;
+                  const showRightEllipsis = currentPage < totalPages - 2;
+
+                  // Always show first page
+                  if (currentPage > 1) {
+                  pageNumbers.push(
+                    <button
+                    key={1}
+                    onClick={() => setCurrentPage(1)}
+                    className={`px-3 py-1 border ${currentPage === 1 ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                    1
+                    </button>
+                  );
+                  }
+
+                  // Only show ellipsis if currentPage > 3
+                  if (showLeftEllipsis) {
+                  pageNumbers.push(
+                    <span key="start-ellipsis" className="px-2 py-1 text-gray-400">...</span>
+                  );
+                  }
+
+                  // Show previous page if not first and not second
+                  if (currentPage - 1 > 1) {
+                  pageNumbers.push(
+                    <button
+                    key={currentPage - 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
+                    >
+                    {currentPage - 1}
+                    </button>
+                  );
+                  }
+
+                  // Show current page
+                  pageNumbers.push(
+                  <button
+                    key={currentPage}
+                    className="px-3 py-1 border bg-[#1E3A5F] text-white"
+                    disabled
+                  >
+                    {currentPage}
+                  </button>
+                  );
+
+                  // Show next page if not last and not second last
+                  if (currentPage + 1 < totalPages) {
+                  pageNumbers.push(
+                    <button
+                    key={currentPage + 1}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
+                    >
+                    {currentPage + 1}
+                    </button>
+                  );
+                  }
+
+                  // Only show ellipsis if currentPage < totalPages - 2
+                  if (showRightEllipsis) {
+                  pageNumbers.push(
+                    <span key="end-ellipsis" className="px-2 py-1 text-gray-400">...</span>
+                  );
+                  }
+
+                  // Always show last page
+                  if (currentPage < totalPages) {
+                  pageNumbers.push(
+                    <button
+                    key={totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    className={`px-3 py-1 border ${currentPage === totalPages ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                    {totalPages}
+                    </button>
+                  );
+                  }
+
+                  return pageNumbers;
+                })()}
+
+                {/* Next button */}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="px-3 py-1 border rounded-r text-gray-600 hover:bg-gray-100"
+                >
+                  Next
+                </button>
               </nav>
             </div>
           </section>
@@ -317,8 +665,8 @@ function AddEmployeeForm({ onSubmit, onCancel }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 mt-4">
-      <div className="flex items-center mb-8 gap-4">
+    <form onSubmit={onSubmit} className="space-y-4 mt-2">
+      <div className="flex items-center mb-4 gap-4">
         <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
           {form.avatar ? (
         <img
@@ -357,7 +705,7 @@ function AddEmployeeForm({ onSubmit, onCancel }) {
           Upload Avatar
         </Button>
       </div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName">First Name</Label>
           <Input id="firstName" name="firstName" placeholder="Enter the first name" value={form.firstName} onChange={handleChange} required />
@@ -513,7 +861,7 @@ function AddEmployeeForm({ onSubmit, onCancel }) {
       </div>
     </div>
     <div className="flex justify-end gap-2 pt-4">
-      <Button type="button" variant="outline">Cancel</Button>
+      <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
       <Button type="submit">Save</Button>
     </div>
     </form>
