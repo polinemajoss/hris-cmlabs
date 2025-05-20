@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -30,6 +29,18 @@ import { SectionCardsEmployee } from "../../components/ui/section-card-employee"
 import { data } from "jquery";
 import { ChartAreaInteractive } from "../../components/ui/chart-area-interactive";
 import { DataTable } from "../../components/ui/data-table";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../../components/ui/alert-dialog";
+import { useState } from "react";
 
 export default function EmployeeDatabase() {
   // Mock data generator functions
@@ -130,7 +141,7 @@ export default function EmployeeDatabase() {
     return employees;
   }
 
-  const [employees] = useState(generateMockEmployees());
+  const [employees, setEmployees] = useState(generateMockEmployees());
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -164,6 +175,79 @@ export default function EmployeeDatabase() {
     const newEmployee = Object.fromEntries(formData);
     console.log("New Employee:", newEmployee);
     setIsSheetOpen(false);
+  };
+
+  const handleDownloadPDF = (employee) => {
+  const pdfContent = `%PDF-1.7
+    1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
+    2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
+    3 0 obj<</Type/Page/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>/MediaBox[0 0 612 792]/Contents 5 0 R>>endobj
+    4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj
+    5 0 obj<</Length 115>>stream
+    BT
+    /F1 16 Tf
+    100 700 Td
+    (Informasi Karyawan)Tj
+    /F1 12 Tf
+    100 680 Td
+    (Nama: ${employee.firstName} ${employee.lastName})Tj
+    100 660 Td
+    (Jenis Kelamin: ${employee.gender})Tj
+    100 640 Td
+    (Nomor Telepon: ${employee.phone})Tj
+    100 620 Td
+    (Cabang: ${employee.branch})Tj
+    100 600 Td
+    (Jabatan: ${employee.position})Tj
+    ET
+    endstream
+    endobj
+    xref
+    0 6
+    0000000000 65535 f 
+    0000000015 00000 n 
+    0000000076 00000 n 
+    0000000177 00000 n 
+    0000000385 00000 n 
+    0000000444 00000 n 
+    trailer<</Size 6/Root 1 0 R>>
+    startxref
+    549
+    %%EOF`;
+
+      const blob = new Blob([pdfContent], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${employee.firstName}-${employee.lastName}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+  };
+
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+
+  const handleDeleteEmployee = (id) => {
+  if (!id) return;
+  const updatedEmployees = employees.filter(emp => emp.id !== id);
+  setEmployees(updatedEmployees);
+  setEmployeeToDelete(null); // Reset after deletion
+  };
+
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+
+  // Handle edit employee
+  const handleEditEmployee = (employee) => {
+    setEditingEmployee({ ...employee });
+    setIsEditSheetOpen(true);
+  };
+
+  // Simulate update
+  const handleUpdateEmployee = (updatedEmployee) => {
+    const updatedList = employees.map(emp =>
+      emp.id === updatedEmployee.id ? updatedEmployee : emp
+    );
+    setEmployees(updatedList);
+    setIsEditSheetOpen(false);
   };
 
   return (
@@ -244,10 +328,38 @@ export default function EmployeeDatabase() {
                 >
                 <Upload size={12} className="mr-1" /> Export PDF
                 </button>
-              <button className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center"
-              style={{ minHeight: "2rem" }}>
-              <Download size={12} className="mr-1" /> Import
-              </button>
+              <label
+                className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center cursor-pointer"
+                style={{ minHeight: "2rem" }}
+              >
+                <Download size={12} className="mr-1" /> Import
+                <input
+                  type="file"
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    // Simple CSV/Excel import using SheetJS (xlsx)
+                    const XLSX = await import("xlsx");
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                      const data = evt.target?.result;
+                      if (!data) return;
+                      const workbook = XLSX.read(data, { type: "binary" });
+                      const sheetName = workbook.SheetNames[0];
+                      const worksheet = workbook.Sheets[sheetName];
+                      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                      // Do something with imported data, e.g. log or set state
+                      console.log("Imported data:", json);
+                      alert("Import berhasil! Lihat console untuk data.");
+                    };
+                    reader.readAsBinaryString(file);
+                    // Reset input so same file can be selected again
+                    e.target.value = "";
+                  }}
+                />
+              </label>
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <button
@@ -385,67 +497,88 @@ export default function EmployeeDatabase() {
                         </span>
                       </TableCell>
                       <TableCell className="flex gap-2 justify-center">
+                        {/* Download Button */}
                         <button
+                          onClick={() => handleDownloadPDF(emp)}
                           className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition"
                           title="Download"
                         >
-                          {/* UI SVG Document Download Icon */}
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#2563eb"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                             <polyline points="14 2 14 8 20 8" />
                             <path d="M12 18v-6" />
                             <path d="M9 15l3 3 3-3" />
                           </svg>
                         </button>
-                        <button
-                          className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition"
-                          title="Edit"
-                        >
-                          {/* UI SVG Edit Icon */}
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#eab308"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+
+                        {/* Edit Button */}
+                        {/* Edit Button with Sheet */}
+                        <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+                          <SheetTrigger asChild>
+                            <button
+                              onClick={() => handleEditEmployee(emp)}
+                              className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition"
+                              title="Edit"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                              </svg>
+                            </button>
+                          </SheetTrigger>
+                          <SheetContent
+                            side="right"
+                            className="!w-[85vw] max-w-none p-6 overflow-y-auto"
+                            style={{ width: "85vw", maxWidth: "none" }}
                           >
-                            <path d="M12 20h9" />
-                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                          </svg>
-                        </button>
-                        <button
-                          className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition"
-                          title="Delete"
-                        >
-                          {/* UI SVG Trash Icon */}
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="red"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
-                          </svg>
-                        </button>
+                            <SheetHeader>
+                              <SheetTitle className="text-lg font-semibold">Edit Karyawan</SheetTitle>
+                              <SheetDescription className="text-sm text-muted-foreground">
+                                Ubah data karyawan {editingEmployee?.firstName} {editingEmployee?.lastName}
+                              </SheetDescription>
+                            </SheetHeader>
+                            <AddEmployeeForm
+                              initialData={editingEmployee}
+                              onSubmit={(formData) => handleUpdateEmployee(formData)}
+                              onCancel={() => setIsEditSheetOpen(false)}
+                            />
+                          </SheetContent>
+                        </Sheet>
+
+                        {/* Delete Button with AlertDialog Trigger */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              onClick={() => setEmployeeToDelete(emp)}
+                              className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition"
+                              title="Delete"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                              </svg>
+                            </button>
+                          </AlertDialogTrigger>
+                            <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                              Data karyawan <strong style={{ color: "red" }}>{employeeToDelete?.firstName} {employeeToDelete?.lastName}</strong> akan dihapus secara permanen.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-red-600 text-white hover:bg-red-700"
+                                onClick={() => handleDeleteEmployee(employeeToDelete?.id)}
+                              >
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -588,7 +721,7 @@ export default function EmployeeDatabase() {
 }
 
 // ✨ Add Employee Form Component
-function AddEmployeeForm({ onSubmit, onCancel }) {
+function AddEmployeeForm({ onSubmit, onCancel, initialData = null }) {
   const genderOptions = [
   { value: "male", label: "Laki-laki" },
   { value: "female", label: "Perempuan" },
@@ -629,25 +762,47 @@ function AddEmployeeForm({ onSubmit, onCancel }) {
     { value: "sp3", label: "SP 3" },
   ];
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    mobilePhone: "",
-    nik: "",
-    gender: "",
-    pendidikan: "",
-    tempatLahir: "",
-    tanggalLahir: null,
-    jabatan: "",
-    cabang: "",
-    kontrak: "",
-    grade: "",
-    bank: "",
-    noRekening: "",
-    atasNama: "",
-    tipeSp: "",
-    avatar: "", // Added avatar property
-  });
+  const [form, setForm] = useState(
+    initialData
+      ? {
+          firstName: initialData.firstName || "",
+          lastName: initialData.lastName || "",
+          mobilePhone: initialData.mobilePhone || "",
+          nik: initialData.nik || "",
+          gender: initialData.gender || "",
+          pendidikan: initialData.pendidikan || "",
+          tempatLahir: initialData.tempatLahir || "",
+          tanggalLahir: initialData.tanggalLahir || "",
+          jabatan: initialData.jabatan || "",
+          cabang: initialData.cabang || "",
+          kontrak: initialData.kontrak || "",
+          grade: initialData.grade || "",
+          bank: initialData.bank || "",
+          noRekening: initialData.noRekening || "",
+          atasNama: initialData.atasNama || "",
+          tipeSp: initialData.tipeSp || "",
+          avatar: initialData.avatar || "",
+        }
+      : {
+          firstName: "",
+          lastName: "",
+          mobilePhone: "",
+          nik: "",
+          gender: "",
+          pendidikan: "",
+          tempatLahir: "",
+          tanggalLahir: null,
+          jabatan: "",
+          cabang: "",
+          kontrak: "",
+          grade: "",
+          bank: "",
+          noRekening: "",
+          atasNama: "",
+          tipeSp: "",
+          avatar: "",
+        }
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
