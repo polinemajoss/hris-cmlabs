@@ -45,10 +45,10 @@ export function SiteHeader() {
   return (
     <header className="flex items-center justify-between px-6 py-2 border-b bg-white">
       {/* Kiri - Judul Halaman */}
-      <div className="flex items-center w-full gap-4">
+      <div className="flex-1 hidden md:flex items-center gap-4 overflow-hidden">
       <h1 className="text-xl font-semibold whitespace-nowrap">{title}</h1>
-      <div className="relative flex-1 hidden md:flex items-center gap-2">
-        <Search className="absolute left-3 w-4 h-4 text-gray-400" />
+      <div className="relative flex-grow max-w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="search"
           placeholder="Search..."
@@ -57,8 +57,7 @@ export function SiteHeader() {
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-    </div>
-
+      </div>
 
       {/* Kanan - Notifikasi dan Profil */}
       <div className="flex items-center gap-4">
