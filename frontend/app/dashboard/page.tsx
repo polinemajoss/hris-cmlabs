@@ -7,31 +7,35 @@ import { SectionCards } from "../../components/ui/section-card";
 import { SiteHeader } from "../../components/ui/site-header";
 import { SidebarInset, SidebarProvider } from "../../components/ui/sidebar";
 import data from "./data.json";
+import { useAuth } from "../../lib/authContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Page() {
-  // const { user, loading } = useAuth();
-  // const router = useRouter();
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // useEffect(() => {
-  //   // if (!loading && !user) {
-  //   //   router.push("/sign-in");
-  //   // }
-  // }, [loading, user]);
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/sign-in");
+    }
+  }, [loading, user]);
 
-  // if (loading || !user) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center bg-white">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
-  //     </div>
-  //   );
-  // }
-
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+      </div>
+    );
+  }
+  
   return (
-    <SidebarProvider>
+  <SidebarProvider>
+    <div className="flex h-screen">
       <AppSidebar variant="inset" />
-      <SidebarInset>
+      <SidebarInset className="flex-1 flex flex-col">
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex-1 overflow-auto">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <SectionCards />
@@ -43,6 +47,8 @@ export default function Page() {
           </div>
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </div>
+  </SidebarProvider>
   );
+
 }
