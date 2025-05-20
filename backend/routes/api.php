@@ -16,8 +16,8 @@ Route::post('/sign-out', [AuthController::class, 'signOut']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::get('/try-for-free', [AuthController::class, 'tryForFree']);
 
-Route::get('/api/employee', [AuthController::class, 'employee']);
-Route::get('/api/employee/{id}', [AuthController::class, 'employeeById']);
+Route::get('/employee', [AuthController::class, 'employee']);
+Route::get('/employee/{id}', [AuthController::class, 'employeeById']);
 
 // Authenticated routes (via Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {
@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::get('/sanctum/csrf-cookie', function (Request $request) {
+    return response()->json(['message' => 'CSRF cookie set']);
+})->name('sanctum.csrf-cookie');
 
 //     // Tambahkan route lain yang membutuhkan autentikasi di sini
 //     Route::apiResource('employees', EmployeeController::class);

@@ -1,13 +1,22 @@
 import axios from 'axios';
 
-const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
 const axiosInstance = axios.create({
-  baseURL: "",
+  baseURL: "http://127.0.0.1:8000/api",
   headers: {
-    Authorization: token ? `Bearer ${token}` : '',
     Accept: "application/json",
   },
+  withCredentials: true, // <-- PENTING: aktifkan ini
 });
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default axiosInstance;

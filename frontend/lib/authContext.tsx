@@ -1,44 +1,50 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import api from "./axios";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import axiosInstance from "./axios";
 
-const AuthContext = createContext(null);
+type User = {
+  avatar: string;
+  id: string;
+  name: string;
+  email: string;
+  // tambahkan properti lain jika perlu
+};
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+type AuthContextType = {
+  user: User | null;
+  setUser: (user: User | null) => void;
+  loading: boolean;
+  signOut: () => void;
+};
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUser = async () => {
+    try {
+      const response = await axiosInstance.get("/user", { withCredentials: true });
+      setUser(response.data);
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-  
-      try {
-        const response = await api.get("/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUser(response.data);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
     fetchUser();
   }, []);
 
-  
-  const signOut = () => {
-    localStorage.removeItem("token");
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  const signOut = async () => {
+    try {
+      await axiosInstance.post("/sign-out", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
     setUser(null);
   };
 
@@ -49,4 +55,8 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+};

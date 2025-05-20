@@ -7,25 +7,28 @@ import { SectionCards } from "../../components/ui/section-card";
 import { SiteHeader } from "../../components/ui/site-header";
 import { SidebarInset, SidebarProvider } from "../../components/ui/sidebar";
 import data from "./data.json";
+import { useAuth } from "../../lib/authContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Page() {
-  // const { user, loading } = useAuth();
-  // const router = useRouter();
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // useEffect(() => {
-  //   // if (!loading && !user) {
-  //   //   router.push("/sign-in");
-  //   // }
-  // }, [loading, user]);
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/sign-in");
+    }
+  }, [loading, user]);
 
-  // if (loading || !user) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center bg-white">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
-  //     </div>
-  //   );
-  // }
-
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+      </div>
+    );
+  }
+  
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
