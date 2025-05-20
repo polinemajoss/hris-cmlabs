@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/api/sign-in", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   return NextResponse.next();
