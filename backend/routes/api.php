@@ -30,6 +30,12 @@ Route::get('/sanctum/csrf-cookie', function (Request $request) {
     return response()->json(['message' => 'CSRF cookie set']);
 })->name('sanctum.csrf-cookie');
 
+Route::middleware(['web'])->group(function () {
+    Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+});
+
+
 //     Tambahkan route lain yang membutuhkan autentikasi di sini
 //     Route::apiResource('salaries', SalaryController::class);
 //     Route::apiResource('letters', LetterController::class);
