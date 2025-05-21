@@ -1,6 +1,8 @@
 "use client";
 
-import { useAuth } from "../../lib/authContext"; // sesuaikan path jika perlu
+import { useAuth } from "../../lib/authContext"; 
+import GoogleLoginButton from '../ui/GoogleLoginButton';
+
 
 import { useState } from "react";
 import { Input } from "../ui/input";
@@ -190,8 +192,9 @@ export function SignIn({
                     type="button"
                     variant="outline"
                     className="w-full h-[50px] font-bold uppercase flex items-center justify-center gap-3"
-                    onClick={() => alert("Google sign-in is not implemented.")}
-                  >
+                    onClick={() => {
+                      window.location.href = 'http://localhost:8000/api/auth/google/redirect';
+                    }}                  >
                     <img
                       src="/images/google-logo.png"
                       alt="Google Logo"
