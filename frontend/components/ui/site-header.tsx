@@ -101,10 +101,6 @@ export function SiteHeader() {
                   <CreditCard className="mr-2 h-4 w-4" />
                   Billing
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <BellIcon className="mr-2 h-4 w-4" />
-                  Notifications
-                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
