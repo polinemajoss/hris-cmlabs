@@ -4,6 +4,7 @@ import { SidebarProvider } from '../../components/ui/sidebar';
 import { AppSidebar } from '../../components/ui/app-sidebar';
 import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
+import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
 
 const checkclockData = [
 //   { name: 'Juanita', jabatan: 'CEO', clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
@@ -41,7 +42,8 @@ export default function CheckclockPage() {
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                     <span>Filter</span>
                   </button>
-                  <button className="bg-gray-800 text-white px-4 py-1.5 rounded-lg font-semibold">+ Tambah Data</button>
+                  <AddCheckclockSheet />
+                  {/* <button className="bg-gray-800 text-white px-4 py-1.5 rounded-lg font-semibold">+ Tambah Data</button> */}
                 </div>
               </div>
               <div className="overflow-x-auto">
