@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
+use Illuminate\Http\RedirectResponse;
+
 
 class AuthController extends Controller
 {
@@ -109,5 +113,43 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out'
         ]);
+    }
+
+    // Sign -in with Google
+    // Google OAuth Redirect
+    public function redirectToGoogle(): RedirectResponse
+    {
+        /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
+        $googleProvider = Socialite::driver('google');
+        return $googleProvider->stateless()->redirect();
+    }
+
+    // Google OAuth Callback
+    public function handleGoogleCallback()
+    {
+        try {
+        /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
+        $googleProvider = Socialite::driver('google');
+        $googleUser = $googleProvider->stateless()->user();
+
+            $user = User::firstOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'name' => $googleUser->getName(),
+                    'email_verified_at' => now(),
+                    'password' => bcrypt(Str::random(16)),
+                ]
+            );
+
+            $token = $user->createToken('google-login')->plainTextToken;
+
+            // Redirect ke Next.js frontend bawa token
+            return redirect("http://localhost:3000/oauth-callback?token={$token}");
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Google login failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
