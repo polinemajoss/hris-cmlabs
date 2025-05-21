@@ -252,470 +252,470 @@ export default function EmployeeDatabase() {
 
   return (
     <SidebarProvider>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <div className="flex flex-col h-full bg-white">
-          <SiteHeader />
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCardsEmployee />
+      <div className="flex">
+        <AppSidebar/>
+          <div className="flex-1 min-h-screen bg-gray-50">
+            <SiteHeader />
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                <SectionCardsEmployee />
+              </div>
             </div>
-          </div>
 
-          {/* Table Controls */}
-            <section className="flex flex-col md:flex-row justify-between items-center gap-4 px-10 py-4">
-            <h2 className="font-semibold text-lg whitespace-nowrap">Informasi Seluruh Karyawan</h2>
-            <div className="flex gap-3 flex-1">
-              <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
-              style={{ minHeight: "2rem" }}
-              />
-              <button
-              onClick={() => setIsFilterActive(!isFilterActive)}
-              className="px-3 py-1 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb] text-xs h-8"
-              style={{ minHeight: "2rem" }}
-              >
-              <Filter
-                size={12}
-                className="mr-1 transition-colors group-hover:text-[#2563eb]"
-              /> Filter
-              </button>
-                <button
-                className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center"
-                style={{ minHeight: "2rem" }}
-                onClick={() => {
-                  import("jspdf").then(jsPDFModule => {
-                  const jsPDF = jsPDFModule.default;
-                  import("jspdf-autotable").then(() => {
-                    const doc = new jsPDF();
-                    // Table columns
-                    const columns = [
-                    "No",
-                    "Nama",
-                    "Jenis Kelamin",
-                    "Nomor Telepon",
-                    "Cabang",
-                    "Jabatan",
-                    "Grade",
-                    "Status"
-                    ];
-                    // Table rows
-                    const rows = currentEmployees.map((emp, i) => [
-                    indexOfFirstItem + i + 1,
-                    `${emp.firstName} ${emp.lastName}`,
-                    emp.gender,
-                    emp.phone,
-                    emp.branch,
-                    emp.position,
-                    emp.grade,
-                    emp.status === "active" ? "Aktif" : "Tidak Aktif"
-                    ]);
-                    // @ts-ignore
-                    doc.autoTable({
-                    head: [columns],
-                    body: rows,
-                    styles: { font: "helvetica", fontSize: 10 },
-                    headStyles: { fillColor: [30, 58, 95] }
-                    });
-                    doc.save("employee-table.pdf");
-                  });
-                  });
-                }}
-                >
-                <Upload size={12} className="mr-1" /> Export PDF
-                </button>
-              <label
-                className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center cursor-pointer"
-                style={{ minHeight: "2rem" }}
-              >
-                <Download size={12} className="mr-1" /> Import
+            {/* Table Controls */}
+              <section className="flex flex-col md:flex-row justify-between items-center gap-4 px-10 py-4">
+              <h2 className="font-semibold text-lg whitespace-nowrap">Informasi Seluruh Karyawan</h2>
+              <div className="flex gap-3 flex-1">
                 <input
-                  type="file"
-                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    // Simple CSV/Excel import using SheetJS (xlsx)
-                    const XLSX = await import("xlsx");
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                      const data = evt.target?.result;
-                      if (!data) return;
-                      const workbook = XLSX.read(data, { type: "binary" });
-                      const sheetName = workbook.SheetNames[0];
-                      const worksheet = workbook.Sheets[sheetName];
-                      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                      // Do something with imported data, e.g. log or set state
-                      console.log("Imported data:", json);
-                      alert("Import berhasil! Lihat console untuk data.");
-                    };
-                    reader.readAsBinaryString(file);
-                    // Reset input so same file can be selected again
-                    e.target.value = "";
-                  }}
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
+                style={{ minHeight: "2rem" }}
                 />
-              </label>
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
                 <button
-                className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
+                onClick={() => setIsFilterActive(!isFilterActive)}
+                className="px-3 py-1 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb] text-xs h-8"
                 style={{ minHeight: "2rem" }}
                 >
-                <Plus size={12} className="mr-1" /> Tambah Data
+                <Filter
+                  size={12}
+                  className="mr-1 transition-colors group-hover:text-[#2563eb]"
+                /> Filter
                 </button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="!w-[85vw] max-w-none p-6 overflow-y-auto"
-                style={{ width: "85vw", maxWidth: "none" }}
-              >
-                <SheetHeader>
-                <SheetTitle className="text-lg font-semibold">Tambah Karyawan</SheetTitle>
-                <SheetDescription className="text-sm text-muted-foreground">
-                  Silahkan isi data karyawan baru di bawah ini.
-                </SheetDescription>
-                </SheetHeader>
-                <AddEmployeeForm onSubmit={handleAddEmployee} onCancel={() => setIsSheetOpen(false)} />
-              </SheetContent>
-              </Sheet>
-            </div>
-            </section>
+                  <button
+                  className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center"
+                  style={{ minHeight: "2rem" }}
+                  onClick={() => {
+                    import("jspdf").then(jsPDFModule => {
+                    const jsPDF = jsPDFModule.default;
+                    import("jspdf-autotable").then(() => {
+                      const doc = new jsPDF();
+                      // Table columns
+                      const columns = [
+                      "No",
+                      "Nama",
+                      "Jenis Kelamin",
+                      "Nomor Telepon",
+                      "Cabang",
+                      "Jabatan",
+                      "Grade",
+                      "Status"
+                      ];
+                      // Table rows
+                      const rows = currentEmployees.map((emp, i) => [
+                      indexOfFirstItem + i + 1,
+                      `${emp.firstName} ${emp.lastName}`,
+                      emp.gender,
+                      emp.phone,
+                      emp.branch,
+                      emp.position,
+                      emp.grade,
+                      emp.status === "active" ? "Aktif" : "Tidak Aktif"
+                      ]);
+                      // @ts-ignore
+                      doc.autoTable({
+                      head: [columns],
+                      body: rows,
+                      styles: { font: "helvetica", fontSize: 10 },
+                      headStyles: { fillColor: [30, 58, 95] }
+                      });
+                      doc.save("employee-table.pdf");
+                    });
+                    });
+                  }}
+                  >
+                  <Upload size={12} className="mr-1" /> Export PDF
+                  </button>
+                <label
+                  className="px-3 py-1 border border-[#1E3A5F] text-[#1E3A5F] rounded hover:bg-[#1E3A5F] hover:text-white transition text-xs h-8 flex items-center cursor-pointer"
+                  style={{ minHeight: "2rem" }}
+                >
+                  <Download size={12} className="mr-1" /> Import
+                  <input
+                    type="file"
+                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      // Simple CSV/Excel import using SheetJS (xlsx)
+                      const XLSX = await import("xlsx");
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        const data = evt.target?.result;
+                        if (!data) return;
+                        const workbook = XLSX.read(data, { type: "binary" });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        // Do something with imported data, e.g. log or set state
+                        console.log("Imported data:", json);
+                        alert("Import berhasil! Lihat console untuk data.");
+                      };
+                      reader.readAsBinaryString(file);
+                      // Reset input so same file can be selected again
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <button
+                  className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
+                  style={{ minHeight: "2rem" }}
+                  >
+                  <Plus size={12} className="mr-1" /> Tambah Data
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="!w-[85vw] max-w-none p-6 overflow-y-auto"
+                  style={{ width: "85vw", maxWidth: "none" }}
+                >
+                  <SheetHeader>
+                  <SheetTitle className="text-lg font-semibold">Tambah Karyawan</SheetTitle>
+                  <SheetDescription className="text-sm text-muted-foreground">
+                    Silahkan isi data karyawan baru di bawah ini.
+                  </SheetDescription>
+                  </SheetHeader>
+                  <AddEmployeeForm onSubmit={handleAddEmployee} onCancel={() => setIsSheetOpen(false)} />
+                </SheetContent>
+                </Sheet>
+              </div>
+              </section>
 
-          {/* Table */}
-          <section className="px-6 pb-6 overflow-x-auto">
-            <Table className="min-w-full">
-              <TableHeader>
-                <TableRow>
-                    <TableHead
-                      style={{ width: 40, minWidth: 40, maxWidth: 40 }}
-                      className="text-center whitespace-nowrap"
-                    >
-                      <div className="text-center w-full">No</div>
-                    </TableHead>
-                    <TableHead className="w-[4%] text-center">
-                      <div className="text-center w-full">Avatar</div>
-                    </TableHead>
-                    <TableHead className="w-[16%]">
-                      <div className="w-full">Nama</div>
-                    </TableHead>
-                    <TableHead className="w-[10%] text-center">
-                      <div className="text-center w-full">Jenis Kelamin</div>
-                    </TableHead>
-                    <TableHead className="w-[10%]">
-                      <div className="w-full">Nomor Telepon</div>
-                    </TableHead>
-                    <TableHead className="w-[13%]">
-                      <div className="w-full">Cabang</div>
-                    </TableHead>
-                    <TableHead className="w-[13%]">
-                      <div className="w-full">Jabatan</div>
-                    </TableHead>
-                    <TableHead className="w-[13%]">
-                      <div className="w-full">Grade</div>
-                    </TableHead>
-                    <TableHead className="w-[8%] text-center">
-                      <div className="text-center w-full">Status</div>
-                    </TableHead>
-                    <TableHead className="w-[12%] text-center">
-                      <div className="text-center w-full">Action</div>
-                    </TableHead>
-                </TableRow>
-              </TableHeader>
-                <TableBody>
-                  {filteredEmployees.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8">
-                        Tidak ada data ditemukan
-                      </TableCell>
-                    </TableRow>
-                  ) : currentEmployees.map((emp, i) => (
-                    <TableRow key={emp.id} className="border-b-[6px] border-white">
-                      <TableCell
+            {/* Table */}
+            <section className="px-6 pb-6 overflow-x-auto">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                      <TableHead
                         style={{ width: 40, minWidth: 40, maxWidth: 40 }}
                         className="text-center whitespace-nowrap"
                       >
-                        {indexOfFirstItem + i + 1}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {generateAvatar(`${emp.firstName} ${emp.lastName}`, emp.avatarUrl)}
-                      </TableCell>
-                      <TableCell>{emp.firstName} {emp.lastName}</TableCell>
-                        <TableCell className="text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold justify-center`}
-                          style={{
-                          minWidth: 90,
-                          width: 90,
-                          display: "inline-flex",
-                          background:
-                            emp.gender === "Laki-Laki"
-                            ? "#DBEAFE"
-                            : "#FCE7F3",
-                          color:
-                            emp.gender === "Laki-Laki"
-                            ? "#1D4ED8"
-                            : "#BE185D",
-                          }}
-                        >
-                          {emp.gender === "Laki-Laki" ? (
-                          // Male icon (simple SVG)
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                            strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
-                            <circle cx="10" cy="14" r="6" />
-                            <path d="M19 5v5M19 5h-5M19 5l-7 7" />
-                          </svg>
-                          ) : (
-                          // Female icon (simple SVG)
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                            strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
-                            <circle cx="12" cy="8" r="5" />
-                            <line x1="12" y1="13" x2="12" y2="21" />
-                            <line x1="9" y1="18" x2="15" y2="18" />
-                          </svg>
-                          )}
-                          {emp.gender}
-                        </span>
+                        <div className="text-center w-full">No</div>
+                      </TableHead>
+                      <TableHead className="w-[4%] text-center">
+                        <div className="text-center w-full">Avatar</div>
+                      </TableHead>
+                      <TableHead className="w-[16%]">
+                        <div className="w-full">Nama</div>
+                      </TableHead>
+                      <TableHead className="w-[10%] text-center">
+                        <div className="text-center w-full">Jenis Kelamin</div>
+                      </TableHead>
+                      <TableHead className="w-[10%]">
+                        <div className="w-full">Nomor Telepon</div>
+                      </TableHead>
+                      <TableHead className="w-[13%]">
+                        <div className="w-full">Cabang</div>
+                      </TableHead>
+                      <TableHead className="w-[13%]">
+                        <div className="w-full">Jabatan</div>
+                      </TableHead>
+                      <TableHead className="w-[13%]">
+                        <div className="w-full">Grade</div>
+                      </TableHead>
+                      <TableHead className="w-[8%] text-center">
+                        <div className="text-center w-full">Status</div>
+                      </TableHead>
+                      <TableHead className="w-[12%] text-center">
+                        <div className="text-center w-full">Action</div>
+                      </TableHead>
+                  </TableRow>
+                </TableHeader>
+                  <TableBody>
+                    {filteredEmployees.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-8">
+                          Tidak ada data ditemukan
                         </TableCell>
-                      <TableCell>{emp.phone}</TableCell>
-                      <TableCell>{emp.branch}</TableCell>
-                      <TableCell>{emp.position}</TableCell>
-                      <TableCell>{emp.grade}</TableCell>
-                      <TableCell className="text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                            emp.status === "active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-200 text-gray-500"
-                          }`}
+                      </TableRow>
+                    ) : currentEmployees.map((emp, i) => (
+                      <TableRow key={emp.id} className="border-b-[6px] border-white">
+                        <TableCell
+                          style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                          className="text-center whitespace-nowrap"
                         >
-                          {emp.status === "active" ? "Aktif" : "Tidak Aktif"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="flex gap-2 justify-center">
-                        {/* Download Button */}
-                        <button
-                          onClick={() => handleDownloadPDF(emp)}
-                          className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition"
-                          title="Download"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <path d="M12 18v-6" />
-                            <path d="M9 15l3 3 3-3" />
-                          </svg>
-                        </button>
-
-                        {/* Edit Button */}
-                        {/* Edit Button with Sheet */}
-                        <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-                          <SheetTrigger asChild>
-                            <button
-                              onClick={() => handleEditEmployee(emp)}
-                              className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition"
-                              title="Edit"
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 20h9" />
-                                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                              </svg>
-                            </button>
-                          </SheetTrigger>
-                          <SheetContent
-                            side="right"
-                            className="!w-[85vw] max-w-none p-6 overflow-y-auto"
-                            style={{ width: "85vw", maxWidth: "none" }}
+                          {indexOfFirstItem + i + 1}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {generateAvatar(`${emp.firstName} ${emp.lastName}`, emp.avatarUrl)}
+                        </TableCell>
+                        <TableCell>{emp.firstName} {emp.lastName}</TableCell>
+                          <TableCell className="text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold justify-center`}
+                            style={{
+                            minWidth: 90,
+                            width: 90,
+                            display: "inline-flex",
+                            background:
+                              emp.gender === "Laki-Laki"
+                              ? "#DBEAFE"
+                              : "#FCE7F3",
+                            color:
+                              emp.gender === "Laki-Laki"
+                              ? "#1D4ED8"
+                              : "#BE185D",
+                            }}
                           >
-                            <SheetHeader>
-                              <SheetTitle className="text-lg font-semibold">Edit Karyawan</SheetTitle>
-                              <SheetDescription className="text-sm text-muted-foreground">
-                                Ubah data karyawan {editingEmployee?.firstName} {editingEmployee?.lastName}
-                              </SheetDescription>
-                            </SheetHeader>
-                            <AddEmployeeForm
-                              initialData={editingEmployee}
-                              onSubmit={(formData) => handleUpdateEmployee(formData)}
-                              onCancel={() => setIsEditSheetOpen(false)}
-                            />
-                          </SheetContent>
-                        </Sheet>
+                            {emp.gender === "Laki-Laki" ? (
+                            // Male icon (simple SVG)
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                              strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
+                              <circle cx="10" cy="14" r="6" />
+                              <path d="M19 5v5M19 5h-5M19 5l-7 7" />
+                            </svg>
+                            ) : (
+                            // Female icon (simple SVG)
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                              strokeLinecap="round" strokeLinejoin="round" className="inline align-middle">
+                              <circle cx="12" cy="8" r="5" />
+                              <line x1="12" y1="13" x2="12" y2="21" />
+                              <line x1="9" y1="18" x2="15" y2="18" />
+                            </svg>
+                            )}
+                            {emp.gender}
+                          </span>
+                          </TableCell>
+                        <TableCell>{emp.phone}</TableCell>
+                        <TableCell>{emp.branch}</TableCell>
+                        <TableCell>{emp.position}</TableCell>
+                        <TableCell>{emp.grade}</TableCell>
+                        <TableCell className="text-center">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+                              emp.status === "active"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-200 text-gray-500"
+                            }`}
+                          >
+                            {emp.status === "active" ? "Aktif" : "Tidak Aktif"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="flex gap-2 justify-center">
+                          {/* Download Button */}
+                          <button
+                            onClick={() => handleDownloadPDF(emp)}
+                            className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition"
+                            title="Download"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                              <path d="M12 18v-6" />
+                              <path d="M9 15l3 3 3-3" />
+                            </svg>
+                          </button>
 
-                        {/* Delete Button with AlertDialog Trigger */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              onClick={() => setEmployeeToDelete(emp)}
-                              className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition"
-                              title="Delete"
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                                <line x1="10" y1="11" x2="10" y2="17" />
-                                <line x1="14" y1="11" x2="14" y2="17" />
-                              </svg>
-                            </button>
-                          </AlertDialogTrigger>
-                            <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                              Data karyawan <strong style={{ color: "red" }}>{employeeToDelete?.firstName} {employeeToDelete?.lastName}</strong> akan dihapus secara permanen.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => handleDeleteEmployee(employeeToDelete?.id)}
+                          {/* Edit Button */}
+                          {/* Edit Button with Sheet */}
+                          <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+                            <SheetTrigger asChild>
+                              <button
+                                onClick={() => handleEditEmployee(emp)}
+                                className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition"
+                                title="Edit"
                               >
-                                Hapus
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-            </Table>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M12 20h9" />
+                                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                </svg>
+                              </button>
+                            </SheetTrigger>
+                            <SheetContent
+                              side="right"
+                              className="!w-[85vw] max-w-none p-6 overflow-y-auto"
+                              style={{ width: "85vw", maxWidth: "none" }}
+                            >
+                              <SheetHeader>
+                                <SheetTitle className="text-lg font-semibold">Edit Karyawan</SheetTitle>
+                                <SheetDescription className="text-sm text-muted-foreground">
+                                  Ubah data karyawan {editingEmployee?.firstName} {editingEmployee?.lastName}
+                                </SheetDescription>
+                              </SheetHeader>
+                              <AddEmployeeForm
+                                initialData={editingEmployee}
+                                onSubmit={(formData) => handleUpdateEmployee(formData)}
+                                onCancel={() => setIsEditSheetOpen(false)}
+                              />
+                            </SheetContent>
+                          </Sheet>
 
-            {/* Pagination */}
-            <div className="mt-4 flex justify-between items-center">
-              {/* Items per page dropdown */}
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Menampilkan</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                    <SelectTrigger id="items-per-page">
-                      {itemsPerPage}
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="20">20</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="text-sm text-gray-700">
-                Menampilkan {indexOfFirstItem + 1} sampai {Math.min(indexOfLastItem, filteredEmployees.length)} dari {filteredEmployees.length} karyawan
-                </div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                          {/* Delete Button with AlertDialog Trigger */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                onClick={() => setEmployeeToDelete(emp)}
+                                className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition"
+                                title="Delete"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                  <line x1="10" y1="11" x2="10" y2="17" />
+                                  <line x1="14" y1="11" x2="14" y2="17" />
+                                </svg>
+                              </button>
+                            </AlertDialogTrigger>
+                              <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                Data karyawan <strong style={{ color: "red" }}>{employeeToDelete?.firstName} {employeeToDelete?.lastName}</strong> akan dihapus secara permanen.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                  onClick={() => handleDeleteEmployee(employeeToDelete?.id)}
+                                >
+                                  Hapus
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+              </Table>
 
-                {/* Previous button */}
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="px-3 py-1 border rounded-l text-gray-600 hover:bg-gray-100"
-                >
-                  Previous
-                </button>
+              {/* Pagination */}
+              <div className="mt-4 flex justify-between items-center">
+                {/* Items per page dropdown */}
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700">Menampilkan</span>
+                    <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                      <SelectTrigger id="items-per-page">
+                        {itemsPerPage}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="text-sm text-gray-700">
+                  Menampilkan {indexOfFirstItem + 1} sampai {Math.min(indexOfLastItem, filteredEmployees.length)} dari {filteredEmployees.length} karyawan
+                  </div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
 
-                {/* Page numbers: only 1 before and 1 after current page, with ellipsis if needed */}
-                {totalPages > 1 && (() => {
-                  const pageNumbers = [];
-                  const showLeftEllipsis = currentPage > 3;
-                  const showRightEllipsis = currentPage < totalPages - 2;
-
-                  // Always show first page
-                  if (currentPage > 1) {
-                  pageNumbers.push(
-                    <button
-                    key={1}
-                    onClick={() => setCurrentPage(1)}
-                    className={`px-3 py-1 border ${currentPage === 1 ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                    1
-                    </button>
-                  );
-                  }
-
-                  // Only show ellipsis if currentPage > 3
-                  if (showLeftEllipsis) {
-                  pageNumbers.push(
-                    <span key="start-ellipsis" className="px-2 py-1 text-gray-400">...</span>
-                  );
-                  }
-
-                  // Show previous page if not first and not second
-                  if (currentPage - 1 > 1) {
-                  pageNumbers.push(
-                    <button
-                    key={currentPage - 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
-                    >
-                    {currentPage - 1}
-                    </button>
-                  );
-                  }
-
-                  // Show current page
-                  pageNumbers.push(
+                  {/* Previous button */}
                   <button
-                    key={currentPage}
-                    className="px-3 py-1 border bg-[#1E3A5F] text-white"
-                    disabled
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="px-3 py-1 border rounded-l text-gray-600 hover:bg-gray-100"
                   >
-                    {currentPage}
+                    Previous
                   </button>
-                  );
 
-                  // Show next page if not last and not second last
-                  if (currentPage + 1 < totalPages) {
-                  pageNumbers.push(
+                  {/* Page numbers: only 1 before and 1 after current page, with ellipsis if needed */}
+                  {totalPages > 1 && (() => {
+                    const pageNumbers = [];
+                    const showLeftEllipsis = currentPage > 3;
+                    const showRightEllipsis = currentPage < totalPages - 2;
+
+                    // Always show first page
+                    if (currentPage > 1) {
+                    pageNumbers.push(
+                      <button
+                      key={1}
+                      onClick={() => setCurrentPage(1)}
+                      className={`px-3 py-1 border ${currentPage === 1 ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                      >
+                      1
+                      </button>
+                    );
+                    }
+
+                    // Only show ellipsis if currentPage > 3
+                    if (showLeftEllipsis) {
+                    pageNumbers.push(
+                      <span key="start-ellipsis" className="px-2 py-1 text-gray-400">...</span>
+                    );
+                    }
+
+                    // Show previous page if not first and not second
+                    if (currentPage - 1 > 1) {
+                    pageNumbers.push(
+                      <button
+                      key={currentPage - 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
+                      >
+                      {currentPage - 1}
+                      </button>
+                    );
+                    }
+
+                    // Show current page
+                    pageNumbers.push(
                     <button
-                    key={currentPage + 1}
+                      key={currentPage}
+                      className="px-3 py-1 border bg-[#1E3A5F] text-white"
+                      disabled
+                    >
+                      {currentPage}
+                    </button>
+                    );
+
+                    // Show next page if not last and not second last
+                    if (currentPage + 1 < totalPages) {
+                    pageNumbers.push(
+                      <button
+                      key={currentPage + 1}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
+                      >
+                      {currentPage + 1}
+                      </button>
+                    );
+                    }
+
+                    // Only show ellipsis if currentPage < totalPages - 2
+                    if (showRightEllipsis) {
+                    pageNumbers.push(
+                      <span key="end-ellipsis" className="px-2 py-1 text-gray-400">...</span>
+                    );
+                    }
+
+                    // Always show last page
+                    if (currentPage < totalPages) {
+                    pageNumbers.push(
+                      <button
+                      key={totalPages}
+                      onClick={() => setCurrentPage(totalPages)}
+                      className={`px-3 py-1 border ${currentPage === totalPages ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                      >
+                      {totalPages}
+                      </button>
+                    );
+                    }
+
+                    return pageNumbers;
+                  })()}
+
+                  {/* Next button */}
+                  <button
+                    disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(currentPage + 1)}
-                    className="px-3 py-1 border text-gray-600 hover:bg-gray-100"
-                    >
-                    {currentPage + 1}
-                    </button>
-                  );
-                  }
-
-                  // Only show ellipsis if currentPage < totalPages - 2
-                  if (showRightEllipsis) {
-                  pageNumbers.push(
-                    <span key="end-ellipsis" className="px-2 py-1 text-gray-400">...</span>
-                  );
-                  }
-
-                  // Always show last page
-                  if (currentPage < totalPages) {
-                  pageNumbers.push(
-                    <button
-                    key={totalPages}
-                    onClick={() => setCurrentPage(totalPages)}
-                    className={`px-3 py-1 border ${currentPage === totalPages ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                    {totalPages}
-                    </button>
-                  );
-                  }
-
-                  return pageNumbers;
-                })()}
-
-                {/* Next button */}
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="px-3 py-1 border rounded-r text-gray-600 hover:bg-gray-100"
-                >
-                  Next
-                </button>
-              </nav>
-            </div>
-          </section>
-        </div>
-      </SidebarInset>
+                    className="px-3 py-1 border rounded-r text-gray-600 hover:bg-gray-100"
+                  >
+                    Next
+                  </button>
+                </nav>
+              </div>
+            </section>
+          </div>
+      </div>
     </SidebarProvider>
   );
 }
