@@ -30,10 +30,10 @@ export default function Page() {
   }
   
   return (
-  <SidebarProvider>
-    <div className="flex h-screen">
-      <AppSidebar variant="inset" />
-      <SidebarInset className="flex-1 flex flex-col">
+    <SidebarProvider>
+      <div className="flex">
+        <AppSidebar/>
+      <div className="flex-1 min-h-screen bg-gray-50">
         <SiteHeader />
         <div className="flex-1 overflow-auto">
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -46,9 +46,8 @@ export default function Page() {
             </div>
           </div>
         </div>
-      </SidebarInset>
-    </div>
-  </SidebarProvider>
-);
-
+        </div>
+      </div>
+    </SidebarProvider>
+  );
 }
