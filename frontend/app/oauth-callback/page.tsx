@@ -12,25 +12,35 @@ export default function OAuthCallback() {
 
   useEffect(() => {
     const token = searchParams.get("token");
+    const error = searchParams.get("error");
 
-    if (token) {
-      localStorage.setItem("token", token);
-
-      // opsional: fetch user jika backend tidak mengembalikannya langsung
-      const fetchUser = async () => {
-        try {
-          const response = await axiosInstance.get("/user");
-          setUser(response.data);
-          router.push("/dashboard");
-        } catch (error) {
-          console.error("Error fetching user", error);
-          router.push("/sign-in");
-        }
-      };
-
-      fetchUser();
+    if (error || !token) {
+      console.error("OAuth error or no token");
+      router.push("/sign-in");
+      return;
     }
-  }, [searchParams]);
 
-  return <p>Signing in with Google...</p>;
+    localStorage.setItem("token", token);
+    console.log("Token stored:", token);
+
+    const fetchUser = async () => {
+      try {
+        const response = await axiosInstance.get("/user");
+        setUser(response.data);
+        router.push("/dashboard");
+      } catch (err: any) {
+        console.error("Failed to fetch user:", err);
+        localStorage.removeItem("token");
+        router.push("/sign-in");
+      }
+    };
+
+    fetchUser();
+  }, [router, searchParams, setUser]);
+
+  return (
+    <div className="flex h-screen items-center justify-center bg-white">
+      <p className="text-xl font-medium">Signing in with Google...</p>
+    </div>
+  );
 }

@@ -193,7 +193,7 @@ export function SignIn({
                     variant="outline"
                     className="w-full h-[50px] font-bold uppercase flex items-center justify-center gap-3"
                     onClick={() => {
-                      window.location.href = 'http://localhost:8000/api/auth/google/redirect';
+                      window.location.href = "http://localhost:8000/api/auth/google/redirect";
                     }}                  >
                     <img
                       src="/images/google-logo.png"
