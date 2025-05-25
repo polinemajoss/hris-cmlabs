@@ -6,8 +6,10 @@ import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
 import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
 import { Filter, Plus } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
 
-const checkclockData = [
+const initialCheckclockData = [
   { name: 'Juanita', jabatan: 'CEO', clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
   { name: 'Shane', jabatan: 'OB', clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
   { name: 'Miles', jabatan: 'Head of HR', clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
@@ -24,6 +26,25 @@ import React, { useState } from 'react';
 
 export default function CheckclockPage() {
   const [isFilterActive, setIsFilterActive] = useState(false);
+  // Ambil data buat checkclock
+  // Misalnya data ini diambil dari API atau state global
+  const [checkclockData, setCheckclockData] = useState([...initialCheckclockData]); // datanya ya qos -awa
+  const [approveIdx, setApproveIdx] = useState<number | null>(null);
+
+  //Ini buat logika approve yaa sayang
+  // Handler untuk approve attendance
+  const handleApprove = () => {
+    if (approveIdx !== null) {
+      setCheckclockData(prev =>
+        prev.map((row, idx) =>
+          idx === approveIdx
+            ? { ...row, approve: true, status: 'On Time' }
+            : row
+        )
+      );
+      setApproveIdx(null);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -94,12 +115,15 @@ export default function CheckclockPage() {
                         <TableCell className="w-25">{row.clockIn}</TableCell>
                         <TableCell className="w-25">{row.clockOut}</TableCell>
                         <TableCell className="w-28">{row.workHours}</TableCell>
-                        <TableCell className="w-25">
+                        {/* Approve checkbox */}
+                        <TableCell className="w-25 text-center align-middle">
                           <input 
                             type="checkbox" 
                             checked={row.approve} 
-                            readOnly 
-                            className="accent-gray-700" />
+                            onChange={() => setApproveIdx(idx)}
+                            className="accent-gray-700 mx-auto block" 
+                            disabled={row.approve} // Disable if already approved
+                            />
                         </TableCell>
                         <TableCell className="w-25">
                           <span
@@ -122,6 +146,25 @@ export default function CheckclockPage() {
                       </TableRow>
                     ))}
                   </TableBody>
+
+                  {/* Dialog Approve */}
+                  <Dialog open={approveIdx !== null} onOpenChange={open => !open && setApproveIdx(null)}>
+                    <DialogContent className="max-w-md w-full">
+                      <DialogHeader>
+                        <DialogTitle>Approve Attendance</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to approve this employee's attendance?<br />
+                          This action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end gap-2 mt-4">
+                        <DialogClose asChild>
+                          <Button variant="outline">Reject</Button>
+                        </DialogClose>
+                        <Button onClick={handleApprove}>Approve</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </Table>
                 </div>
                 {/* Pagination, dst */}
