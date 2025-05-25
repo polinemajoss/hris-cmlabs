@@ -5,21 +5,26 @@ import { AppSidebar } from '../../components/ui/app-sidebar';
 import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
 import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
+import { Filter, Plus } from 'lucide-react';
 
 const checkclockData = [
-//   { name: 'Juanita', jabatan: 'CEO', clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
-//   { name: 'Shane', jabatan: 'OB', clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
-//   { name: 'Miles', jabatan: 'Head of HR', clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
-//   { name: 'Flores', jabatan: 'Manager', clockIn: '09.15', clockOut: '15.30', workHours: '6h 15m', approve: true, status: 'Late' },
-//   { name: 'Henry', jabatan: 'CPO', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Annual Leave' },
-//   { name: 'Marvin', jabatan: 'OB', clockIn: '0', clockOut: '0', workHours: '0', approve: true, status: 'Absent' },
-//   { name: 'Black', jabatan: 'HRD', clockIn: '08.15', clockOut: '17.00', workHours: '9h 45m', approve: true, status: 'On Time' },
-//   { name: 'Jacob Jones', jabatan: 'Supervisor', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Sick Leave' },
-//   { name: 'Ronalds Ricards', jabatan: 'OB', clockIn: '08.00', clockOut: '16.00', workHours: '10h', approve: true, status: 'Late' },
-//   { name: 'Leslie Alexander', jabatan: 'OB', clockIn: '08.30', clockOut: '16.00', workHours: '8h 30m', approve: false, status: 'Waiting Approval' },
+  { name: 'Juanita', jabatan: 'CEO', clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
+  { name: 'Shane', jabatan: 'OB', clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
+  { name: 'Miles', jabatan: 'Head of HR', clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
+  { name: 'Flores', jabatan: 'Manager', clockIn: '09.15', clockOut: '15.30', workHours: '6h 15m', approve: true, status: 'Late' },
+  { name: 'Henry', jabatan: 'CPO', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Annual Leave' },
+  { name: 'Marvin', jabatan: 'OB', clockIn: '0', clockOut: '0', workHours: '0', approve: true, status: 'Absent' },
+  { name: 'Black', jabatan: 'HRD', clockIn: '08.15', clockOut: '17.00', workHours: '9h 45m', approve: true, status: 'On Time' },
+  { name: 'Jacob Jones', jabatan: 'Supervisor', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Sick Leave' },
+  { name: 'Ronalds Ricards', jabatan: 'OB', clockIn: '08.00', clockOut: '16.00', workHours: '10h', approve: true, status: 'Late' },
+  { name: 'Leslie Alexander', jabatan: 'OB', clockIn: '08.30', clockOut: '16.00', workHours: '8h 30m', approve: false, status: 'Waiting Approval' },
 ];
 
+import React, { useState } from 'react';
+
 export default function CheckclockPage() {
+  const [isFilterActive, setIsFilterActive] = useState(false);
+
   return (
     <SidebarProvider>
       <div className="flex">
@@ -29,78 +34,98 @@ export default function CheckclockPage() {
             <SiteHeader />
           </div>
           <main className="p-8">
-            <div className="bg-white rounded-xl shadow p-6 w-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-lg font-semibold">Checkclock Overview</div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    placeholder="Search Employee"
-                    className="border rounded-lg px-3 py-1 bg-gray-100"
-                  />
-                  <button className="border px-3 py-1 rounded-lg flex items-center space-x-1 bg-white">
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                    <span>Filter</span>
-                  </button>
-                  <AddCheckclockSheet />
-                  {/* <button className="bg-gray-800 text-white px-4 py-1.5 rounded-lg font-semibold">+ Tambah Data</button> */}
+            <section className="flex flex-col gap-4 py-4 md:gap-6 md:py-0">
+              <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-6 w-full">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <h2 className="font-semibold text-lg whitespace-nowrap">Checkclock Overview</h2>
+                  <div className="flex gap-3 flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search Employee"
+                      className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
+                      style={{ minHeight: "2rem" }}
+                    />
+                    <button
+                      onClick={() => setIsFilterActive(!isFilterActive)}
+                      className="px-3 py-1 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb] text-xs h-8"
+                      style={{ minHeight: "2rem" }}
+                      >
+                      <Filter size={12} className="mr-1 transition-colors group-hover:text-[#2563eb]"
+                      /> Filter
+                    </button>
+                    <AddCheckclockSheet />
+                  </div>
                 </div>
-              </div>
-              <div className="overflow-x-auto">
-                <Table className="w-full">
+                <div className="overflow-x-auto">
+                  {/* ...table... */}
+                  <Table className="w-full table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Employee Name</TableHead>
-                      <TableHead>Jabatan</TableHead>
-                      <TableHead>Clock In</TableHead>
-                      <TableHead>Clock Out</TableHead>
-                      <TableHead>Work Hours</TableHead>
-                      <TableHead>Approve</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Details</TableHead>
+                      <TableHead className="w-48">Employee Name</TableHead>
+                      <TableHead className="w-32">Jabatan</TableHead>
+                      <TableHead className="w-25">Clock In</TableHead>
+                      <TableHead className="w-25">Clock Out</TableHead>
+                      <TableHead className="w-28">Work Hours</TableHead>
+                      <TableHead className="w-25">Approve</TableHead>
+                      <TableHead className="w-36">Status</TableHead>
+                      <TableHead className="w-25">Details</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {checkclockData.map((row, idx) => (
                       <TableRow key={idx}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="w-8 h-8 bg-gray-300 rounded-full inline-block" />
-                            <span>{row.name}</span>
+                        {/* Employee name */}
+                        <TableCell className="w-48">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-base font-normal text-gray-600 uppercase">
+                              {row.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .slice(0, 2)
+                              }
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-900">{row.name}</div>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell>{row.jabatan}</TableCell>
-                        <TableCell>{row.clockIn}</TableCell>
-                        <TableCell>{row.clockOut}</TableCell>
-                        <TableCell>{row.workHours}</TableCell>
-                        <TableCell>
-                          <input type="checkbox" checked={row.approve} readOnly className="accent-gray-700" />
+                        <TableCell className="w-32">{row.jabatan}</TableCell>
+                        <TableCell className="w-25">{row.clockIn}</TableCell>
+                        <TableCell className="w-25">{row.clockOut}</TableCell>
+                        <TableCell className="w-28">{row.workHours}</TableCell>
+                        <TableCell className="w-25">
+                          <input 
+                            type="checkbox" 
+                            checked={row.approve} 
+                            readOnly 
+                            className="accent-gray-700" />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-25">
                           <span
-                            className={`px-2 py-1 rounded bg-gray-100 border text-xs ${
+                            className={`px-2 py-1 rounded bg-white-100 border text-xs ${
                               row.status === 'Late'
                                 ? 'border-yellow-400 text-yellow-700'
                                 : row.status === 'On Time'
                                 ? 'border-green-400 text-green-700'
                                 : row.status === 'Waiting Approval'
                                 ? 'border-gray-400 text-gray-700'
-                                : 'border-gray-300 text-gray-500'
+                                : 'border-red-400 text-red-700'
                             }`}
                           >
                             {row.status}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <button className="border px-3 py-1 rounded-lg">View</button>
+                          <button className="border px-3 py-1 rounded  hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]">View</button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </div>
-              {/* Pagination */}
-              <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                </div>
+                {/* Pagination, dst */}
+                <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
                 <select className="border rounded px-2 py-1">
                   <option>10</option>
                   <option>25</option>
@@ -117,7 +142,8 @@ export default function CheckclockPage() {
                   <button className="px-2 py-1 border rounded hover:bg-gray-100">&gt;</button>
                 </div>
               </div>
-            </div>
+              </div>
+            </section>
           </main>
         </div>
       </div>
