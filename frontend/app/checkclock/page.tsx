@@ -8,18 +8,23 @@ import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
 import { Filter, Plus } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
+import AttendanceDetailsSheet from '../../components/ui/AttendanceDetailsSheet';
 
+const formatDate = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options); // Format: "1 March 2025"
+};
 const initialCheckclockData = [
-  { name: 'Juanita', jabatan: 'CEO', clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
-  { name: 'Shane', jabatan: 'OB', clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
-  { name: 'Miles', jabatan: 'Head of HR', clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
-  { name: 'Flores', jabatan: 'Manager', clockIn: '09.15', clockOut: '15.30', workHours: '6h 15m', approve: true, status: 'Late' },
-  { name: 'Henry', jabatan: 'CPO', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Annual Leave' },
-  { name: 'Marvin', jabatan: 'OB', clockIn: '0', clockOut: '0', workHours: '0', approve: true, status: 'Absent' },
-  { name: 'Black', jabatan: 'HRD', clockIn: '08.15', clockOut: '17.00', workHours: '9h 45m', approve: true, status: 'On Time' },
-  { name: 'Jacob Jones', jabatan: 'Supervisor', clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Sick Leave' },
-  { name: 'Ronalds Ricards', jabatan: 'OB', clockIn: '08.00', clockOut: '16.00', workHours: '10h', approve: true, status: 'Late' },
-  { name: 'Leslie Alexander', jabatan: 'OB', clockIn: '08.30', clockOut: '16.00', workHours: '8h 30m', approve: false, status: 'Waiting Approval' },
+  { name: 'Juanita', jabatan: 'CEO', date: formatDate(new Date()), clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
+  { name: 'Shane', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
+  { name: 'Miles', jabatan: 'Head of HR', date: formatDate(new Date()), clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
+  { name: 'Flores', jabatan: 'Manager', date: formatDate(new Date()), clockIn: '09.15', clockOut: '15.30', workHours: '6h 15m', approve: true, status: 'Late' },
+  { name: 'Henry', jabatan: 'CPO', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Annual Leave' },
+  { name: 'Marvin', jabatan: 'OB', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: true, status: 'Absent' },
+  { name: 'Black', jabatan: 'HRD', date: formatDate(new Date()), clockIn: '08.15', clockOut: '17.00', workHours: '9h 45m', approve: true, status: 'On Time' },
+  { name: 'Jacob Jones', jabatan: 'Supervisor', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Sick Leave' },
+  { name: 'Ronalds Ricards', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.00', clockOut: '16.00', workHours: '10h', approve: true, status: 'Late' },
+  { name: 'Leslie Alexander', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.30', clockOut: '16.00', workHours: '8h 30m', approve: false, status: 'Waiting Approval' },
 ];
 
 import React, { useState } from 'react';
@@ -30,6 +35,8 @@ export default function CheckclockPage() {
   // Misalnya data ini diambil dari API atau state global
   const [checkclockData, setCheckclockData] = useState([...initialCheckclockData]); // datanya ya qos -awa
   const [approveIdx, setApproveIdx] = useState<number | null>(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   //Ini buat logika approve yaa sayang
   // Handler untuk approve attendance
@@ -44,6 +51,12 @@ export default function CheckclockPage() {
       );
       setApproveIdx(null);
     }
+  };
+
+  // Handler untuk membuka detail attendance
+  const handleViewDetails = (row) => {
+    setSelectedDetail(row);
+    setIsDetailOpen(true);
   };
 
   return (
@@ -141,7 +154,11 @@ export default function CheckclockPage() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <button className="border px-3 py-1 rounded  hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]">View</button>
+                          <button 
+                            className="border px-3 py-1 rounded  hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]"
+                            onClick={() => handleViewDetails(row)}
+                            >View
+                          </button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -167,6 +184,13 @@ export default function CheckclockPage() {
                   </Dialog>
                 </Table>
                 </div>
+
+                {/* Attendance Details Sheet */}
+                <AttendanceDetailsSheet
+                  data={selectedDetail}
+                  isOpen={isDetailOpen}
+                  onClose={() => setIsDetailOpen(false)}
+                />
                 {/* Pagination, dst */}
                 <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
                 <select className="border rounded px-2 py-1">
