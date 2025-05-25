@@ -42,7 +42,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
@@ -52,7 +52,7 @@ const data = {
     },
     {
         title: "Check Clock",
-        url: "#",
+        url: "/checkclock",
         icon: ClockIcon,
       },
     {
