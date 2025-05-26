@@ -41,6 +41,7 @@ import {
   AlertDialogAction,
 } from "../../components/ui/alert-dialog";
 import { useState } from "react";
+import axiosInstance from "../../lib/axios";
 
 export default function EmployeeDatabase() {
   // Mock data generator functions
@@ -55,7 +56,40 @@ export default function EmployeeDatabase() {
     }
     const h = Math.abs(hash) % 360;
     const bgColor = `hsl(${h}, 70%, 80%)`;
+ const [form, setForm] = useState({
+    user_id: '', // pastikan sesuai id user yang valid
+    first_name: '',
+    last_name: '',
+    gender: 'M',
+  });
 
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+    await axiosInstance.get("/sanctum/csrf-cookie");
+
+    const response = await axiosInstance.post("/employees", form, {
+      headers: {
+        'Content-Type': 'application/json',
+        // Jika perlu token:
+        // 'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    console.log('Success:', response.data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  
     return (
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs relative overflow-hidden bg-[hsl(var(--avatar-bg))] text-[#1E3A5F]"

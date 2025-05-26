@@ -9,8 +9,8 @@ use App\Http\Controllers\LetterController;
 use App\Http\Controllers\CheckClockController;
 
 // Public routes
-Route::post('/sign-in', [AuthController::class, 'signIn']);
 Route::post('/sign-up', [AuthController::class, 'signUp']);
+Route::post('/sign-in', [AuthController::class, 'signIn']);
 Route::post('/sign-up/verify', [AuthController::class, 'verifyEmail']);
 Route::post('/sign-out', [AuthController::class, 'signOut']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -35,6 +35,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
+// Protected Employee Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('employees', EmployeeController::class);
+});
 
 //     Tambahkan route lain yang membutuhkan autentikasi di sini
 //     Route::apiResource('salaries', SalaryController::class);
