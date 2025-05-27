@@ -16,9 +16,6 @@ Route::post('/sign-out', [AuthController::class, 'signOut']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::get('/try-for-free', [AuthController::class, 'tryForFree']);
 
-Route::get('/employee', [AuthController::class, 'employee']);
-Route::get('/employee/{id}', [AuthController::class, 'employeeById']);
-
 // Authenticated routes (via Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -36,10 +33,12 @@ Route::middleware(['web'])->group(function () {
 });
 
 // Protected Employee Routes
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('employees', EmployeeController::class);
-});
+// });
 
+// Route::get('/employee', [AuthController::class, 'employee']);
+// Route::get('/employee/{id}', [AuthController::class, 'employeeById']);
 //     Tambahkan route lain yang membutuhkan autentikasi di sini
 //     Route::apiResource('salaries', SalaryController::class);
 //     Route::apiResource('letters', LetterController::class);

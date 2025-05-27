@@ -4,16 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log; 
 
 class EmployeeController extends Controller
 {
     // Get all employees
     public function index()
     {
-        return response()->json(Employee::with('user')->get(), 200);
+        try {
+            // Return data langsung sesuai yang diharapkan frontend Anda saat ini
+            return response()->json(Employee::with('user')->get(), 200);
+        } catch (\Exception $e) {
+            Log::error("Error fetching employees: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve employees.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Show specific employee
@@ -23,7 +33,14 @@ class EmployeeController extends Controller
             $employee = Employee::with('user')->findOrFail($id);
             return response()->json($employee, 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Employee not found'], 404);
+            return response()->json(['status' => 'error', 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error fetching employee by ID: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve employee.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -35,30 +52,43 @@ class EmployeeController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
-                'gender' => 'required|in:M,F',
+                'gender' => 'required|in:M,F', // Perhatikan: ini 'M' atau 'F'
                 'mobile_number' => 'nullable|string|max:20',
                 'nik' => 'nullable|string|max:20|unique:employees,nik',
                 'birth_place' => 'nullable|string|max:100',
-                'birth_date' => 'nullable|date',
+                'birth_date' => 'nullable|date', // Format YYYY-MM-DD
                 'education' => 'nullable|string|max:100',
                 'position' => 'nullable|string|max:100',
                 'grade' => 'nullable|string|max:50',
                 'branch' => 'nullable|string|max:100',
-                'contract_type' => 'nullable|in:Tetap,Kontrak,Lepas',
+                'contract_type' => 'nullable|in:Tetap,Kontrak,Lepas', // Perhatikan: ini 'Tetap', 'Kontrak', 'Lepas'
                 'bank' => 'nullable|string|max:50',
                 'bank_account_number' => 'nullable|string|max:50',
                 'bank_account_name' => 'nullable|string|max:100',
                 'sp_type' => 'nullable|string|max:50',
-                'status' => 'nullable|in:Aktif,Tidak Aktif',
+                'status' => 'nullable|in:Aktif,Tidak Aktif', // Perhatikan: ini 'Aktif' atau 'Tidak Aktif'
                 'avatar' => 'nullable|string',
             ]);
 
-            $validated['id'] = (string) Str::uuid();
+            // Hapus baris ini. Model sudah menangani pembuatan UUID.
+            // $validated['id'] = (string) Str::uuid();
 
             $employee = Employee::create($validated);
-            return response()->json($employee, 201);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee created successfully',
+                'data' => $employee
+            ], 201);
         } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
+            Log::error("Validation Error creating employee: " . json_encode($e->errors()));
+            return response()->json(['status' => 'error', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error("Error creating employee: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create employee.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -69,6 +99,7 @@ class EmployeeController extends Controller
             $employee = Employee::findOrFail($id);
 
             $validated = $request->validate([
+                'user_id' => 'sometimes|required|exists:users,id', // tambahkan sometimes
                 'first_name' => 'sometimes|string|max:100',
                 'last_name' => 'sometimes|string|max:100',
                 'gender' => 'sometimes|in:M,F',
@@ -90,11 +121,23 @@ class EmployeeController extends Controller
             ]);
 
             $employee->update($validated);
-            return response()->json($employee, 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee updated successfully',
+                'data' => $employee
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Employee not found'], 404);
+            return response()->json(['status' => 'error', 'message' => 'Employee not found'], 404);
         } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
+            Log::error("Validation Error updating employee: " . json_encode($e->errors()));
+            return response()->json(['status' => 'error', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error("Error updating employee: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update employee.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -104,9 +147,16 @@ class EmployeeController extends Controller
         try {
             $employee = Employee::findOrFail($id);
             $employee->delete();
-            return response()->json(['message' => 'Employee deleted'], 200);
+            return response()->json(['status' => 'success', 'message' => 'Employee deleted'], 200); // 204 No Content juga cocok
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Employee not found'], 404);
+            return response()->json(['status' => 'error', 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting employee: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete employee.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

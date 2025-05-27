@@ -40,7 +40,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "../../components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../lib/axios";
 
 export default function EmployeeDatabase() {
@@ -89,6 +89,21 @@ export default function EmployeeDatabase() {
       console.error('Error:', error);
     }
   }
+
+  const [employees, setEmployees] = useState([]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await axiosInstance.get("/employees");
+        setEmployees(res.data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
   
     return (
       <div
