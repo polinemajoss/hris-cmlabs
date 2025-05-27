@@ -21,6 +21,10 @@ import {
   DropdownMenuSeparator
 } from "../../components/ui/dropdown-menu";
 
+import { SidebarTrigger } from "./sidebar"; // sesuaikan path komponen sidebar
+import { UserCircle2 } from "lucide-react";
+
+
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/employee": "Employee",

@@ -35,7 +35,7 @@ export default function Page() {
         <AppSidebar/>
       <div className="flex-1 min-h-screen bg-gray-50">
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex-1 overflow-auto">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <SectionCards />
