@@ -1,36 +1,61 @@
-services:
-  mysql:
-    image: mysql:8
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hris
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
+version: '3.8' # Versi Docker Compose
 
+services:
+  # Layanan untuk Backend (Laravel)
   backend:
     build:
-      context: ./backend
-    working_dir: /var/www
-    volumes:
-      - ./backend:/var/www
+      context: ./backend # Lokasi Dockerfile untuk backend
+      dockerfile: Dockerfile # Nama Dockerfile di dalam folder backend
     ports:
-      - "8000:8000"
+      - "8000:8000" # Mapping port: port host:port kontainer. Laravel biasanya jalan di 8000.
+    volumes:
+      - ./backend:/var/www/html # Mount kode Laravel ke dalam kontainer
+    environment:
+      # Variabel lingkungan untuk Laravel (sesuaikan dengan .env kamu)
+      DB_CONNECTION: mysql
+      DB_HOST: mysql # Nama layanan database di Docker Compose
+      DB_PORT: 3306
+      DB_DATABASE: hris_db
+      DB_USERNAME: user
+      DB_PASSWORD: password
     depends_on:
-      - mysql
+      - mysql # Backend tergantung pada database
+    networks:
+      - hris_network
 
+  # Layanan untuk Frontend (Next.js)
   frontend:
     build:
-      context: ./frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
+      context: ./frontend # Lokasi Dockerfile untuk frontend
+      dockerfile: Dockerfile # Nama Dockerfile di dalam folder frontend
     ports:
-      - "3000:3000"
+      - "3000:3000" # Mapping port: port host:port kontainer. Next.js biasanya jalan di 3000.
+    volumes:
+      - ./frontend:/app # Mount kode Next.js ke dalam kontainer (untuk pengembangan)
+      - /app/node_modules # Kecualikan node_modules dari mounting
     depends_on:
-      - backend
+      - backend # Frontend mungkin tergantung pada backend
+    networks:
+      - hris_network
 
+  # Layanan untuk Database (MySQL sebagai contoh)
+  mysql:
+    image: mysql:8.0 # Menggunakan image MySQL resmi
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password # Ganti dengan password yang kuat
+      MYSQL_DATABASE: hris_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql_data:/var/lib/mysql # Persistent storage untuk data database
+    networks:
+      - hris_network
+
+# Definisi jaringan untuk komunikasi antar kontainer
+networks:
+  hris_network:
+    driver: bridge
+
+# Definisi volume untuk data persisten (database)
 volumes:
-  db_data:
+  mysql_data:
