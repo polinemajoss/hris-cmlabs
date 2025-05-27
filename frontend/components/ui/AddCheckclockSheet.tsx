@@ -5,12 +5,18 @@ import { Input } from './input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './select';
 import { Button } from './button';
 import { Label } from './label';
+import { Plus } from 'lucide-react';
 
 export default function AddCheckclockSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="bg-gray-800 text-white px-4 py-1.5 rounded-lg font-semibold">+ Tambah Data</Button>
+        <button
+          className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
+          style={{ minHeight: "2rem" }}
+          >
+          <Plus size={12} className="mr-1" /> Tambah Data
+        </button>
       </SheetTrigger>
       <SheetContent
         side="right"
