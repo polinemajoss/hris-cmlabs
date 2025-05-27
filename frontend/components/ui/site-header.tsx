@@ -40,6 +40,10 @@ export function SiteHeader() {
   const [search, setSearch] = useState("");
   const { user, signOut } = useAuth();
   const title = pageTitles[pathname] || "Page";
+  // const title = Object.entries(pageTitles).find(([path]) =>
+  // pathname.startsWith(path)
+  // )?.[1] || "Page";
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -66,6 +70,7 @@ export function SiteHeader() {
       {/* Kanan - Notifikasi dan Profil */}
       <div className="flex items-center gap-4">
         <button
+          // type="button"
           aria-label="Notifications"
           className="relative p-2 rounded hover:bg-gray-100"
         >
@@ -87,7 +92,7 @@ export function SiteHeader() {
                 />
                 <div className="flex flex-col text-left text-sm leading-tight">
                   <span className="font-medium text-gray-800">{user.name}</span>
-                  <span className="text-gray-500 text-xs">roles user</span>
+                  <span className="text-gray-500 text-xs">{user.role || "User"}</span>
                 </div>
               </div>
             </DropdownMenuTrigger>
