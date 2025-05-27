@@ -21,7 +21,6 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import { NavDocuments } from "../../components/ui/nav-document"
 import { NavMain } from "../../components/ui/nav-main"
 import { NavSecondary } from "../..//components/ui/nav-secondary"
 import { NavUser } from "../../components/ui/nav-user"
@@ -41,77 +40,24 @@ const data = {
   
   navMain: [
     {
-      title: "Dashboard",
+      name: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Employee",
+      name: "Employee",
       url: "/employee",
       icon: UsersIcon,
     },
     {
-        title: "Check Clock",
-        url: "/checkclock",
-        icon: ClockIcon,
-      },
-    {
-        title: "Calendar",
-        url: "#",
-        icon: Calendar1Icon,
-      },
-    {
-        title: "Document",
-        url: "#",
-        icon: ClipboardCheckIcon,
-      },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      name: "Check Clock",
+      url: "/checkclock",
+      icon: ClockIcon,
     },
     {
-      title: "Proposal",
-      icon: FileTextIcon,
+      name: "Letter Management",
       url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      icon: ClipboardCheckIcon,
     },
   ],
   navSecondary: [
@@ -129,23 +75,6 @@ const data = {
       title: "Search",
       url: "#",
       icon: SearchIcon,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: DatabaseIcon,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardListIcon,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: FileIcon,
     },
   ],
 }
@@ -173,7 +102,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
