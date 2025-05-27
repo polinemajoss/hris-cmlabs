@@ -21,6 +21,7 @@ export default function OAuthCallback() {
     }
 
     localStorage.setItem("token", token);
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     console.log("Token stored:", token);
 
     const fetchUser = async () => {

@@ -42,7 +42,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
@@ -177,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        {/* {user && (
+        {user && (
       <NavUser
         user={{
           name: user.name,
@@ -185,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           avatar: user.avatar || "/avatars/default.jpg",
         }}
       />
-    )}       */}
+    )}      
       {/* {loading ? (
       <div className="px-4 py-2 text-sm text-muted">Loading user...</div>
     ) : user ? (

@@ -234,7 +234,7 @@ export function SignUp({
                     type="button"
                     variant="outline"
                     className="w-full h-[40px] font-bold uppercase flex items-center justify-center gap-3"
-                    onClick={() => window.location.href = "/signup"}
+                    onClick={() => window.location.href = "http://localhost:8000/api/auth/google/redirect"}
                   >
                     {/* Google logo */}
                     <img
