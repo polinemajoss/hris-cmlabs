@@ -52,7 +52,7 @@ const data = {
     },
     {
         title: "Check Clock",
-        url: "#",
+        url: "/checkclock",
         icon: ClockIcon,
       },
     {
