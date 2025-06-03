@@ -1,44 +1,33 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { AppSidebar } from "../components/ui/app-sidebar";
-// ChartAreaInteractive didefinisikan di dalam file ini, tidak perlu import dari components/ui
-// import { ChartAreaInteractive } from "../../components/ui/chart-area-interactive";
-import { DataTable } from "../components/ui/data-table";
-import { SectionCards } from "../components/ui/section-card";
-import { SiteHeader } from "../components/ui/site-header";
-import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
+import * as React from "react"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
-// Import komponen chart yang diperlukan (Recharts dan Shadcn UI chart components)
-import * as React from "react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { useIsMobile } from "../hooks/use-mobile";
+import { useIsMobile } from "../../hooks/use-mobile"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "../../components/ui/card"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../components/ui/chart";
+} from "../../components/ui/chart"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from "../../components/ui/select"
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "../components/ui/toggle-group";
-
-// --- START: Definisi ChartAreaInteractive (dipindahkan dari komponen terpisah ke sini jika tidak di-import) ---
+} from "../../components/ui/toggle-group"
 const chartData = [
   { date: "2024-04-01", desktop: 222, mobile: 150 },
   { date: "2024-04-02", desktop: 97, mobile: 180 },
@@ -54,6 +43,22 @@ const chartData = [
   { date: "2024-04-12", desktop: 292, mobile: 210 },
   { date: "2024-04-13", desktop: 342, mobile: 380 },
   { date: "2024-04-14", desktop: 137, mobile: 220 },
+  { date: "2024-04-15", desktop: 120, mobile: 170 },
+  { date: "2024-04-16", desktop: 138, mobile: 190 },
+  { date: "2024-04-17", desktop: 446, mobile: 360 },
+  { date: "2024-04-18", desktop: 364, mobile: 410 },
+  { date: "2024-04-19", desktop: 243, mobile: 180 },
+  { date: "2024-04-20", desktop: 89, mobile: 150 },
+  { date: "2024-04-21", desktop: 137, mobile: 200 },
+  { date: "2024-04-22", desktop: 224, mobile: 170 },
+  { date: "2024-04-23", desktop: 138, mobile: 230 },
+  { date: "2024-04-24", desktop: 387, mobile: 290 },
+  { date: "2024-04-25", desktop: 215, mobile: 250 },
+  { date: "2024-04-26", desktop: 75, mobile: 130 },
+  { date: "2024-04-27", desktop: 383, mobile: 420 },
+  { date: "2024-04-28", desktop: 122, mobile: 180 },
+  { date: "2024-04-29", desktop: 315, mobile: 240 },
+  { date: "2024-04-30", desktop: 454, mobile: 380 },
   { date: "2024-05-01", desktop: 165, mobile: 220 },
   { date: "2024-05-02", desktop: 293, mobile: 310 },
   { date: "2024-05-03", desktop: 247, mobile: 190 },
@@ -66,7 +71,56 @@ const chartData = [
   { date: "2024-05-10", desktop: 293, mobile: 330 },
   { date: "2024-05-11", desktop: 335, mobile: 270 },
   { date: "2024-05-12", desktop: 197, mobile: 240 },
-]; // shortened for brevity
+  { date: "2024-05-13", desktop: 197, mobile: 160 },
+  { date: "2024-05-14", desktop: 448, mobile: 490 },
+  { date: "2024-05-15", desktop: 473, mobile: 380 },
+  { date: "2024-05-16", desktop: 338, mobile: 400 },
+  { date: "2024-05-17", desktop: 499, mobile: 420 },
+  { date: "2024-05-18", desktop: 315, mobile: 350 },
+  { date: "2024-05-19", desktop: 235, mobile: 180 },
+  { date: "2024-05-20", desktop: 177, mobile: 230 },
+  { date: "2024-05-21", desktop: 82, mobile: 140 },
+  { date: "2024-05-22", desktop: 81, mobile: 120 },
+  { date: "2024-05-23", desktop: 252, mobile: 290 },
+  { date: "2024-05-24", desktop: 294, mobile: 220 },
+  { date: "2024-05-25", desktop: 201, mobile: 250 },
+  { date: "2024-05-26", desktop: 213, mobile: 170 },
+  { date: "2024-05-27", desktop: 420, mobile: 460 },
+  { date: "2024-05-28", desktop: 233, mobile: 190 },
+  { date: "2024-05-29", desktop: 78, mobile: 130 },
+  { date: "2024-05-30", desktop: 340, mobile: 280 },
+  { date: "2024-05-31", desktop: 178, mobile: 230 },
+  { date: "2024-06-01", desktop: 178, mobile: 200 },
+  { date: "2024-06-02", desktop: 470, mobile: 410 },
+  { date: "2024-06-03", desktop: 103, mobile: 160 },
+  { date: "2024-06-04", desktop: 439, mobile: 380 },
+  { date: "2024-06-05", desktop: 88, mobile: 140 },
+  { date: "2024-06-06", desktop: 294, mobile: 250 },
+  { date: "2024-06-07", desktop: 323, mobile: 370 },
+  { date: "2024-06-08", desktop: 385, mobile: 320 },
+  { date: "2024-06-09", desktop: 438, mobile: 480 },
+  { date: "2024-06-10", desktop: 155, mobile: 200 },
+  { date: "2024-06-11", desktop: 92, mobile: 150 },
+  { date: "2024-06-12", desktop: 492, mobile: 420 },
+  { date: "2024-06-13", desktop: 81, mobile: 130 },
+  { date: "2024-06-14", desktop: 426, mobile: 380 },
+  { date: "2024-06-15", desktop: 307, mobile: 350 },
+  { date: "2024-06-16", desktop: 371, mobile: 310 },
+  { date: "2024-06-17", desktop: 475, mobile: 520 },
+  { date: "2024-06-18", desktop: 107, mobile: 170 },
+  { date: "2024-06-19", desktop: 341, mobile: 290 },
+  { date: "2024-06-20", desktop: 408, mobile: 450 },
+  { date: "2024-06-21", desktop: 169, mobile: 210 },
+  { date: "2024-06-22", desktop: 317, mobile: 270 },
+  { date: "2024-06-23", desktop: 480, mobile: 530 },
+  { date: "2024-06-24", desktop: 132, mobile: 180 },
+  { date: "2024-06-25", desktop: 141, mobile: 190 },
+  { date: "2024-06-26", desktop: 434, mobile: 380 },
+  { date: "2024-06-27", desktop: 448, mobile: 490 },
+  { date: "2024-06-28", desktop: 149, mobile: 200 },
+  { date: "2024-06-29", desktop: 103, mobile: 160 },
+  { date: "2024-06-30", desktop: 446, mobile: 400 },
+]
 
 const chartConfig = {
   visitors: {
@@ -80,34 +134,31 @@ const chartConfig = {
     label: "Mobile",
     color: "hsl(var(--chart-2))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
-// Komponen ChartAreaInteractive harus didefinisikan secara terpisah jika di-import
-// Jika Anda ingin tetap menuliskannya di file page.tsx, biarkan seperti ini dan
-// jangan import dari components/ui/chart-area-interactive
-function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari konflik jika ada import lain
-  const isMobile = useIsMobile();
-  const [timeRange, setTimeRange] = React.useState("30d");
+export function ChartAreaInteractive() {
+  const isMobile = useIsMobile()
+  const [timeRange, setTimeRange] = React.useState("30d")
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("7d");
+      setTimeRange("7d")
     }
-  }, [isMobile]);
+  }, [isMobile])
 
   const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date);
-    const referenceDate = new Date("2024-06-30"); // Gunakan tanggal referensi yang sesuai
-    let daysToSubtract = 90;
+    const date = new Date(item.date)
+    const referenceDate = new Date("2024-06-30")
+    let daysToSubtract = 90
     if (timeRange === "30d") {
-      daysToSubtract = 30;
+      daysToSubtract = 30
     } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+      daysToSubtract = 7
     }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+    const startDate = new Date(referenceDate)
+    startDate.setDate(startDate.getDate() - daysToSubtract)
+    return date >= startDate
+  })
 
   return (
     <Card className="@container/card">
@@ -198,11 +249,11 @@ function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari ko
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value);
+                const date = new Date(value)
                 return date.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
-                });
+                })
               }}
             />
             <ChartTooltip
@@ -213,7 +264,7 @@ function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari ko
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
-                    });
+                    })
                   }}
                   indicator="dot"
                 />
@@ -237,76 +288,5 @@ function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari ko
         </ChartContainer>
       </CardContent>
     </Card>
-  );
-}
-// --- END: Definisi ChartAreaInteractive ---
-
-
-// Menyesuaikan tipe data mockTableData dengan yang diharapkan oleh DataTable
-const mockTableData = [
-  { header: 'ID', id: 1, type: 'Expense', status: 'Pending', target: 'Marketing', limit: '1000', reviewer: 'Admin' },
-  { header: 'Status', id: 2, type: 'Income', status: 'Approved', target: 'Sales', limit: '500', reviewer: 'Manager' },
-  { header: 'Type', id: 3, type: 'Expense', status: 'Rejected', target: 'HR', limit: '200', reviewer: 'Supervisor' },
-  // Tambahkan data sesuai kebutuhan DataTable Anda
-];
-
-
-export default function DashboardPage() {
-  const [dashboardLoading, setDashboardLoading] = useState(true);
-  const [dashboardError, setDashboardError] = useState<string | null>(null);
-
-  // Simulasi loading data dashboard
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      setDashboardLoading(true);
-      setDashboardError(null);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log("Dashboard mock data loaded.");
-      } catch (err: any) {
-        console.error("Error loading dashboard mock data:", err);
-        setDashboardError("Gagal memuat data dashboard mock.");
-      } finally {
-        setDashboardLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, []);
-
-  if (dashboardLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
-      </div>
-    );
-  }
-
-  if (dashboardError) {
-    return <div className="flex h-screen items-center justify-center bg-white text-red-500">{dashboardError}</div>;
-  }
-  
-  return (
-    <SidebarProvider>
-      <div className="flex h-screen">
-        <AppSidebar variant="inset" />
-        <SidebarInset className="flex-1 flex flex-col">
-          <SiteHeader />
-          <div className="flex-1 overflow-auto">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <SectionCards />
-                <div className="px-4 lg:px-6">
-                  {/* Panggil ChartAreaInteractiveSelfContained sebagai komponen */}
-                  <ChartAreaInteractiveSelfContained /> 
-                </div>
-                {/* Gunakan mockTableData yang sudah disesuaikan tipenya */}
-                <DataTable data={mockTableData} />
-              </div>
-            </div>
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
+  )
 }
