@@ -1,5 +1,8 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from './sheet';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
+
 
 interface AttendanceDetailsProps {
   data: {
@@ -24,6 +27,8 @@ interface AttendanceDetailsProps {
 
 const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen, onClose, onApprove }) => {
   if (!data) return null;
+
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = React.useState(false);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -122,13 +127,38 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
           {/* Approve Button */}
           <div className="mt-4">
             <button
-              onClick={onApprove}
+              onClick={() => setIsApproveDialogOpen(true)} // Buka dialog persetujuan
               className="px-4 py-2 bg-[#1E3A5F] text-white rounded border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] w-full"
               disabled={data.approve}
             >
               {data.approve ? 'Approved' : 'Approve'}
             </button>
           </div>
+
+          <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+            <DialogContent className="max-w-md w-full">
+              <DialogHeader>
+                <DialogTitle>Approve Attendance</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to approve this employee's attendance?<br />
+                  This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2 mt-4">
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button
+                  onClick={() => {
+                    onApprove(); // Jalankan fungsi approve
+                    setIsApproveDialogOpen(false); // Tutup dialog
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </SheetContent>
     </Sheet>
