@@ -137,8 +137,8 @@ export default function CheckclockPage() {
                       <TableHead className="w-25">Clock In</TableHead>
                       <TableHead className="w-25">Clock Out</TableHead>
                       <TableHead className="w-28">Work Hours</TableHead>
-                      <TableHead className="w-25">Approve</TableHead>
-                      <TableHead className="w-36">Status</TableHead>
+                      <TableHead className="w-25 text-center">Approve</TableHead>
+                      <TableHead className="w-36 text-center">Status</TableHead>
                       <TableHead className="w-25">Details</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -177,7 +177,7 @@ export default function CheckclockPage() {
                             {row.approve ? 'Approved' : 'Waiting Approval'}
                           </span>
                         </TableCell>
-                        <TableCell className="w-25">
+                        <TableCell className="w-30 text-center">
                           <span
                             className={`px-2 py-1 rounded bg-white-100 border text-xs ${
                               row.status === 'Late'
