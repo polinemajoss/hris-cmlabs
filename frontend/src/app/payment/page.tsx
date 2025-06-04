@@ -183,6 +183,83 @@ export default function PaymentPage() {
             </Card>
           </div>
         </TabsContent>
+
+        {/* SEAT CONTENT */}
+        <TabsContent value="seat">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            {/* Seat 1 */}
+            <Card className="bg-gray-100 border border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  STANDARD
+                </CardTitle>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-2xl font-bold text-gray-900">Rp 15.000</p>
+                </div>
+                <p className="text-sm text-gray-500">For 1-50 users monthly</p>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Perfect for small teams with up to 50 employees
+                </p>
+                <Button 
+                  className="w-full bg-gray-800 text-white hover:bg-gray-700"
+                  onClick={() => handlePackageSelect("Standard", "Seat")}
+                >
+                  Upgrade Paket →
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Seat 2 */}
+            <Card className="bg-gray-100 border border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  PREMIUM
+                </CardTitle>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-2xl font-bold text-gray-900">Rp 12.000</p>
+                </div>
+                <p className="text-sm text-gray-500">For 51-100 users monthly</p>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Ideal for growing teams of 51-100 employees
+                </p>
+                <Button 
+                  className="w-full bg-gray-800 text-white hover:bg-gray-700"
+                  onClick={() => handlePackageSelect("Premium", "Seat")}
+                >
+                  Upgrade Paket →
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Seat 3 */}
+            <Card className="bg-gray-100 border border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  ULTRA
+                </CardTitle>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-2xl font-bold text-gray-900">Rp 19.000</p>
+                </div>
+                <p className="text-sm text-gray-500">For 101+ users monthly</p>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Best for large organizations with 101+ employees
+                </p>
+                <Button 
+                  className="w-full bg-gray-800 text-white hover:bg-gray-700"
+                  onClick={() => handlePackageSelect("Ultra", "Seat")}
+                >
+                  Upgrade Paket →
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
