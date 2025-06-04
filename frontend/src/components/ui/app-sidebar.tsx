@@ -31,6 +31,11 @@ const data = {
       url: "#",
       icon: ClipboardCheckIcon,
     },
+    {
+      name: "Payment",
+      url: "/payment",
+      icon: GemIcon,
+    },
   ],
   navSecondary: [
     {
@@ -57,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!pl-2">
                 <a href="/" className="flex items-center h-full w-full">
                 <img
-                  src="/images/hris-logo.png" 
+                  src="/images/hris-logo.png"
                   alt="HRIS LOGO"
                   className="h-15 w-auto max-w-full object-contain"
                 />
