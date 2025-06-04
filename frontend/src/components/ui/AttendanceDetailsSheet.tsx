@@ -123,7 +123,7 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
           <div className="mt-4">
             <button
               onClick={onApprove}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+              className="px-4 py-2 bg-[#1E3A5F] text-white rounded border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] w-full"
               disabled={data.approve}
             >
               {data.approve ? 'Approved' : 'Approve'}
