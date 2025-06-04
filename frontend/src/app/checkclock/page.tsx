@@ -6,6 +6,9 @@ import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
 import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
 import { Filter, Plus } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
+import AttendanceDetailsSheet from '../../components/ui/AttendanceDetailsSheet';
 
 const formatDate = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -187,8 +190,38 @@ export default function CheckclockPage() {
                       </TableRow>
                     ))}
                   </TableBody>
+
+                  {/* Dialog Approve */}
+                  <Dialog open={approveIdx !== null} onOpenChange={open => !open && setApproveIdx(null)}>
+                    <DialogContent className="max-w-md w-full">
+                      <DialogHeader>
+                        <DialogTitle>Approve Attendance</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to approve this employee's attendance?<br />
+                          This action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end gap-2 mt-4">
+                        <DialogClose asChild>
+                          <Button variant="outline">Reject</Button>
+                        </DialogClose>
+                        <Button onClick={() => {
+                          handleApprove();
+                          setIsDetailOpen(false); // Tutup detail sheet setelah approve
+                        }}>Approve</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </Table>
                 </div>
+
+                {/* Attendance Details Sheet */}
+                <AttendanceDetailsSheet
+                  data={selectedDetail}
+                  isOpen={isDetailOpen}
+                  onClose={() => setIsDetailOpen(false)}
+                  onApprove={handleApprove}
+                />
                 {/* Pagination, dst */}
                 <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
                 <select className="border rounded px-2 py-1">
