@@ -261,6 +261,13 @@ export default function PaymentPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <PaymentDetail
+        packageName={selectedPackage.name}
+        packageType={selectedPackage.type}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+      />
     </div>
   );
 }
