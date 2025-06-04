@@ -83,10 +83,11 @@ export default function CheckclockPage() {
   };
 
   const filteredData = checkclockData.filter(row => {
-  const matchesSearch = row.name.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesStatus = filterStatus ? row.status === filterStatus : true;
-  return matchesSearch && matchesStatus;
-  }); 
+    const matchesSearch = row.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          row.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus ? row.status === filterStatus : true;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <SidebarProvider>
