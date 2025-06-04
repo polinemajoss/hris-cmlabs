@@ -54,10 +54,10 @@ export default function CheckclockPage() {
     long: string;
     proof: string;
   };
-
   const [selectedDetail, setSelectedDetail] = useState<AttendanceDetailsData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   //Ini buat logika approve yaa sayang
   // Handler untuk approve attendance
   const handleApprove = () => {
@@ -86,6 +86,12 @@ export default function CheckclockPage() {
     setIsDetailOpen(true);
   };
 
+  const filteredData = checkclockData.filter(row => {
+  const matchesSearch = row.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesStatus = filterStatus ? row.status === filterStatus : true;
+  return matchesSearch && matchesStatus;
+  }); 
+
   return (
     <SidebarProvider>
       <div className="flex">
@@ -103,17 +109,25 @@ export default function CheckclockPage() {
                     <input
                       type="text"
                       placeholder="Search Employee"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
                       style={{ minHeight: "2rem" }}
                     />
-                    <button
-                      onClick={() => setIsFilterActive(!isFilterActive)}
-                      className="px-3 py-1 rounded border-none bg-transparent text-[#1E3A5F] flex items-center group hover:text-[#2563eb] text-xs h-8"
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F]"
                       style={{ minHeight: "2rem" }}
-                      >
-                      <Filter size={12} className="mr-1 transition-colors group-hover:text-[#2563eb]"
-                      /> Filter
-                    </button>
+                    >
+                      <option value="">All Status</option>
+                      <option value="Waiting Approval">Waiting Approval</option>
+                      <option value="On Time">On Time</option>
+                      <option value="Late">Late</option>
+                      <option value="Absent">Absent</option>
+                      <option value="Annual Leave">Annual Leave</option>
+                      <option value="Sick Leave">Sick Leave</option>
+                    </select>
                     <AddCheckclockSheet />
                   </div>
                 </div>
@@ -133,7 +147,7 @@ export default function CheckclockPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {checkclockData.map((row, idx) => (
+                    {filteredData.map((row, idx) => (
                       <TableRow key={idx}>
                         {/* Employee name */}
                         <TableCell className="w-48">
