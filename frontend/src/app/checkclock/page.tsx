@@ -172,10 +172,10 @@ export default function CheckclockPage() {
                             className={`px-2 py-1 rounded text-xs ${
                               row.approve
                                 ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-700'
+                                : 'bg-red-100 text-red-700'
                             }`}
                           >
-                            {row.approve ? 'Approved' : 'Waiting Approval'}
+                            {row.approve ? <span>&#10003;</span> : <span>&#10007;</span>}
                           </span>
                         </TableCell>
                         <TableCell className="w-30 text-center">
