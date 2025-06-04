@@ -4,8 +4,8 @@ import { SidebarProvider } from '../../components/ui/sidebar';
 import { AppSidebar } from '../../components/ui/app-sidebar';
 import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
+import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
 import { Filter, Plus } from 'lucide-react';
-
 
 const formatDate = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -111,7 +111,7 @@ export default function CheckclockPage() {
                       <Filter size={12} className="mr-1 transition-colors group-hover:text-[#2563eb]"
                       /> Filter
                     </button>
-                    
+                    <AddCheckclockSheet />
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -187,10 +187,8 @@ export default function CheckclockPage() {
                       </TableRow>
                     ))}
                   </TableBody>
-
                 </Table>
                 </div>
-
                 {/* Pagination, dst */}
                 <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
                 <select className="border rounded px-2 py-1">

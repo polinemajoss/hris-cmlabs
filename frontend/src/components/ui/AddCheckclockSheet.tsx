@@ -1,146 +1,117 @@
-// hris-cmlabs/frontend/src/components/ui/AddCheckclockSheet.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "./button";
-import { Input } from "./input";
-import { Label } from "./label";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./sheet";
-import { Plus } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose, SheetTrigger } from './sheet';
+import { Input } from './input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './select';
+import { Button } from './button';
+import { Label } from './label';
+import { Plus } from 'lucide-react';
 
-// --- Definisikan tipe untuk data formulir yang benar-benar diisi oleh form ---
-export interface AddCheckclockFormData { // <-- Export interface ini
-  name: string;
-  jabatan: string;
-  date?: string; // Tanggal bisa diisi di form atau di-generate di page.tsx
-  clockIn: string;
-  clockOut: string;
-  workHours?: string; // Bisa dihitung di page.tsx
-  location: string;
-  address: string;
-  lat: string;
-  long: string;
-  proof: string;
-  // Hapus 'approve' dan 'status' dari sini, karena form ini tidak menginputnya secara langsung
-  // dan akan ditambahkan di page.tsx setelah submit
-}
-
-// Definisikan interface untuk props komponen AddCheckclockSheet
-interface AddCheckclockSheetProps {
-  onSubmit: (formData: AddCheckclockFormData) => void;
-}
-
-export default function AddCheckclockSheet({ onSubmit }: AddCheckclockSheetProps) {
-  const [formData, setFormData] = useState<AddCheckclockFormData>({
-    name: '',
-    jabatan: '',
-    date: '', // Default value untuk date
-    clockIn: '',
-    clockOut: '',
-    location: '',
-    address: '',
-    lat: '',
-    long: '',
-    proof: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-    // Reset form setelah submit
-    setFormData({
-      name: '',
-      jabatan: '',
-      date: '',
-      clockIn: '',
-      clockOut: '',
-      location: '',
-      address: '',
-      lat: '',
-      long: '',
-      proof: '',
-    });
-  };
-
+export default function AddCheckclockSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
-          style={{ minHeight: "2rem" }}>
-          <Plus size={12} className="mr-1" /> Add Checkclock
-        </Button>
+        <button
+          className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8"
+          style={{ minHeight: "2rem" }}
+          >
+          <Plus size={12} className="mr-1" /> Tambah Data
+        </button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent
+        side="right"
+        className="!w-[85vw] max-w-none p-6 overflow-y-auto"
+        style={{ width: "85vw", maxWidth: "none" }}
+      >
         <SheetHeader>
-          <SheetTitle>Add New Checkclock</SheetTitle>
-          <SheetDescription>
-            Fill in the details for the new checkclock entry.
-          </SheetDescription>
+          <SheetTitle>Add Checkclock</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          {/* Input fields */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Name</Label>
-            <Input id="name" name="name" value={formData.name} onChange={handleChange} className="col-span-3" required />
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          {/* Kiri: Karyawan, Absensi, Upload */}
+          <div className="flex flex-col gap-10">
+            <div>
+              <Label htmlFor="karyawan">Karyawan</Label>
+              <Select>
+                <SelectTrigger id="karyawan" className="w-full mt-1">
+                  <SelectValue placeholder="Pilih Karyawan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="juanita">Juanita</SelectItem>
+                  <SelectItem value="shane">Shane</SelectItem>
+                  <SelectItem value="miles">Miles</SelectItem>
+                  {/* Tambahkan data karyawan lain */}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="tipe">Tipe Absensi</Label>
+              <Select>
+                <SelectTrigger id="tipe" className="w-full mt-1">
+                  <SelectValue placeholder="Pilih Tipe Absensi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clockin">Clock In</SelectItem>
+                  <SelectItem value="clockout">Clock Out</SelectItem>
+                  <SelectItem value="absent">Absent</SelectItem>
+                  <SelectItem value="annual">Annual Leave</SelectItem>
+                  <SelectItem value="sick">Sick Leave</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Upload Bukti Pendukung</Label>
+              <div className="border rounded-lg bg-gray-50 flex flex-col items-center justify-center py-10">
+                <span className="text-3xl mb-2">🖼️</span>
+                <span>Drag n Drop here<br />or <span className="text-blue-600 underline cursor-pointer">Browse</span></span>
+              </div>
+              <Button variant="default" className="w-full mt-8">
+                Upload Now
+              </Button>
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="jabatan" className="text-right">Jabatan</Label>
-            <Input id="jabatan" name="jabatan" value={formData.jabatan} onChange={handleChange} className="col-span-3" required />
+          {/* Kanan: Lokasi, Map, Alamat */}
+          <div className="flex flex-col gap-10">
+            <div>
+              <Label htmlFor="lokasi">Lokasi</Label>
+              <Select>
+                <SelectTrigger id="lokasi" className="w-full mt-1">
+                  <SelectValue placeholder="Pilih Lokasi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="malang">Malang</SelectItem>
+                  {/* Tambahkan lokasi lain */}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="rounded-lg border overflow-hidden w-full h-40 bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400">[Map Here]</span>
+              </div>
+            </div>
+            <div>
+              <Label>Detail Alamat</Label>
+              <Input placeholder="Kota Malang, Jawa Timur" className="mt-1" />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label>Lat</Label>
+                <Input placeholder="Lat Lokasi" className="mt-1" />
+              </div>
+              <div className="flex-1">
+                <Label>Long</Label>
+                <Input placeholder="Long Lokasi" className="mt-1" />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="date" className="text-right">Date</Label>
-            <Input id="date" name="date" type="date" value={formData.date || ''} onChange={handleChange} className="col-span-3" required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="clockIn" className="text-right">Clock In</Label>
-            <Input id="clockIn" name="clockIn" type="time" value={formData.clockIn} onChange={handleChange} className="col-span-3" required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="clockOut" className="text-right">Clock Out</Label>
-            <Input id="clockOut" name="clockOut" type="time" value={formData.clockOut} onChange={handleChange} className="col-span-3" required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="location" className="text-right">Location</Label>
-            <Input id="location" name="location" value={formData.location} onChange={handleChange} className="col-span-3" required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-right">Address</Label>
-            <Input id="address" name="address" value={formData.address} onChange={handleChange} className="col-span-3" required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lat" className="text-right">Latitude</Label>
-            <Input id="lat" name="lat" value={formData.lat} onChange={handleChange} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="long" className="text-right">Longitude</Label>
-            <Input id="long" name="long" value={formData.long} onChange={handleChange} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="proof" className="text-right">Proof URL</Label>
-            <Input id="proof" name="proof" value={formData.proof} onChange={handleChange} className="col-span-3" />
-          </div>
-          
-          <SheetFooter className="mt-4">
-            <SheetClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
-            </SheetClose>
-            <Button type="submit">Add Checkclock</Button>
-          </SheetFooter>
+          {/* Tombol Save/Cancel sticky kanan bawah card */}
+            <div className="absolute right-10 bottom-20 flex gap-5">
+              <SheetClose asChild>
+                <Button variant="outline" size="sm" className="h-8 px-3 text-sm">Cancel</Button>
+              </SheetClose>
+              <Button type="submit" size="sm" className="h-8 px-3 text-sm">Save</Button>
+            </div>
         </form>
+        
       </SheetContent>
     </Sheet>
   );
