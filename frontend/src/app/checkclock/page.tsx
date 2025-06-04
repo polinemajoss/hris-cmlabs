@@ -5,9 +5,6 @@ import { AppSidebar } from '../../components/ui/app-sidebar';
 import { SiteHeader } from '../../components/ui/site-header';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
 import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
-import { Filter, Plus } from 'lucide-react';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
 import AttendanceDetailsSheet from '../../components/ui/AttendanceDetailsSheet';
 
 const formatDate = (date: Date) => {
@@ -42,7 +39,6 @@ const initialCheckclockData = [
 import React, { useState } from 'react';
 
 export default function CheckclockPage() {
-  const [isFilterActive, setIsFilterActive] = useState(false);
   // Ambil data buat checkclock
   // Misalnya data ini diambil dari API atau state global
   const [checkclockData, setCheckclockData] = useState([...initialCheckclockData]); // datanya ya qos -awa
@@ -171,13 +167,15 @@ export default function CheckclockPage() {
                         <TableCell className="w-28">{row.workHours}</TableCell>
                         {/* Approve checkbox */}
                         <TableCell className="w-25 text-center align-middle">
-                          <input 
-                            type="checkbox" 
-                            checked={row.approve} 
-                            onChange={() => setApproveIdx(idx)}
-                            className="accent-gray-700 mx-auto block" 
-                            disabled={row.approve} // Disable if already approved
-                            />
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              row.approve
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {row.approve ? 'Approved' : 'Waiting Approval'}
+                          </span>
                         </TableCell>
                         <TableCell className="w-25">
                           <span
@@ -204,28 +202,6 @@ export default function CheckclockPage() {
                       </TableRow>
                     ))}
                   </TableBody>
-
-                  {/* Dialog Approve */}
-                  <Dialog open={approveIdx !== null} onOpenChange={open => !open && setApproveIdx(null)}>
-                    <DialogContent className="max-w-md w-full">
-                      <DialogHeader>
-                        <DialogTitle>Approve Attendance</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to approve this employee's attendance?<br />
-                          This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <DialogClose asChild>
-                          <Button variant="outline">Reject</Button>
-                        </DialogClose>
-                        <Button onClick={() => {
-                          handleApprove();
-                          setIsDetailOpen(false); // Tutup detail sheet setelah approve
-                        }}>Approve</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
                 </Table>
                 </div>
 
