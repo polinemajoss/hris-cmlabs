@@ -118,44 +118,44 @@ class AuthController extends Controller
 
     // Sign -in with Google
     // Google OAuth Redirect
-    public function redirectToGoogle(): RedirectResponse
-    {
-        /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
-        $googleProvider = Socialite::driver('google');
-        return $googleProvider->stateless()->redirect();
-    }
+    // public function redirectToGoogle(): RedirectResponse
+    // {
+    //     /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
+    //     $googleProvider = Socialite::driver('google');
+    //     return $googleProvider->stateless()->redirect();
+    // }
 
-    // Google OAuth Callback
-    public function handleGoogleCallback()
-    {
-        try {
-        /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
-        $googleProvider = Socialite::driver('google');
-        $googleUser = $googleProvider->stateless()->user();
+    // // Google OAuth Callback
+    // public function handleGoogleCallback()
+    // {
+    //     try {
+    //     /** @var \Laravel\Socialite\Two\GoogleProvider $googleProvider */
+    //     $googleProvider = Socialite::driver('google');
+    //     $googleUser = $googleProvider->stateless()->user();
 
-           $user = User::updateOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name' => $googleUser->getName(),
-                'email_verified_at' => now(),
-                'password' => bcrypt(Str::random(16)),
-            ]
-        );
-             // Hapus token lama agar tidak bentrok
-            $user->tokens()->delete();
+    //        $user = User::updateOrCreate(
+    //         ['email' => $googleUser->getEmail()],
+    //         [
+    //             'name' => $googleUser->getName(),
+    //             'email_verified_at' => now(),
+    //             'password' => bcrypt(Str::random(16)),
+    //         ]
+    //     );
+    //          // Hapus token lama agar tidak bentrok
+    //         $user->tokens()->delete();
 
-            // Buat token Sanctum
-            $token = $user->createToken('google-login')->plainTextToken;
+    //         // Buat token Sanctum
+    //         $token = $user->createToken('google-login')->plainTextToken;
 
-            // Redirect ke Next.js frontend dengan token sebagai query
-            return redirect()->away("http://localhost:3000/oauth-callback?token={$token}");
+    //         // Redirect ke Next.js frontend dengan token sebagai query
+    //         return redirect()->away("http://localhost:3000/oauth-callback?token={$token}");
 
-        } catch (\Exception $e) {
-            // Logging error agar bisa kamu cek di laravel.log
-            Log::error("Google login failed: " . $e->getMessage());
+    //     } catch (\Exception $e) {
+    //         // Logging error agar bisa kamu cek di laravel.log
+    //         Log::error("Google login failed: " . $e->getMessage());
 
-            // Redirect ke frontend dengan error
-            return redirect()->away("http://localhost:3000/oauth-callback?error=1");
-        }
-    }
+    //         // Redirect ke frontend dengan error
+    //         return redirect()->away("http://localhost:3000/oauth-callback?error=1");
+    //     }
+    // }
 }
