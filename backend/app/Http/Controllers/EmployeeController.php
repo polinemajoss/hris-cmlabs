@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log; 
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule; 
+
 
 class EmployeeController extends Controller
 {
@@ -99,25 +101,29 @@ class EmployeeController extends Controller
             $employee = Employee::findOrFail($id);
 
             $validated = $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'first_name' => 'required|string|max:100',
-                'last_name' => 'required|string|max:100',
-                'gender' => 'required|in:M,F', // Hanya 'M' atau 'F'
+                'user_id'       => 'required|exists:users,id',
+                'first_name'    => 'required|string|max:100',
+                'last_name'     => 'required|string|max:100',
+                'gender'        => 'required|in:M,F', // Hanya 'M' atau 'F'
                 'mobile_number' => 'nullable|string|max:20',
-                'nik' => 'nullable|string|max:20|unique:employees,nik',
-                'birth_place' => 'nullable|string|max:100',
-                'birth_date' => 'nullable|date', // Format YYYY-MM-DD
-                'education' => 'nullable|string|max:100',
-                'position' => 'nullable|string|max:100',
-                'grade' => 'nullable|string|max:50',
-                'branch' => 'nullable|string|max:100',
-                'contract_type' => 'nullable|in:Tetap,Kontrak,Lepas',
-                'bank' => 'nullable|string|max:50',
+                'nik'           => [ // <--- UBAH BAGIAN INI
+                    'nullable',
+                    'string',
+                    'max:20',
+                    Rule::unique('employees', 'nik')->ignore($employee->id), // Mengabaikan ID employee saat ini
+                ],                'birth_place' => 'nullable|string|max:100',
+                'birth_date'          => 'nullable|date', // Format YYYY-MM-DD
+                'education'           => 'nullable|string|max:100',
+                'position'            => 'nullable|string|max:100',
+                'grade'               => 'nullable|string|max:50',
+                'branch'              => 'nullable|string|max:100',
+                'contract_type'       => 'nullable|in:Tetap,Kontrak,Lepas',
+                'bank'                => 'nullable|string|max:50',
                 'bank_account_number' => 'nullable|string|max:50',
-                'bank_account_name' => 'nullable|string|max:100',
-                'sp_type' => 'nullable|string|max:50',
-                'status' => 'nullable|in:Aktif,Tidak Aktif',
-                'avatar' => 'nullable|string',
+                'bank_account_name'   => 'nullable|string|max:100',
+                'sp_type'             => 'nullable|string|max:50',
+                'status'              => 'nullable|in:Aktif,Tidak Aktif',
+                'avatar'              => 'nullable|string',
             ]);
 
             $employee->update($validated);
