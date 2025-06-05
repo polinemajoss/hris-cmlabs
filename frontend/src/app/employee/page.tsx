@@ -22,18 +22,11 @@ import { SectionCardsEmployee } from "../../components/ui/section-card-employee"
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Hapus import yang tidak digunakan lagi:
-// import { Card, CardContent } from "../../components/ui/card";
-// import { Bell, UserCircle2, ImageIcon, CalendarIcon } from "lucide-react";
-// import { Toggle } from "../../components/ui/toggle";
-// import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "../../components/ui/sheet";
-// import { Label } from "../../components/ui/label";
-// import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group";
-// import RealAddEmployeeForm from "../../components/ui/AddEmployeeForm"; // Ini digunakan jika Anda tetap pakai Sheet untuk Add/Edit
+import RealAddEmployeeForm from "../../components/ui/AddEmployeeForm"; // Ini digunakan jika Anda tetap pakai Sheet untuk Add/Edit
 
 // Hapus import axios dan axiosInstance karena tidak ada backend
-// import axiosInstance from "../../lib/axios";
-// import axios from "axios";
+import axiosInstance from "../../lib/axios";
+import axios from "axios";
 
 
 // Definisikan interface untuk data karyawan (sesuaikan dengan kebutuhan tampilan Anda)
@@ -61,61 +54,6 @@ interface Employee {
   avatarUrl?: string; // Jika Anda punya field 'avatarUrl' untuk data mock
 }
 
-// Data mock karyawan
-const mockEmployees: Employee[] = [
-  {
-    id: "1a2b3c4d-5e6f-7890-1234-567890abcdef",
-    first_name: "Noah",
-    last_name: "White",
-    gender: "M",
-    mobile_number: "081961186366",
-    nik: "1234567890123456",
-    position: "Intern",
-    branch: "Palembang",
-    status: "Aktif",
-    birth_date: "1995-06-15",
-    grade: "Management",
-    contract_type: "Kontrak",
-    bank: "BCA",
-    bank_account_number: "1234567890",
-    bank_account_name: "Noah White",
-  },
-  {
-    id: "f1e2d3c4-b5a6-9870-6543-210fedcba987",
-    first_name: "Jane",
-    last_name: "Doe",
-    gender: "F",
-    mobile_number: "081234567890",
-    nik: "9876543210987654",
-    position: "HR Staff",
-    branch: "Jakarta",
-    status: "Aktif",
-    birth_date: "1990-03-20",
-    grade: "Junior",
-    contract_type: "Tetap",
-    bank: "Mandiri",
-    bank_account_number: "0987654321",
-    bank_account_name: "Jane Doe",
-  },
-  {
-    id: "c9b8a7d6-e5f4-3210-9876-543210fedcba",
-    first_name: "John",
-    last_name: "Smith",
-    gender: "M",
-    mobile_number: "085678901234",
-    nik: "1122334455667788",
-    position: "Software Engineer",
-    branch: "Bandung",
-    status: "Tidak Aktif",
-    birth_date: "1988-07-01",
-    grade: "Senior",
-    contract_type: "Tetap",
-    bank: "BCA",
-    bank_account_number: "1122334455",
-    bank_account_name: "John Smith",
-  },
-];
-
 
 export default function EmployeeDatabase() {
   const router = useRouter();
@@ -139,18 +77,47 @@ export default function EmployeeDatabase() {
   const fetchEmployees = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      // Simulasi panggilan API dengan delay
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay 1 detik
-      
-      // Menggunakan data mock
-      setEmployees(mockEmployees); 
-      console.log("Mock data loaded for employees:", mockEmployees);
+      const res = await axiosInstance.get("/employees");
+      console.log("API Response:", res.data);
 
+      if (Array.isArray(res.data)) {
+        const mappedEmployees = res.data.map(emp => ({
+          id: emp.id,
+          first_name: emp.first_name,
+          last_name: emp.last_name,
+          gender:
+            emp.gender === "M" || emp.gender === "Laki-Laki"
+              ? (emp.gender === "Laki-Laki" ? "Laki-Laki" : "M")
+              : emp.gender === "F" || emp.gender === "Perempuan"
+              ? (emp.gender === "Perempuan" ? "Perempuan" : "F")
+              : "M", // fallback to "M" if unknown, or handle as needed
+          mobile_number: emp.mobile_number || "",
+          phone: emp.mobile_number || "", // Jika phone digunakan di UI
+          nik: emp.nik,
+          birth_place: emp.birth_place,
+          birth_date: emp.birth_date,
+          education: emp.education,
+          position: emp.position,
+          grade: emp.grade,
+          branch: emp.branch,
+          contract_type: emp.contract_type,
+          bank: emp.bank,
+          bank_account_number: emp.bank_account_number,
+          bank_account_name: emp.bank_account_name,
+          sp_type: emp.sp_type,
+          status: emp.status, // Pastikan nilainya adalah "Aktif"/"Tidak Aktif"
+          avatar: emp.avatar, // Bisa gunakan avatar dari user jika diperlukan
+          avatarUrl: emp.avatar ? emp.avatar : undefined,
+        }));
+        setEmployees(mappedEmployees as Employee[]);
+      } else {
+        console.error("Invalid data format from API:", res.data);
+        setError("Format data tidak valid dari API.");
+      }
     } catch (err: any) {
-      console.error("Fetch error (mock data):", err);
-      setError(`Gagal memuat data karyawan (mock): ${err.message}`);
+      console.error("Fetch error:", err);
+      setError(`Gagal memuat data karyawan: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -207,20 +174,20 @@ export default function EmployeeDatabase() {
   };
 
   const handleActualAddEmployee = async (formData: any) => {
-    // Fungsi ini akan dipanggil oleh AddEmployeeForm jika Anda tetap menggunakan sheet.
-    // Sekarang, hanya simulasi penambahan data.
-    console.log('Simulating Add Employee:', formData);
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi delay
-    const newEmployee: Employee = {
-      id: crypto.randomUUID(), // Generate UUID untuk ID mock
-      ...formData,
-      status: formData.status || "Aktif",
-      gender: formData.gender === "Laki-Laki" ? "M" : formData.gender === "Perempuan" ? "F" : formData.gender, // Normalize gender
-    };
-    setEmployees((prev) => [...prev, newEmployee]);
-    console.log('Employee added to mock data.');
-    // setIsAddSheetOpen(false); // Jika Anda tetap pakai sheet
-    // fetchEmployees(); // Muat ulang data mock
+    try {
+      const res = await axiosInstance.post("/employees", formData);
+      console.log("Karyawan berhasil ditambahkan:", res.data);
+      router.push('/employee'); // Kembali ke halaman utama
+    } catch (err: any) {
+      if (err.response && err.response.status === 422) {
+        const errors = err.response.data.errors;
+        const errorMessage = Object.values(errors).flat().join('\n');
+        alert(`Validasi gagal:\n${errorMessage}`);
+      } else {
+        console.error("Gagal menambahkan karyawan:", err.message);
+        alert("Terjadi kesalahan saat menambahkan karyawan.");
+      }
+    }
   };
 
   const handleOpenEditSheet = (employee: Employee) => {
@@ -231,20 +198,15 @@ export default function EmployeeDatabase() {
   };
   
   const handleActualUpdateEmployee = async (formData: any) => {
-    // Fungsi ini akan dipanggil oleh form edit.
-    // Sekarang, hanya simulasi update data.
     if (!editingEmployee) return;
-    console.log("Simulating Update Employee:", editingEmployee.id, formData);
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi delay
-    setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === editingEmployee.id ? { ...emp, ...formData } : emp
-      )
-    );
-    console.log("Employee updated in mock data.");
-    setEditingEmployee(null);
-    // setIsEditSheetOpen(false); // Jika Anda tetap pakai sheet
-    // fetchEmployees(); // Muat ulang data mock
+    try {
+      await axiosInstance.put(`/employees/${editingEmployee.id}`, formData);
+      fetchEmployees(); // Reload data
+      router.push('/employee'); // Kembali ke halaman utama
+    } catch (err: any) {
+      console.error("Error updating employee:", err);
+      alert("Gagal mengubah karyawan");
+    }
   };
 
   const confirmDeleteEmployee = (employee: Employee) => {
@@ -254,24 +216,32 @@ export default function EmployeeDatabase() {
 
   const executeDeleteEmployee = async () => {
     if (!employeeToDelete) return;
-    console.log("Simulating Delete Employee:", employeeToDelete.id);
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi delay
-    setEmployees((prev) => prev.filter((emp) => emp.id !== employeeToDelete.id));
-    console.log("Employee deleted from mock data.");
-    setEmployeeToDelete(null); // Tutup dialog
-    // fetchEmployees(); // Muat ulang data mock
+    try {
+      await axiosInstance.delete(`/employees/${employeeToDelete.id}`);
+      fetchEmployees(); // Reload data
+      setEmployeeToDelete(null);
+    } catch (err: any) {
+      console.error("Error deleting employee:", err);
+      alert("Gagal menghapus karyawan");
+    }
   };
 
-  const handleDownloadPDF = (employee: Employee) => {
-    console.log("Simulating Download PDF for:", employee.first_name);
-    // Logika PDF Anda tetap seperti yang Anda buat, karena tidak melibatkan backend
-    const pdfContent = `%PDF-1.7 ... (Nama: ${employee.first_name} ${employee.last_name}) ... (Nomor Telepon: ${employee.mobile_number || employee.phone}) ...`;
-    const blob = new Blob([pdfContent], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${employee.first_name}-${employee.last_name}.pdf`;
-    link.click();
-    URL.revokeObjectURL(link.href);
+  const handleDownloadPDF = async (employee: Employee) => {
+    try {
+      const res = await axiosInstance.get(`/employees/${employee.id}/download-pdf`, {
+        responseType: 'blob', // Penting untuk download file
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${employee.first_name}-${employee.last_name}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Gagal download PDF:", err);
+      alert("Gagal mendownload PDF");
+    }
   };
 
 
