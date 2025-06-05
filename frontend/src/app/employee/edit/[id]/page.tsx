@@ -3,94 +3,174 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../lib/axios";
 import { useParams, useRouter } from "next/navigation";
-import AddEmployeeForm from "../../../../components/ui/AddEmployeeForm";
-
+import EmployeeForm, { EmployeeFormData } from "../../../../components/ui/EmployeeForm";
 // Definisikan interface yang sesuai dengan backend Laravel
 interface EmployeeData {
-    id: string; // ID karyawan
-    user_id: string;
-    first_name: string;
-    last_name: string;
-    gender: "M" | "F";
-    mobile_number: string;
-    nik: string;
-    birth_place: string;
-    birth_date: string | null;
-    education: string;
-    position: string;
-    grade: string;
-    branch: string;
-    contract_type: "Tetap" | "Kontrak" | "Lepas";
-    bank: string;
-    bank_account_number: string;
-    bank_account_name: string;
-    sp_type: string;
-    status: "Aktif" | "Tidak Aktif";
-    avatar: string;
-    created_at: string; // Tambahan dari API
-    updated_at: string; // Tambahan dari API
-    user?: any; // Jika Anda perlu data user terkait
+  id: string;
+  user_id?: string; // Optional karena bisa jadi tidak perlu diedit
+  first_name: string;
+  last_name: string;
+  gender: "M" | "F";
+  mobile_number?: string;
+  nik?: string;
+  birth_place?: string;
+  birth_date?: string | null;
+  education?: string;
+  position?: string;
+  grade?: string;
+  branch?: string;
+  contract_type?: "Tetap" | "Kontrak" | "Lepas";
+  bank?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+  sp_type?: string;
+  status?: "Aktif" | "Tidak Aktif";
+  avatar?: string;
+  created_at?: string;
+  updated_at?: string;
+  user?: any;
 }
 
 export default function EditEmployeePage() {
-    const router = useRouter();
-    const { id } = useParams(); // ID dari URL
-    const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { id } = useParams(); // ID dari URL (misalnya: /employee/edit/[id])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!id) return;
-            setLoading(true);
-            try {
-                // Ambil CSRF cookie jika menggunakan Sanctum SPA authentication
-                await axiosInstance.get("/sanctum/csrf-cookie");
-                const response = await axiosInstance.get(`/employees/${id}`);
-                // Perhatikan format respons: Anda mungkin perlu mengakses response.data.data
-                // jika backend mengembalikan format { status: 'success', data: ... }
-                setEmployeeData(response.data); // Sesuaikan jika respons berbeda
-            } catch (err: any) {
-                console.error("Failed to fetch employee for editing:", err.response ? err.response.data : err.message);
-                setError("Failed to load employee data.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [id]);
+  // Ambil data awal karyawan saat komponen dimuat
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) {
+        setError("ID karyawan tidak ditemukan.");
+        setLoading(false);
+        return;
+      }
 
-    const handleUpdate = async (formData: EmployeeData) => {
-        try {
-            // Ambil CSRF cookie jika menggunakan Sanctum SPA authentication
-            await axiosInstance.get("/sanctum/csrf-cookie");
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(`/employees/${id}`);
 
-            const response = await axiosInstance.put(`/employees/${id}`, formData);
-            console.log("Employee updated successfully:", response.data);
-            router.push("/employee");
-        } catch (err: any) {
-            console.error("Failed to update employee:", err.response ? err.response.data : err.message);
-            if (err.response && err.response.data && err.response.data.errors) {
-                alert('Validation Errors: ' + JSON.stringify(err.response.data.errors));
-            } else {
-                alert('Failed to update employee. Please try again.');
-            }
+        if (response.status === 200 && response.data) {
+          setEmployeeData(response.data);
+        } else {
+          setError("Data karyawan tidak ditemukan.");
         }
+      } catch (err: any) {
+        console.error("Gagal mengambil data karyawan:", err.message);
+        if (err.response?.status === 404) {
+          setError("Karyawan tidak ditemukan.");
+        } else {
+          setError(`Gagal memuat data karyawan: ${err.message}`);
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) return <p>Loading employee data...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
-    if (!employeeData) return <p>No employee data found.</p>;
+    fetchData();
+  }, [id]);
 
-    return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Edit Karyawan</h1>
-            {/* Gunakan AddEmployeeForm dan lewati data awal sebagai initialData */}
-            <AddEmployeeForm
-                initialData={employeeData} // Mengirim data karyawan yang akan diedit
-                onSubmit={handleUpdate}
-                onCancel={() => router.push("/employee")}
-            />
-        </div>
-    );
+  // Fungsi untuk menangani pengiriman formulir
+  const handleUpdate = async (formData: EmployeeFormData) => {
+    if (!id || !employeeData) { // Tambahkan pengecekan employeeData di sini juga
+        alert("ID karyawan atau data karyawan tidak tersedia.");
+        return;
+    }
+
+    let formattedBirthDate = null;
+    if (formData.birth_date) {
+        const date = new Date(formData.birth_date);
+        if (!isNaN(date.getTime())) {
+        formattedBirthDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        } else {
+        console.warn("Tanggal lahir tidak valid saat update, akan dikirim sebagai null/undefined.");
+        }
+    }
+
+    // Gabungkan id dari URL dengan data form untuk payload backend
+    const payload: Partial<EmployeeData> = {
+      ...formData,
+      user_id: employeeData.user_id, 
+      gender: formData.gender === "" ? undefined : formData.gender,
+      birth_date: formattedBirthDate || undefined,
+      contract_type:
+        formData.contract_type === "" ? undefined : formData.contract_type,
+      status:
+        formData.status === "" ? undefined : formData.status,
+    };
+
+    try {
+      const response = await axiosInstance.put(`/employees/${id}`, payload);
+
+      if (response.status === 200) {
+        console.log("Karyawan berhasil diupdate:", response.data);
+        router.push("/employee");
+      }
+    } catch (err: any) {
+      console.error("Error updating employee:", err.response?.data || err.message);
+
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        const validationErrors = Object.entries(err.response.data.errors)
+          .map(([field, messages]) =>
+            Array.isArray(messages) ? `${field}: ${messages.join(", ")}` : `${field}: ${messages}`
+          )
+          .join("\n");
+
+        // Tampilkan error dalam format yang lebih mudah dibaca jika memungkinkan
+        // Misalnya, jika backend mengirimkan { user_id: ["The user id field is required."], nik: ["The nik has already been taken."] }
+        // Anda bisa format ulang string errornya.
+        let errorString = "Validasi gagal:\n";
+        if (err.response.data.errors.user_id) {
+            errorString += `- user_id: ${err.response.data.errors.user_id.join(', ')}\n`;
+        }
+        if (err.response.data.errors.nik) {
+            errorString += `- nik: ${err.response.data.errors.nik.join(', ')}\n`;
+        }
+        // ... tambahkan field lain jika perlu
+        alert(errorString.trim());
+
+        } else {
+        alert(
+            `Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${
+            err.response?.data?.message || err.message
+            }`
+        );
+      }
+    }
+  };
+
+  // Tampilkan loading atau error state
+  if (loading) return <p>Loading employee data...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!employeeData) return <p>Data karyawan tidak tersedia.</p>;
+
+  // Render form edit dengan data awal
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Edit Data Karyawan</h1>
+      <EmployeeForm
+        initialData={{
+          ...employeeData,
+          mobile_number: employeeData.mobile_number ?? "",
+          nik: employeeData.nik ?? "",
+          birth_place: employeeData.birth_place ?? "",
+          birth_date: employeeData.birth_date ?? "",
+          education: employeeData.education ?? "",
+          position: employeeData.position ?? "",
+          grade: employeeData.grade ?? "",
+          branch: employeeData.branch ?? "",
+          contract_type: employeeData.contract_type ?? "Tetap",
+          bank: employeeData.bank ?? "",
+          bank_account_number: employeeData.bank_account_number ?? "",
+          bank_account_name: employeeData.bank_account_name ?? "",
+          sp_type: employeeData.sp_type ?? "",
+          status: employeeData.status ?? "Aktif",
+          avatar: employeeData.avatar ?? "",
+        }}
+        onSubmit={handleUpdate}
+        onCancel={() => router.push("/employee")}
+      />
+    </div>
+  );
 }
