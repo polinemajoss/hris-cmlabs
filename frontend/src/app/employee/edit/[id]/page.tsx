@@ -1,8 +1,10 @@
+// File: frontend/src/app/employee/edit/[id]/page.tsx
+// TIDAK ADA "use client" DI SINI
+
 import EditForm from "./EditForm";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
-// Tipe untuk data karyawan
 interface EmployeeData {
   id: string;
   user_id?: string;
@@ -30,38 +32,17 @@ interface EmployeeData {
 }
 
 // -----------------------------------------------------------------------------
-// FUNGSI 1: Memberitahu Next.js ID mana saja yang harus dibuat halamannya
+// HAPUS SELURUH FUNGSI 'generateStaticParams' DARI SINI
 // -----------------------------------------------------------------------------
-export async function generateStaticParams() {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-    const res = await fetch(`${apiUrl}/employees`);
-    if (!res.ok) {
-      throw new Error(`Gagal mengambil daftar karyawan: ${res.statusText}`);
-    }
-    const employees = await res.json();
-    if (!Array.isArray(employees)) {
-      console.error("API tidak mengembalikan array karyawan:", employees);
-      return [];
-    }
-    return employees.map((employee: { id: number | string }) => ({
-      id: String(employee.id),
-    }));
-  } catch (error) {
-    console.error("Tidak bisa membuat halaman statis karyawan:", error);
-    return [];
-  }
-}
 
-// -----------------------------------------------------------------------------
-// FUNGSI 2: Mengambil data untuk SATU halaman spesifik
-// -----------------------------------------------------------------------------
+// FUNGSI UNTUK MENGAMBIL DATA TETAP DIPERLUKAN
 async function getEmployeeData(id: string) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-    const res = await fetch(`${apiUrl}/employees/${id}`, {
-      next: { revalidate: 60 }
-    });
+
+    // UBAH: Gunakan 'cache: "no-store"' untuk memastikan data selalu baru
+    const res = await fetch(`<span class="math-inline">\{apiUrl\}/employees/</span>{id}`, { cache: 'no-store' });
+
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Gagal mengambil data untuk karyawan ID ${id}`);
     return res.json();
@@ -71,28 +52,20 @@ async function getEmployeeData(id: string) {
   }
 }
 
-// -----------------------------------------------------------------------------
-// FUNGSI 3: Membuat judul halaman dinamis untuk SEO
-// -----------------------------------------------------------------------------
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const employee = await getEmployeeData(id);
-
+// FUNGSI METADATA TETAP BERGUNA
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const employee = await getEmployeeData(params.id);
   if (!employee) {
     return { title: 'Karyawan Tidak Ditemukan' };
   }
-
   return {
     title: `Edit Karyawan: ${employee.first_name} ${employee.last_name}`,
   };
 }
 
-// =============================================================================
-// HALAMAN UTAMA (SERVER COMPONENT)
-// =============================================================================
-export default async function EditEmployeePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const employeeData = await getEmployeeData(id);
+// KOMPONEN UTAMA (SERVER COMPONENT)
+export default async function EditEmployeePage({ params }: { params: { id: string } }) {
+  const employeeData = await getEmployeeData(params.id);
 
   if (!employeeData) {
     notFound();
