@@ -32,6 +32,31 @@ interface EmployeeData {
   user?: Record<string, unknown>;
 }
 
+export async function generateStaticParams() {
+  try {
+    // Ambil daftar semua karyawan dari backend Anda
+    // Ganti URL ini dengan URL API Anda yang sebenarnya
+    const res = await fetch('http://localhost:8000/api/employees');
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch employees');
+    }
+
+    const employees = await res.json();
+
+    // Buat array yang berisi objek { id: '...' } untuk setiap karyawan
+    // Pastikan 'id' adalah string
+    return employees.map((employee: { id: any }) => ({
+      id: String(employee.id),
+    }));
+
+  } catch (error) {
+    console.error("Could not generate static params:", error);
+    // Jika gagal fetching, kembalikan array kosong agar build tidak gagal total
+    return [];
+  }
+}
+
 export default function EditEmployeePage() {
   const router = useRouter();
   const { id } = useParams(); // ID dari URL (misalnya: /employee/edit/[id])
