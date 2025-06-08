@@ -26,7 +26,7 @@ jobs:
 
       # Langkah 3: Menyalin folder frontend ke server VM
       - name: Copy frontend files to VM
-        uses: appleboy/scp-action@v1.0.3
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AZURE_SSH_HOST }}
           username: ${{ secrets.AZURE_SSH_USER }}
