@@ -117,16 +117,15 @@ export default function EditEmployeePage() {
         router.push("/employee");
       }
     } catch (err) {
-      // Siapkan pesan default dari error standar
-      let detailMessage = (err instanceof Error) ? err.message : 'Terjadi kesalahan tidak terduga.';
-
-      // Periksa apakah ini error dari axios dan ambil pesan dari response API
-      if (axios.isAxiosError(err) && err.response?.data?.message) {
-        detailMessage = err.response.data.message;
+        // Gunakan axios.isAxiosError untuk pengecekan yang lebih bersih
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setError("Karyawan tidak ditemukan (404).");
+        } else {
+          // Tangani semua error lain, termasuk masalah jaringan
+          setError("Gagal memuat data karyawan.");
+        }
+        console.error("Gagal mengambil data karyawan:", err);
       }
-
-      alert(`Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${detailMessage}`);
-    }
   };
 
   // Tampilkan loading atau error state
