@@ -3,7 +3,6 @@
 
 import { SidebarProvider } from "../../components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
-import { Button } from "../../components/ui/button";
 import { Filter, Download, Upload, Plus } from "lucide-react";
 import { SiteHeader } from "../../components/ui/site-header";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "../../components/ui/alert-dialog";
@@ -21,7 +20,6 @@ import axios from "axios";
 // Import EmployeeForm dan tipe datanya
 import EmployeeForm, { EmployeeFormData } from "@/components/employee/EmployeeForm";
 
-import { Toaster } from "../../components/ui/sonner"; // <-- TAMBAHKAN IMPORT INI
 import { toast } from "sonner";
 
 // Definisikan interface payload untuk create
@@ -73,8 +71,6 @@ interface Employee {
 }
 
 export default function EmployeeDatabase() {
-  const router = useRouter();
-
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,8 +111,12 @@ export default function EmployeeDatabase() {
       } else {
         setError("Format data tidak valid dari API.");
       }
-    } catch (err: any) {
-      setError(`Gagal memuat data karyawan: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Gagal memuat data karyawan: ${err.message}`);
+      } else {
+        setError("Gagal memuat data karyawan: Unknown error");
+      }
     } finally {
       setLoading(false);
     }
@@ -172,7 +172,7 @@ export default function EmployeeDatabase() {
 
       setIsCreateSheetOpen(false);
       fetchEmployees();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // --- GANTI SELURUH BLOK CATCH ANDA DENGAN INI ---
       if (axios.isAxiosError(error) && error.response) {
         const validationErrors = error.response.data.errors;
@@ -208,11 +208,16 @@ export default function EmployeeDatabase() {
             description: errorMsg,
           });
         }
-      } else {
+      } else if (error instanceof Error) {
         // Handle error network atau lainnya
         console.error("Error creating employee:", error.message);
         toast.error("Terjadi Kesalahan", {
           description: error.message,
+        });
+      } else {
+        // Handle truly unknown error
+        toast.error("Terjadi Kesalahan", {
+          description: "Unknown error occurred.",
         });
       }
     }
@@ -262,7 +267,7 @@ export default function EmployeeDatabase() {
       setIsEditSheetOpen(false);
       setEditingEmployee(null);
       fetchEmployees();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const validationErrors = error.response.data.errors;
         if (validationErrors && typeof validationErrors === "object") {
@@ -283,10 +288,15 @@ export default function EmployeeDatabase() {
             description: errorMsg,
           });
         }
-      } else {
+      } else if (error instanceof Error) {
         console.error("Error updating employee:", error.message);
         toast.error("Terjadi Kesalahan", {
           description: error.message,
+        });
+      } else {
+        console.error("Error updating employee:", error);
+        toast.error("Terjadi Kesalahan", {
+          description: "Unknown error occurred.",
         });
       }
     }
@@ -311,7 +321,7 @@ export default function EmployeeDatabase() {
       await axiosInstance.delete(`/employees/${employeeToDelete.id}`);
       fetchEmployees();
       setEmployeeToDelete(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting employee:", err);
       alert("Gagal menghapus karyawan");
     }
@@ -386,9 +396,9 @@ export default function EmployeeDatabase() {
                 <input
                   type="file"
                   className="hidden"
-                  onChange={async (e) => {
-                    /* Logika Import Anda */
-                  }}
+                  // onChange={async (e) => {
+                  //   /* Logika Import Anda */
+                  // }}
                 />
               </label>
 

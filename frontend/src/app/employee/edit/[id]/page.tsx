@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../../lib/axios";
 import { useParams, useRouter } from "next/navigation";
 import EmployeeForm, { EmployeeFormData } from "../../../../components/employee/EmployeeForm";
+import axios from "axios";
 // Definisikan interface yang sesuai dengan backend Laravel
 interface EmployeeData {
   id: string;
@@ -28,7 +29,7 @@ interface EmployeeData {
   avatar?: string;
   created_at?: string;
   updated_at?: string;
-  user?: any;
+  user?: Record<string, unknown>;
 }
 
 export default function EditEmployeePage() {
@@ -56,12 +57,16 @@ export default function EditEmployeePage() {
         } else {
           setError("Data karyawan tidak ditemukan.");
         }
-      } catch (err: any) {
-        console.error("Gagal mengambil data karyawan:", err.message);
-        if (err.response?.status === 404) {
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("Gagal mengambil data karyawan:", err.message);
+        } else {
+          console.error("Gagal mengambil data karyawan:", err);
+        }
+        if (typeof err === "object" && err !== null && "response" in err && (err as any).response?.status === 404) {
           setError("Karyawan tidak ditemukan.");
         } else {
-          setError(`Gagal memuat data karyawan: ${err.message}`);
+          setError(`Gagal memuat data karyawan: ${(err as Error).message}`);
         }
       } finally {
         setLoading(false);
@@ -106,29 +111,16 @@ export default function EditEmployeePage() {
         console.log("Karyawan berhasil diupdate:", response.data);
         router.push("/employee");
       }
-    } catch (err: any) {
-      console.error("Error updating employee:", err.response?.data || err.message);
+    } catch (err) {
+      // Siapkan pesan default dari error standar
+      let detailMessage = (err instanceof Error) ? err.message : 'Terjadi kesalahan tidak terduga.';
 
-      if (err.response?.status === 422 && err.response?.data?.errors) {
-        const validationErrors = Object.entries(err.response.data.errors)
-          .map(([field, messages]) => (Array.isArray(messages) ? `${field}: ${messages.join(", ")}` : `${field}: ${messages}`))
-          .join("\n");
-
-        // Tampilkan error dalam format yang lebih mudah dibaca jika memungkinkan
-        // Misalnya, jika backend mengirimkan { user_id: ["The user id field is required."], nik: ["The nik has already been taken."] }
-        // Anda bisa format ulang string errornya.
-        let errorString = "Validasi gagal:\n";
-        if (err.response.data.errors.user_id) {
-          errorString += `- user_id: ${err.response.data.errors.user_id.join(", ")}\n`;
-        }
-        if (err.response.data.errors.nik) {
-          errorString += `- nik: ${err.response.data.errors.nik.join(", ")}\n`;
-        }
-        // ... tambahkan field lain jika perlu
-        alert(errorString.trim());
-      } else {
-        alert(`Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${err.response?.data?.message || err.message}`);
+      // Periksa apakah ini error dari axios dan ambil pesan dari response API
+      if (axios.isAxiosError(err) && err.response?.data?.message) {
+        detailMessage = err.response.data.message;
       }
+
+      alert(`Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${detailMessage}`);
     }
   };
 
@@ -158,6 +150,11 @@ export default function EditEmployeePage() {
           sp_type: employeeData.sp_type ?? "",
           status: employeeData.status ?? "Aktif",
           avatar: employeeData.avatar ?? "",
+          email:
+            // Try to get email from employeeData.user if available, otherwise fallback to empty string
+            (employeeData.user && typeof employeeData.user === "object" && "email" in employeeData.user
+              ? (employeeData.user as { email?: string }).email ?? ""
+              : ""),
         }}
         onSubmit={handleUpdate}
         onCancel={() => router.push("/employee")}

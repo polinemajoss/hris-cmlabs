@@ -4,6 +4,7 @@ import axios from "axios";
 import axiosInstance from "../../../lib/axios";
 import { useRouter } from "next/navigation";
 import AddEmployeeForm from "../../../components/employee/EmployeeForm";
+import type { EmployeeFormData } from "../../../components/employee/EmployeeForm";
 
 // Definisikan interface yang sesuai dengan backend Laravel
 interface EmployeePayload {
@@ -29,25 +30,19 @@ interface EmployeePayload {
 
 export default function CreateEmployeePage() {
   const router = useRouter();
-
-  // Generate UUID untuk user_id secara otomatis
-  const generateUserId = () => {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === "x" ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  };
-
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: EmployeeFormData) => {
     // Validasi frontend sederhana
     if (!formData.first_name || !formData.last_name) {
       alert("Nama depan dan belakang harus diisi.");
       return;
     }
 
-    // Normalisasi gender
-    const normalizedGender = formData.gender === "Laki-Laki" ? "M" : "F";
+    // Gender harus "M" atau "F" (bukan string kosong)
+    if (formData.gender !== "M" && formData.gender !== "F") {
+      alert("Jenis kelamin harus dipilih.");
+      return;
+    }
+    const normalizedGender: "M" | "F" = formData.gender;
 
     // Format tanggal lahir
     let formattedBirthDate = null;
@@ -66,6 +61,10 @@ export default function CreateEmployeePage() {
         ...formData,
         gender: normalizedGender,
         birth_date: formattedBirthDate || undefined,
+        contract_type:
+          formData.contract_type === "" ? undefined : formData.contract_type,
+        status:
+          formData.status === "" ? undefined : formData.status,
       };
 
       console.log("Data yang akan dikirim:", payload);

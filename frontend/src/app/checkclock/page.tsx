@@ -7,11 +7,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from ".
 import AddCheckclockSheet from "../../components/checkclock/CheckclockSheet";
 import AttendanceDetailsSheet from "../../components/ui/AttendanceDetailsSheet";
 
-const formatDate = (date: Date) => {
-  const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
-  return date.toLocaleDateString("en-US", options); // Format: "1 March 2025"
-};
-
 interface Employee {
   id: string;
   first_name: string;
@@ -20,12 +15,12 @@ interface Employee {
 }
 
 interface Attendance {
-  name: any;
+  name: string;
   jabatan: ReactNode;
   clockIn: ReactNode;
   clockOut: ReactNode;
   workHours: ReactNode;
-  approve: any;
+  approve: boolean;
   id: string;
   employee_id: string;
   type: string;
@@ -48,22 +43,6 @@ type CheckclockData = {
   workHours: string;
   approve: boolean;
   status: string;
-};
-
-type AttendanceDetailsData = {
-  name: string;
-  jabatan: string;
-  date: string;
-  clockIn: string;
-  clockOut: string;
-  workHours: string;
-  approve: boolean;
-  status: string;
-  location: string;
-  address: string;
-  lat: string;
-  long: string;
-  proof: string;
 };
 
 import React, { ReactNode, useEffect, useState } from "react";
@@ -116,9 +95,14 @@ export default function CheckclockPage() {
       toast.success("Absensi berhasil ditambahkan!");
       fetchAttendances(); // Muat ulang data tabel setelah berhasil
       return true; // Beri sinyal sukses agar sheet bisa ditutup
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let message = "Silakan cek kembali data Anda.";
+      if (error && typeof error === "object" && "response" in error && error.response && typeof error.response === "object" && "data" in error.response && error.response.data && typeof error.response.data === "object" && "message" in error.response.data) {
+        // @ts-expect-error: We checked the structure above
+        message = error.response.data.message || message;
+      }
       toast.error("Gagal menambah absensi", {
-        description: error.response?.data?.message || "Silakan cek kembali data Anda.",
+        description: message,
       });
       return false; // Beri sinyal gagal
     }
@@ -160,7 +144,7 @@ export default function CheckclockPage() {
       toast.success("Absensi berhasil di-approve!");
       fetchAttendances(); // Muat ulang data
       setIsDetailOpen(false); // Tutup sheet detail
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Gagal melakukan approval.");
       console.error(error);
     }
