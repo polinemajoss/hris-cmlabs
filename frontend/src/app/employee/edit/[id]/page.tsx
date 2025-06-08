@@ -4,9 +4,9 @@ import EditForm from "./EditForm";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
+// ✅ Tipe props harus menggunakan Promise untuk params
 type Props = {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
 };
 
 async function getEmployeeData(id: string) {
@@ -26,17 +26,21 @@ async function getEmployeeData(id: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const employee = await getEmployeeData(params.id);
+  const { id } = await params; // ❗await dulu
+  const employee = await getEmployeeData(id);
+
   if (!employee) {
     return { title: 'Karyawan Tidak Ditemukan' };
   }
+
   return {
     title: `Edit Karyawan: ${employee.first_name} ${employee.last_name}`,
   };
 }
 
 export default async function EditEmployeePage({ params }: Props) {
-  const employeeData = await getEmployeeData(params.id);
+  const { id } = await params; // ❗await dulu
+  const employeeData = await getEmployeeData(id);
 
   if (!employeeData) {
     notFound();
