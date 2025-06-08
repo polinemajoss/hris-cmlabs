@@ -1,11 +1,10 @@
+// File: components/ui/EmployeeForm.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-// Hapus import useAuth karena tidak ada backend
-// import { useAuth } from "../../lib/authContext"; // <-- KOMENTARI/HAPUS BARIS INI
-import { ImageIcon } from "lucide-react";
+import imageCompression from 'browser-image-compression';
+import { useEffect, useState, useRef } from "react";
+import { ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "./button";
-
 import { Input } from "./input";
 import { Label } from "./label";
 import {
@@ -16,9 +15,13 @@ import {
   SelectValue,
 } from "./select";
 import { RadioGroup, RadioGroupItem } from "./radio-group";
+import axiosInstance from "@/lib/axios";
+import { toast } from "sonner";
 
 // Definisikan interface EmployeeFormData (tanpa user_id)
-interface EmployeeFormData {
+// Tetap ekspor EmployeeFormData jika dibutuhkan di luar (seperti di EditEmployeePage)
+export interface EmployeeFormData {
+  email: string;
   first_name: string;
   last_name: string;
   mobile_number: string;
@@ -38,23 +41,18 @@ interface EmployeeFormData {
   status?: "Aktif" | "Tidak Aktif" | "";
   avatar?: string;
 }
-
-// Interface untuk initialData (jika ini digunakan untuk mode edit)
-// Tambahkan 'id' karena initialData bisa jadi data employee lengkap dengan ID
 interface InitialEmployeeData extends EmployeeFormData {
-    id: string;
+  id: string; // atau tipe ID yang sesuai
 }
 
-// Perbarui prop initialData agar tipe datanya lebih spesifik
-// PERBAIKAN DI SINI: Definisikan tipe untuk onSubmit, onCancel, dan initialData
-function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
-    onSubmit: (formData: EmployeeFormData) => void;
-    onCancel: () => void;
-    initialData?: InitialEmployeeData | null;
-}) {
-  // Hapus penggunaan useAuth karena tidak ada backend
-  // const { user } = useAuth(); // <-- HAPUS/KOMENTARI BARIS INI
+interface EmployeeFormProps {
+  onSubmit: (formData: EmployeeFormData) => void;
+  onCancel: () => void;
+  initialData?: InitialEmployeeData | null;
+}
 
+const EmployeeForm = ({
+  onSubmit, onCancel, initialData = null }: EmployeeFormProps) => {
   const genderOptions = [
     { value: "M", label: "Laki-laki" },
     { value: "F", label: "Perempuan" },
@@ -102,31 +100,14 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
     { value: "Tidak Aktif", label: "Tidak Aktif" },
   ];
 
-  // Inisialisasi form tanpa user_id dari backend, dan pastikan tipe awal sesuai EmployeeFormData
   const [form, setForm] = useState<EmployeeFormData>(
     initialData
       ? {
-          // user_id: initialData.user_id, // <-- HAPUS BARIS INI
-          first_name: initialData.first_name || "",
-          last_name: initialData.last_name || "",
-          mobile_number: initialData.mobile_number || "",
-          nik: initialData.nik || "",
-          gender: initialData.gender || "M",
-          education: initialData.education || "",
-          birth_place: initialData.birth_place || "",
-          birth_date: initialData.birth_date || null,
-          position: initialData.position || "",
-          branch: initialData.branch || "",
-          contract_type: initialData.contract_type || "Kontrak",
-          grade: initialData.grade || "",
-          bank: initialData.bank || "",
-          bank_account_number: initialData.bank_account_number || "",
-          bank_account_name: initialData.bank_account_name || "",
-          sp_type: initialData.sp_type || "",
+          ...initialData,
           status: initialData.status || "Aktif",
-          avatar: initialData.avatar || "",
         }
       : {
+          email: "",
           first_name: "",
           last_name: "",
           mobile_number: "",
@@ -148,20 +129,17 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
         }
   );
 
-  // Hapus useEffect yang bergantung pada `user` atau `user_id`
-  // useEffect(() => {
-  //   if (user && !form.user_id) {
-  //     setForm((prev) => ({ ...prev, user_id: user.id }));
-  //   }
-  // }, [user, form.user_id]);
+  const fileInputRef = useRef<HTMLInputElement>(null);    // Ref untuk input file
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: keyof EmployeeFormData, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value as any })); // Type assertion if value type is constrained
   };
 
   const handleDateChange = (dateString: string) => {
@@ -173,48 +151,83 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
     onSubmit(form);
   };
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAvatarUpload = async (file: File) => {
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('avatar', file); // Pastikan key "avatar" sesuai dengan Laravel
+
+  try {
+    setIsUploading(true);
+    setError(null);
+
+    const response = await axiosInstance.post(
+      '/upload-avatar', // Pastikan endpoint sesuai route Laravel
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+
+    // Update form.avatar langsung
+    setForm((prev) => ({
+      ...prev,
+      avatar: response.data.url,
+    }));
+
+    toast.success("Gambar berhasil diupload!");
+
+  } catch (err: any) {
+    console.error('Upload Error:', err);
+    setError(
+      err.response?.data?.message || 
+      err.message || 
+      'Terjadi kesalahan saat upload'
+    );
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleAvatarUpload(e.target.files[0]);
+    }
+  };
+  
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-4 mt-2">
-      {/* ... Isi form Anda ... */}
+    <form onSubmit={handleFormSubmit} className="space-y-4">
+      {/* Bagian Avatar */}
       <div className="flex items-center mb-4 gap-4">
-        <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+        <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative">
           {form.avatar ? (
             <img
               src={form.avatar}
               alt="Avatar Preview"
+              
               className="object-cover w-full h-full"
             />
           ) : (
             <ImageIcon size={48} className="text-gray-400" />
           )}
         </div>
-        <input
-          id="avatar-upload"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                setForm((prev) => ({
-                  ...prev,
-                  avatar: ev.target?.result as string,
-                }));
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-        />
+
+        {/* Tombol Upload */}
         <Button
           variant="outline"
           type="button"
-          onClick={() => document.getElementById("avatar-upload")?.click()}
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
         >
-          Upload Avatar
+          {isUploading ? "Mengupload..." : "Upload Avatar"}
         </Button>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="first_name">First Name</Label>
@@ -228,6 +241,20 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
           <Label htmlFor="mobile_number">Mobile Number</Label>
           <Input id="mobile_number" name="mobile_number" placeholder="Enter the Mobile Number" value={form.mobile_number} onChange={handleChange} required />
         </div>
+        {!initialData && (
+          <div>
+            <Label htmlFor="email">Email untuk Akun Baru</Label>
+            <Input
+              id="email"
+              name="email" // <-- Atribut 'name' ini sangat PENTING
+              type="email"
+              placeholder="contoh@perusahaan.com"
+              value={form.email} // Terhubung ke state
+              onChange={handleChange} // Terhubung ke handler
+              required
+            />
+          </div>
+        )}
         <div>
           <Label htmlFor="nik">NIK</Label>
           <Input id="nik" name="nik" placeholder="Enter the NIK" value={form.nik} onChange={handleChange} required />
@@ -238,7 +265,10 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
             value={form.gender}
             onValueChange={(value: "M" | "F" | "") => handleSelectChange("gender", value)}
           >
-            <SelectTrigger id="gender">
+            <SelectTrigger
+              id="gender"
+              className="w-full min-w-0" // Menyesuaikan lebar dengan parent grid
+            >
               <SelectValue placeholder="-Pilih Gender-" />
             </SelectTrigger>
             <SelectContent>
@@ -256,7 +286,7 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
             value={form.education}
             onValueChange={(value) => handleSelectChange("education", value)}
           >
-            <SelectTrigger id="education">
+            <SelectTrigger id="education" className="w-full min-w-0">
               <SelectValue placeholder="-Pilih Pendidikan Terakhir-" />
             </SelectTrigger>
             <SelectContent>
@@ -322,7 +352,7 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
             value={form.bank}
             onValueChange={(value) => handleSelectChange("bank", value)}
           >
-            <SelectTrigger id="bank">
+            <SelectTrigger id="bank" className="w-full min-w-0">
               <SelectValue placeholder="-Pilih Bank-" />
             </SelectTrigger>
             <SelectContent>
@@ -348,7 +378,7 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
             value={form.sp_type}
             onValueChange={(value) => handleSelectChange("sp_type", value)}
           >
-            <SelectTrigger id="sp_type">
+            <SelectTrigger id="sp_type" className="w-full min-w-0">
               <SelectValue placeholder="-Pilih SP-" />
             </SelectTrigger>
             <SelectContent>
@@ -363,10 +393,10 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
         <div>
           <Label htmlFor="status">Status Karyawan</Label>
           <Select
-            value={form.status}
+            value={form.status} // Pastikan ini string atau undefined, sesuai dengan apa yang diterima Select
             onValueChange={(value: "Aktif" | "Tidak Aktif" | "") => handleSelectChange("status", value)}
           >
-            <SelectTrigger id="status">
+            <SelectTrigger id="status" className="w-full min-w-0">
               <SelectValue placeholder="-Pilih Status-" />
             </SelectTrigger>
             <SelectContent>
@@ -380,11 +410,13 @@ function AddEmployeeForm({ onSubmit, onCancel, initialData = null }: {
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>Batal</Button>
+        <Button type="submit" disabled={isUploading}>
+          {initialData ? "Simpan Perubahan" : "Tambah Karyawan"}
+        </Button>
       </div>
     </form>
   );
-}
+};
 
-export default AddEmployeeForm;
+export default EmployeeForm;

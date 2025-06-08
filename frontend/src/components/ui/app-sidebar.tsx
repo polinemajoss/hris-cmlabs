@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { ArrowUpCircleIcon, BarChartIcon, Calendar1Icon, CameraIcon, ClipboardCheckIcon, ClipboardListIcon, ClockIcon, DatabaseIcon, FileCodeIcon, FileIcon, FileTextIcon, FolderIcon, HelpCircleIcon, LayoutDashboardIcon, ListIcon, SearchIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { ArrowUpCircleIcon, BarChartIcon, Calendar1Icon, CameraIcon, ClipboardCheckIcon, ClipboardListIcon, ClockIcon, DatabaseIcon, FileCodeIcon, FileIcon, FileTextIcon, FolderIcon, GemIcon, HelpCircleIcon, LayoutDashboardIcon, ListIcon, SearchIcon, SettingsIcon, UsersIcon } from "lucide-react";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
@@ -30,6 +30,11 @@ const data = {
       name: "Letter Management",
       url: "#",
       icon: ClipboardCheckIcon,
+    },
+    {
+      name: "Payment",
+      url: "/payment",
+      icon: GemIcon,
     },
   ],
   navSecondary: [
