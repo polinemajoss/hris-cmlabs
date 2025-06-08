@@ -23,9 +23,6 @@ import {
   useSidebar,
 } from "../../components/ui/sidebar"
 
-import { useAuth } from "../../lib/authContext" // Import context auth
-import { useRouter } from "next/navigation" // Import router untuk redirect
-
 export function NavUser({
   user,
 }: {
