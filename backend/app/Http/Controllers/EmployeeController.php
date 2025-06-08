@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log; 
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule; 
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use App\Models\User; 
 
 
 class EmployeeController extends Controller
@@ -50,45 +54,58 @@ class EmployeeController extends Controller
     // Store new employee
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'gender' => 'required|in:M,F', // Perhatikan: ini 'M' atau 'F'
+            'mobile_number' => 'nullable|string|max:20',
+            'nik' => 'nullable|string|max:20|unique:employees,nik',
+            'birth_place' => 'nullable|string|max:100',
+            'birth_date' => 'nullable|date', // Format YYYY-MM-DD
+            'education' => 'nullable|string|max:100',
+            'position' => 'nullable|string|max:100',
+            'grade' => 'nullable|string|max:50',
+            'branch' => 'nullable|string|max:100',
+            'contract_type' => 'nullable|in:Tetap,Kontrak,Lepas', 
+            'bank' => 'nullable|string|max:50',
+            'bank_account_number' => 'nullable|string|max:50',
+            'bank_account_name' => 'nullable|string|max:100',
+            'sp_type' => 'nullable|string|max:50',
+            'status' => 'nullable|in:Aktif,Tidak Aktif', 
+            'avatar' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         try {
-            Log::info('Received Request Data:', $request->all());
-            $validated = $request->validate([
-                'first_name' => 'required|string|max:100',
-                'last_name' => 'required|string|max:100',
-                'gender' => 'required|in:M,F', // Perhatikan: ini 'M' atau 'F'
-                'mobile_number' => 'nullable|string|max:20',
-                'nik' => 'nullable|string|max:20|unique:employees,nik',
-                'birth_place' => 'nullable|string|max:100',
-                'birth_date' => 'nullable|date', // Format YYYY-MM-DD
-                'education' => 'nullable|string|max:100',
-                'position' => 'nullable|string|max:100',
-                'grade' => 'nullable|string|max:50',
-                'branch' => 'nullable|string|max:100',
-                'contract_type' => 'nullable|in:Tetap,Kontrak,Lepas', 
-                'bank' => 'nullable|string|max:50',
-                'bank_account_number' => 'nullable|string|max:50',
-                'bank_account_name' => 'nullable|string|max:100',
-                'sp_type' => 'nullable|string|max:50',
-                'status' => 'nullable|in:Aktif,Tidak Aktif', 
-                'avatar' => 'nullable|string',
-            ]);
+            $newEmployee = DB::transaction(function () use ($request) {
+                // A. Buat User baru
+                $newUser = User::create([
+                    'name' => $request->input('first_name') . ' ' . $request->input('last_name'),
+                    'email' => $request->input('email'),
+                    'password' => Hash::make(Str::random(10)), // Buat password acak
+                ]);
 
-            $validated['user_id'] = $validated['user_id'] ?? Str::uuid(); // Ambil user_id dari token yang sudah ada
+                // LANGKAH B: Buat record baru di tabel `employees`
+                // Kita gunakan semua data dari request KECUALI 'email', lalu tambahkan 'user_id'
+                Employee::create(array_merge(
+                    $request->except('email'), // Ambil semua input KECUALI email
+                    ['user_id' => $newUser->id] // Tambahkan user_id dari user yang baru dibuat
+                ));
+            });
 
-            $employee = Employee::create($validated);
             return response()->json([
-                'status' => 'success',
-                'message' => 'Employee created successfully',
-                'data' => $employee
+                'message' => 'Karyawan dan Akun Pengguna berhasil dibuat!',
+                'data' => $newEmployee
             ], 201);
-        } catch (ValidationException $e) {
-            Log::error("Validation Error creating employee: " . json_encode($e->errors()));
-            return response()->json(['status' => 'error', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+
         } catch (\Exception $e) {
-            Log::error("Error creating employee: " . $e->getMessage());
+            Log::error("Gagal membuat Karyawan & User: " . $e->getMessage());
             return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to create employee.',
+                'message' => 'Gagal membuat Karyawan.',
                 'error' => $e->getMessage()
             ], 500);
         }
