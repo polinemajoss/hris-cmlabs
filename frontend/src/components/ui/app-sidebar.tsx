@@ -1,12 +1,10 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 import { ArrowUpCircleIcon, BarChartIcon, Calendar1Icon, CameraIcon, ClipboardCheckIcon, ClipboardListIcon, ClockIcon, DatabaseIcon, FileCodeIcon, FileIcon, FileTextIcon, FolderIcon, GemIcon, HelpCircleIcon, LayoutDashboardIcon, ListIcon, SearchIcon, SettingsIcon, UsersIcon } from "lucide-react";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
-import { NavUser } from "../../components/ui/nav-user";
-//import { useAuth } from "../../lib/authContext";
-
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../../components/ui/sidebar";
 
 const data = {
@@ -60,13 +58,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!pl-2">
-                <a href="/" className="flex items-center h-full w-full">
+              <Link href="/" className="flex items-center h-full w-full">
                 <img
                   src="/images/hris-logo.png"
                   alt="HRIS LOGO"
                   className="h-15 w-auto max-w-full object-contain"
                 />
-                </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -76,26 +74,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        {/* {user && (
-      <NavUser
-        user={{
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar || "/avatars/default.jpg",
-        }}
-      />
-    )}       */}
-      {/* {loading ? (
-      <div className="px-4 py-2 text-sm text-muted">Loading user...</div>
-    ) : user ? (
-      <NavUser
-        user={{
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar || "/avatars/default.jpg",
-        }}
-      />
-    ) : null} */}
       </SidebarFooter>
     </Sidebar>
   );
