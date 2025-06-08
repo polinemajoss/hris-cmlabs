@@ -86,11 +86,19 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
+// -----------------------------------------------------------------------------
+// DEFINISIKAN TIPE UNTUK PROPS DI SINI
+// -----------------------------------------------------------------------------
+type Props = {
+  params: { id: string };
+  // searchParams?: { [key: string]: string | string[] | undefined }; // Ini opsional untuk nanti jika butuh query URL
+};
+
 
 // -----------------------------------------------------------------------------
-// KOMPONEN UTAMA (SERVER COMPONENT)
+// KOMPONEN UTAMA (SERVER COMPONENT) - GUNAKAN TIPE PROPS YANG BARU
 // -----------------------------------------------------------------------------
-export default async function EditEmployeePage({ params }: { params: { id: string } }) {
+export default async function EditEmployeePage({ params }: Props) { // <-- UBAH MENJADI SEPERTI INI
   // Panggil fungsi untuk mengambil data karyawan spesifik berdasarkan ID dari URL
   const employeeData = await getEmployeeData(params.id);
 
