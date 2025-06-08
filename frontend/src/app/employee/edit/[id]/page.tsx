@@ -1,9 +1,8 @@
-// File: frontend/src/app/employee/edit/[id]/page.tsx
 import EditForm from "./EditForm";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
-// Tipe untuk data karyawan, bisa diimpor dari file lain jika perlu
+// Tipe untuk data karyawan
 interface EmployeeData {
   id: string;
   user_id?: string;
@@ -34,74 +33,70 @@ interface EmployeeData {
 // FUNGSI 1: Memberitahu Next.js ID mana saja yang harus dibuat halamannya
 // -----------------------------------------------------------------------------
 export async function generateStaticParams() {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-    const res = await fetch(`${apiUrl}/employees`);
-    if (!res.ok) {
-      throw new Error(`Gagal mengambil daftar karyawan: ${res.statusText}`);
-    }
-    const employees = await res.json();
-    if (!Array.isArray(employees)) {
-      console.error("API tidak mengembalikan array karyawan:", employees);
-      return [];
-    }
-    return employees.map((employee: { id: number | string }) => ({
-      id: String(employee.id),
-    }));
-  } catch (error) {
-    console.error("Tidak bisa membuat halaman statis karyawan:", error);
-    return [];
-  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const res = await fetch(`${apiUrl}/employees`);
+    if (!res.ok) {
+      throw new Error(`Gagal mengambil daftar karyawan: ${res.statusText}`);
+    }
+    const employees = await res.json();
+    if (!Array.isArray(employees)) {
+      console.error("API tidak mengembalikan array karyawan:", employees);
+      return [];
+    }
+    return employees.map((employee: { id: number | string }) => ({
+      id: String(employee.id),
+    }));
+  } catch (error) {
+    console.error("Tidak bisa membuat halaman statis karyawan:", error);
+    return [];
+  }
 }
 
 // -----------------------------------------------------------------------------
 // FUNGSI 2: Mengambil data untuk SATU halaman spesifik
 // -----------------------------------------------------------------------------
 async function getEmployeeData(id: string) {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-    const res = await fetch(`${apiUrl}/employees/${id}`, {
-      next: { revalidate: 60 }
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`Gagal mengambil data untuk karyawan ID ${id}`);
-    return res.json();
-  } catch (error) {
-    console.error("Error di getEmployeeData:", error);
-    return null;
-  }
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const res = await fetch(`${apiUrl}/employees/${id}`, {
+      next: { revalidate: 60 }
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Gagal mengambil data untuk karyawan ID ${id}`);
+    return res.json();
+  } catch (error) {
+    console.error("Error di getEmployeeData:", error);
+    return null;
+  }
 }
 
 // -----------------------------------------------------------------------------
 // FUNGSI 3: Membuat judul halaman dinamis untuk SEO
 // -----------------------------------------------------------------------------
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const employee = await getEmployeeData(params.id);
-  if (!employee) {
-    return { title: 'Karyawan Tidak Ditemukan' };
-  }
-  return {
-    title: `Edit Karyawan: ${employee.first_name} ${employee.last_name}`,
-  };
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const employee = await getEmployeeData(id);
+
+  if (!employee) {
+    return { title: 'Karyawan Tidak Ditemukan' };
+  }
+
+  return {
+    title: `Edit Karyawan: ${employee.first_name} ${employee.last_name}`,
+  };
 }
 
 // =============================================================================
-// INI BAGIAN YANG DIPERBAIKI
+// HALAMAN UTAMA (SERVER COMPONENT)
 // =============================================================================
+export default async function EditEmployeePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const employeeData = await getEmployeeData(id);
 
-// Definisikan tipe yang lebih lengkap untuk props halaman
-interface PageProps {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
+  if (!employeeData) {
+    notFound();
+  }
 
-// KOMPONEN UTAMA (SERVER COMPONENT)
-export default async function EditEmployeePage({ params }: PageProps) {
-  const employeeData = await getEmployeeData(params.id);
-
-  if (!employeeData) {
-    notFound();
-  }
-
-  return <EditForm initialData={employeeData} />;
+  return <EditForm initialData={employeeData} />;
 }
