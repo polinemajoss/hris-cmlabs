@@ -1,4 +1,4 @@
-name: Build and Deploy Frontend to Azure VM
+name: Deploy to Server
 
 on:
   push:
@@ -6,35 +6,32 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      # Langkah 1: Mengunduh semua kode dari repositori
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      # Langkah 2: Setup Node.js untuk melakukan proses build
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '18' # Gunakan versi Node.js yang sesuai dengan proyek Anda
+          node-version: 18
 
-      # Langkah 3: Melakukan proses build (mengubah resep menjadi kue jadi)
-      - name: Build Frontend Project
-        run: |
-          cd frontend
-          npm install
-          npm run build
+      - name: Install Dependencies
+        run: npm install
 
-      # Langkah 4: Menyalin HANYA HASIL BUILD ke server VM
-      - name: Copy build output to VM
+      - name: Build Project
+        run: npm run build && npm run export # Hanya jika pakai next export
+
+      - name: Check Files
+        run: ls -la out/ # Ganti sesuai output build kamu
+
+      - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.AZURE_SSH_HOST }}
-          username: ${{ secrets.AZURE_SSH_USER }}
-          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
-          port: 22
-          # PENTING: Sumbernya sekarang adalah folder 'out' hasil build
-          source: "frontend/out/"
-          target: "/var/www/hris-frontend"
-          strip_components: 1
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "out/**"
+          target: "/var/www/html/myapp"
