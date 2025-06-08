@@ -3,7 +3,7 @@
 import axios from "axios";
 import axiosInstance from "../../../lib/axios";
 import { useRouter } from "next/navigation";
-import AddEmployeeForm from "../../../components/ui/EmployeeForm";
+import AddEmployeeForm from "../../../components/employee/EmployeeForm";
 
 // Definisikan interface yang sesuai dengan backend Laravel
 interface EmployeePayload {

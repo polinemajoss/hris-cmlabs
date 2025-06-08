@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../lib/axios";
 import { useParams, useRouter } from "next/navigation";
-import EmployeeForm, { EmployeeFormData } from "../../../../components/ui/EmployeeForm";
+import EmployeeForm, { EmployeeFormData } from "../../../../components/employee/EmployeeForm";
 // Definisikan interface yang sesuai dengan backend Laravel
 interface EmployeeData {
   id: string;
@@ -73,31 +73,30 @@ export default function EditEmployeePage() {
 
   // Fungsi untuk menangani pengiriman formulir
   const handleUpdate = async (formData: EmployeeFormData) => {
-    if (!id || !employeeData) { // Tambahkan pengecekan employeeData di sini juga
-        alert("ID karyawan atau data karyawan tidak tersedia.");
-        return;
+    if (!id || !employeeData) {
+      // Tambahkan pengecekan employeeData di sini juga
+      alert("ID karyawan atau data karyawan tidak tersedia.");
+      return;
     }
 
     let formattedBirthDate = null;
     if (formData.birth_date) {
-        const date = new Date(formData.birth_date);
-        if (!isNaN(date.getTime())) {
-        formattedBirthDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        } else {
+      const date = new Date(formData.birth_date);
+      if (!isNaN(date.getTime())) {
+        formattedBirthDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+      } else {
         console.warn("Tanggal lahir tidak valid saat update, akan dikirim sebagai null/undefined.");
-        }
+      }
     }
 
     // Gabungkan id dari URL dengan data form untuk payload backend
     const payload: Partial<EmployeeData> = {
       ...formData,
-      user_id: employeeData.user_id, 
+      user_id: employeeData.user_id,
       gender: formData.gender === "" ? undefined : formData.gender,
       birth_date: formattedBirthDate || undefined,
-      contract_type:
-        formData.contract_type === "" ? undefined : formData.contract_type,
-      status:
-        formData.status === "" ? undefined : formData.status,
+      contract_type: formData.contract_type === "" ? undefined : formData.contract_type,
+      status: formData.status === "" ? undefined : formData.status,
     };
 
     try {
@@ -112,9 +111,7 @@ export default function EditEmployeePage() {
 
       if (err.response?.status === 422 && err.response?.data?.errors) {
         const validationErrors = Object.entries(err.response.data.errors)
-          .map(([field, messages]) =>
-            Array.isArray(messages) ? `${field}: ${messages.join(", ")}` : `${field}: ${messages}`
-          )
+          .map(([field, messages]) => (Array.isArray(messages) ? `${field}: ${messages.join(", ")}` : `${field}: ${messages}`))
           .join("\n");
 
         // Tampilkan error dalam format yang lebih mudah dibaca jika memungkinkan
@@ -122,20 +119,15 @@ export default function EditEmployeePage() {
         // Anda bisa format ulang string errornya.
         let errorString = "Validasi gagal:\n";
         if (err.response.data.errors.user_id) {
-            errorString += `- user_id: ${err.response.data.errors.user_id.join(', ')}\n`;
+          errorString += `- user_id: ${err.response.data.errors.user_id.join(", ")}\n`;
         }
         if (err.response.data.errors.nik) {
-            errorString += `- nik: ${err.response.data.errors.nik.join(', ')}\n`;
+          errorString += `- nik: ${err.response.data.errors.nik.join(", ")}\n`;
         }
         // ... tambahkan field lain jika perlu
         alert(errorString.trim());
-
-        } else {
-        alert(
-            `Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${
-            err.response?.data?.message || err.message
-            }`
-        );
+      } else {
+        alert(`Gagal memperbarui data karyawan. Silakan coba lagi.\nDetail: ${err.response?.data?.message || err.message}`);
       }
     }
   };
