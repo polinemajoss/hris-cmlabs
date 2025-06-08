@@ -7,9 +7,10 @@ use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\CheckClockController;
-use App\Http\Controllers\AvatarUploadController;
-use App\Http\Controllers\api\AttendanceController;
-use App\Http\Controllers\api\CheckClockSettingController;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\CheckClockSettingController;
+use App\Http\Controllers\Api\AvatarUploadController;
+
 
 // Public routes
 Route::post('/sign-up', [AuthController::class, 'signUp']);
@@ -42,9 +43,13 @@ Route::middleware(['web'])->group(function () {
 // Anda sudah mengomentari baris ini, yang artinya 'employees' sekarang public.
 // Route::middleware('auth:sanctum')->group(function () {
 Route::apiResource('employees', EmployeeController::class);
+Route::post('/upload-avatar', [AvatarUploadController::class, 'store']);
+
 // });
 
 Route::apiResource('attendances', AttendanceController::class);
+Route::post('/attendances/{attendance}/approve', [AttendanceController::class, 'approve']);
+
 Route::apiResource('check-clock-settings', CheckClockSettingController::class);
 
 

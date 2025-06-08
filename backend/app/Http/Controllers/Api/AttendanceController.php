@@ -40,12 +40,13 @@ class AttendanceController extends Controller
         // Validasi berdasarkan field di wireframe "Add Checkclock" 
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|string|exists:employees,id',
-            'type' => 'required|string|in:Masuk,Pulang', // Disederhanakan untuk awal
+            'type' => 'required|string|in:clockin,clockout, absent, annual, sick', // Disederhanakan untuk awal
             'attendance_time' => 'required|date_format:Y-m-d H:i:s', // Contoh format: 2025-06-08 08:00:00
             'photo_proof' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
             'address_detail' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+            'location_name' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
@@ -59,7 +60,7 @@ class AttendanceController extends Controller
             // --- Logika Penentuan Status (sesuai kriteria evaluasi ) ---
             // CATATAN: Ini adalah logika sederhana. Nantinya akan dihubungkan dengan
             // modul "Check-Clock Settings" yang Anda buat.
-            if ($data['type'] === 'Masuk') {
+            if ($data['type'] === 'checkin') {
                 $clockInTime = Carbon::parse($data['attendance_time']);
                 // Asumsi jam masuk standar adalah 08:30
                 $standardInTime = $clockInTime->copy()->setTime(8, 30, 0);
@@ -107,5 +108,20 @@ class AttendanceController extends Controller
         }
     }
 
-    // CATATAN: Fungsi update (untuk approval) dan destroy bisa ditambahkan di sini nanti.
+    public function approve(Attendance $attendance)
+    {
+        try {
+            $attendance->approval_status = 'Approved';
+            $attendance->save();
+
+            return response()->json([
+                'message' => 'Absensi berhasil di-approve!',
+                'data' => $attendance
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error approving attendance: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal melakukan approval.'], 500);
+        }
+    }
 }

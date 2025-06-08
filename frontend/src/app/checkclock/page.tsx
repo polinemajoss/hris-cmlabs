@@ -1,16 +1,43 @@
-'use client';
+"use client";
 
-import { SidebarProvider } from '../../components/ui/sidebar';
-import { AppSidebar } from '../../components/ui/app-sidebar';
-import { SiteHeader } from '../../components/ui/site-header';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
-import AddCheckclockSheet from '../../components/ui/AddCheckclockSheet';
-import AttendanceDetailsSheet from '../../components/ui/AttendanceDetailsSheet';
+import { SidebarProvider } from "../../components/ui/sidebar";
+import { AppSidebar } from "../../components/ui/app-sidebar";
+import { SiteHeader } from "../../components/ui/site-header";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table";
+import AddCheckclockSheet from "../../components/checkclock/CheckclockSheet";
+import AttendanceDetailsSheet from "../../components/ui/AttendanceDetailsSheet";
 
 const formatDate = (date: Date) => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options); // Format: "1 March 2025"
+  const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+  return date.toLocaleDateString("en-US", options); // Format: "1 March 2025"
 };
+
+interface Employee {
+  id: string;
+  first_name: string;
+  last_name: string;
+  position: string;
+}
+
+interface Attendance {
+  name: any;
+  jabatan: ReactNode;
+  clockIn: ReactNode;
+  clockOut: ReactNode;
+  workHours: ReactNode;
+  approve: any;
+  id: string;
+  employee_id: string;
+  type: string;
+  attendance_time: string;
+  approval_status: "Pending" | "Approved" | "Rejected";
+  status: string | null;
+  employee: Employee;
+  address_detail?: string;
+  latitude?: string;
+  longitude?: string;
+  photo_proof?: string;
+}
 
 type CheckclockData = {
   name: string;
@@ -23,71 +50,121 @@ type CheckclockData = {
   status: string;
 };
 
-const initialCheckclockData = [
-  { name: 'Juanita', jabatan: 'CEO', date: formatDate(new Date()), clockIn: '08.00', clockOut: '16.30', workHours: '10h 5m', approve: false, status: 'Waiting Approval' },
-  { name: 'Shane', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.00', clockOut: '17.15', workHours: '9h 50m', approve: true, status: 'On Time' },
-  { name: 'Miles', jabatan: 'Head of HR', date: formatDate(new Date()), clockIn: '09.00', clockOut: '16.45', workHours: '10h 30m', approve: true, status: 'On Time' },
-  { name: 'Flores', jabatan: 'Manager', date: formatDate(new Date()), clockIn: '09.15', clockOut: '15.30', workHours: '6h 15m', approve: true, status: 'Late' },
-  { name: 'Henry', jabatan: 'CPO', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Annual Leave' },
-  { name: 'Marvin', jabatan: 'OB', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: true, status: 'Absent' },
-  { name: 'Black', jabatan: 'HRD', date: formatDate(new Date()), clockIn: '08.15', clockOut: '17.00', workHours: '9h 45m', approve: true, status: 'On Time' },
-  { name: 'Jacob Jones', jabatan: 'Supervisor', date: formatDate(new Date()), clockIn: '0', clockOut: '0', workHours: '0', approve: false, status: 'Sick Leave' },
-  { name: 'Ronalds Ricards', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.00', clockOut: '16.00', workHours: '10h', approve: true, status: 'Late' },
-  { name: 'Leslie Alexander', jabatan: 'OB', date: formatDate(new Date()), clockIn: '08.30', clockOut: '16.00', workHours: '8h 30m', approve: false, status: 'Waiting Approval' },
-];
+type AttendanceDetailsData = {
+  name: string;
+  jabatan: string;
+  date: string;
+  clockIn: string;
+  clockOut: string;
+  workHours: string;
+  approve: boolean;
+  status: string;
+  location: string;
+  address: string;
+  lat: string;
+  long: string;
+  proof: string;
+};
 
-import React, { useState } from 'react';
+import React, { ReactNode, useEffect, useState } from "react";
+import { toast } from "sonner";
+import axiosInstance from "@/lib/axios";
 
 export default function CheckclockPage() {
-  // Ambil data buat checkclock
-  // Misalnya data ini diambil dari API atau state global
-  const [checkclockData, setCheckclockData] = useState([...initialCheckclockData]); // datanya ya qos -awa
-  const [approveIdx, setApproveIdx] = useState<number | null>(null);
   type AttendanceDetailsData = CheckclockData & {
+    id: string;
     location: string;
     address: string;
     lat: string;
     long: string;
     proof: string;
   };
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // State untuk UI tidak berubah
   const [selectedDetail, setSelectedDetail] = useState<AttendanceDetailsData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  //Ini buat logika approve yaa sayang
-  // Handler untuk approve attendance
-  const handleApprove = () => {
-    if (selectedDetail) {
-    setCheckclockData(prev =>
-      prev.map(row =>
-        row.name === selectedDetail.name
-          ? { ...row, approve: true, status: 'On Time' }
-          : row
-      )
-    );
-    setSelectedDetail({ ...selectedDetail, approve: true });
-  }
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  const fetchAttendances = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axiosInstance.get("/attendances");
+      setAttendances(response.data.data || []);
+    } catch (err) {
+      setError("Gagal memuat data absensi.");
+      toast.error("Gagal memuat data absensi.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Handler untuk membuka detail attendance
-  const handleViewDetails = (row: CheckclockData) => {
-    setSelectedDetail({
-      ...row,
-      location: '',
-      address: '',
-      lat: '',
-      long: '',
-      proof: '',
-    });
+  useEffect(() => {
+    fetchAttendances();
+  }, []);
+
+  const handleAddAttendance = async (formData: FormData) => {
+    try {
+      await axiosInstance.post("/attendances", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Absensi berhasil ditambahkan!");
+      fetchAttendances(); // Muat ulang data tabel setelah berhasil
+      return true; // Beri sinyal sukses agar sheet bisa ditutup
+    } catch (error: any) {
+      toast.error("Gagal menambah absensi", {
+        description: error.response?.data?.message || "Silakan cek kembali data Anda.",
+      });
+      return false; // Beri sinyal gagal
+    }
+  };
+
+  const handleViewDetails = (row: Attendance) => {
+    const detail: AttendanceDetailsData = {
+      id: row.id,
+      name: `${row.employee.first_name} ${row.employee.last_name}`,
+      jabatan: row.employee.position,
+      date: new Date(row.attendance_time).toLocaleDateString("id-ID"),
+      clockIn: new Date(row.attendance_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+      clockOut: "-", // Data ini perlu dihitung atau diambil dari record lain
+      workHours: "-", // Data ini perlu dihitung
+      approve: row.approval_status === "Approved",
+      status: row.status || "N/A",
+      location: "Kantor Pusat", // Ganti dengan data lokasi jika ada
+      address: row.address_detail || "Tidak ada data",
+      lat: row.latitude || "Tidak ada data",
+      long: row.longitude || "Tidak ada data",
+      proof: row.photo_proof || "",
+    };
+    setSelectedDetail(detail);
     setIsDetailOpen(true);
   };
 
-  const filteredData = checkclockData.filter(row => {
-    const matchesSearch = row.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          row.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredData = attendances.filter((row) => {
+    const fullName = `${row.employee.first_name} ${row.employee.last_name}`;
+    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) || row.employee.position.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus ? row.status === filterStatus : true;
     return matchesSearch && matchesStatus;
   });
+
+  const handleApprove = async () => {
+    if (!selectedDetail) return;
+    try {
+      // Endpoint ini akan kita buat di backend pada Langkah 3
+      await axiosInstance.post(`/api/attendances/${selectedDetail.id}/approve`);
+      toast.success("Absensi berhasil di-approve!");
+      fetchAttendances(); // Muat ulang data
+      setIsDetailOpen(false); // Tutup sheet detail
+    } catch (error: any) {
+      toast.error("Gagal melakukan approval.");
+      console.error(error);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -97,26 +174,14 @@ export default function CheckclockPage() {
           <div className="w-full">
             <SiteHeader />
           </div>
-          <main className="p-8">
+          <main className="p-4">
             <section className="flex flex-col gap-4 py-4 md:gap-6 md:py-0">
-              <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-6 w-full">
+              <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-2 w-full">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <h2 className="font-semibold text-lg whitespace-nowrap">Checkclock Overview</h2>
                   <div className="flex gap-3 flex-1">
-                    <input
-                      type="text"
-                      placeholder="Search Employee"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
-                      style={{ minHeight: "2rem" }}
-                    />
-                    <select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F]"
-                      style={{ minHeight: "2rem" }}
-                    >
+                    <input type="text" placeholder="Search Employee" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0" style={{ minHeight: "2rem" }} />
+                    <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F]" style={{ minHeight: "2rem" }}>
                       <option value="">All Status</option>
                       <option value="Waiting Approval">Waiting Approval</option>
                       <option value="On Time">On Time</option>
@@ -125,112 +190,104 @@ export default function CheckclockPage() {
                       <option value="Annual Leave">Annual Leave</option>
                       <option value="Sick Leave">Sick Leave</option>
                     </select>
-                    <AddCheckclockSheet />
+                    <AddCheckclockSheet onAddAttendance={handleAddAttendance} />
                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                  {/* ...table... */}
-                  <Table className="w-full table-fixed">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-48">Employee Name</TableHead>
-                      <TableHead className="w-32">Jabatan</TableHead>
-                      <TableHead className="w-25">Clock In</TableHead>
-                      <TableHead className="w-25">Clock Out</TableHead>
-                      <TableHead className="w-28">Work Hours</TableHead>
-                      <TableHead className="w-25 text-center">Approve</TableHead>
-                      <TableHead className="w-36 text-center">Status</TableHead>
-                      <TableHead className="w-25">Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredData.map((row, idx) => (
-                      <TableRow key={idx}>
-                        {/* Employee name */}
-                        <TableCell className="w-48">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-base font-normal text-gray-600 uppercase">
-                              {row.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                                .slice(0, 2)
-                              }
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900">{row.name}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="w-32">{row.jabatan}</TableCell>
-                        <TableCell className="w-25">{row.clockIn}</TableCell>
-                        <TableCell className="w-25">{row.clockOut}</TableCell>
-                        <TableCell className="w-28">{row.workHours}</TableCell>
-                        {/* Approve checkbox */}
-                        <TableCell className="w-25 text-center align-middle">
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              row.approve
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            {row.approve ? <span>&#10003;</span> : <span>&#10007;</span>}
-                          </span>
-                        </TableCell>
-                        <TableCell className="w-30 text-center">
-                          <span
-                            className={`px-2 py-1 rounded bg-white-100 border text-xs ${
-                              row.status === 'Late'
-                                ? 'border-yellow-400 text-yellow-700'
-                                : row.status === 'On Time'
-                                ? 'border-green-400 text-green-700'
-                                : row.status === 'Waiting Approval'
-                                ? 'border-gray-400 text-gray-700'
-                                : 'border-red-400 text-red-700'
-                            }`}
-                          >
-                            {row.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <button 
-                            className="border px-3 py-1 rounded  hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F]"
-                            onClick={() => handleViewDetails(row)}
-                            >View
-                          </button>
-                        </TableCell>
+
+                <div className="overflow-x-auto mt-4">
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employee Name</TableHead>
+                        <TableHead>Jabatan</TableHead>
+                        <TableHead>Attendance Time</TableHead>
+                        <TableHead>Tipe</TableHead>
+                        <TableHead>Approval</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Details</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        Array.from({ length: 10 }).map((_, index) => (
+                          <TableRow key={`skeleton-${index}`}>
+                            <TableCell colSpan={7}>
+                              <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : error ? (
+                        <TableRow>
+                            <TableCell colSpan={7} className="text-center text-red-500">{error}</TableCell>
+                        </TableRow>
+                      ) : filteredData.length > 0 ? (
+                        filteredData.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>{`${row.employee.first_name} ${row.employee.last_name}`}</TableCell>
+                          <TableCell>{row.employee.position}</TableCell>
+                          <TableCell>{new Date(row.attendance_time).toLocaleString("id-ID")}</TableCell>
+                          <TableCell>{row.type}</TableCell>
+                          <TableCell>
+                            <span className={row.approval_status === "Approved" ? "text-green-600" : "text-gray-500"}>{row.approval_status}</span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="px-2 py-1 rounded text-xs border">{row.status || "N/A"}</span>
+                          </TableCell>
+                          <TableCell>
+                            <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
+                          </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center">Tidak ada data absensi ditemukan.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
 
                 {/* Attendance Details Sheet */}
                 <AttendanceDetailsSheet
-                  data={selectedDetail}
+                  data={
+                    selectedDetail
+                      ? {
+                          name: selectedDetail.name,
+                          jabatan: selectedDetail.jabatan,
+                          date: selectedDetail.date,
+                          clockIn: selectedDetail.clockIn,
+                          clockOut: selectedDetail.clockOut,
+                          workHours: selectedDetail.workHours,
+                          approve: selectedDetail.approve,
+                          status: selectedDetail.status || "N/A",
+                          location: selectedDetail.location || "N/A",
+                          address: selectedDetail.address || "N/A",
+                          lat: selectedDetail.lat || "N/A",
+                          long: selectedDetail.long || "N/A",
+                          proof: selectedDetail.proof || "",
+                        }
+                      : null
+                  }
                   isOpen={isDetailOpen}
                   onClose={() => setIsDetailOpen(false)}
                   onApprove={handleApprove}
                 />
                 {/* Pagination, dst */}
                 <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
-                <select className="border rounded px-2 py-1">
-                  <option>10</option>
-                  <option>25</option>
-                  <option>50</option>
-                </select>
-                <div>
-                  Showing 1 to 10 out of {checkclockData.length} records
+                  <select className="border rounded px-2 py-1">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                  </select>
+                  <div>Showing 1 to 10 out of {filteredData.length} records</div>
+                  <div className="flex space-x-1">
+                    <button className="px-2 py-1 border rounded hover:bg-gray-100">&lt;</button>
+                    <button className="px-2 py-1 border rounded bg-gray-200">1</button>
+                    <button className="px-2 py-1 border rounded hover:bg-gray-100">2</button>
+                    <button className="px-2 py-1 border rounded hover:bg-gray-100">3</button>
+                    <button className="px-2 py-1 border rounded hover:bg-gray-100">&gt;</button>
+                  </div>
                 </div>
-                <div className="flex space-x-1">
-                  <button className="px-2 py-1 border rounded hover:bg-gray-100">&lt;</button>
-                  <button className="px-2 py-1 border rounded bg-gray-200">1</button>
-                  <button className="px-2 py-1 border rounded hover:bg-gray-100">2</button>
-                  <button className="px-2 py-1 border rounded hover:bg-gray-100">3</button>
-                  <button className="px-2 py-1 border rounded hover:bg-gray-100">&gt;</button>
-                </div>
-              </div>
               </div>
             </section>
           </main>
