@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Build and Deploy
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
       - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
 
-      - name: Check Files
-        run: ls -la 
+    steps:
+      - name: List All Files
+        run: ls -la
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -25,13 +25,3 @@ jobs:
 
       - name: Build Project
         run: npm run build
-
-      - name: Deploy via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "out/**"
-          target: "/var/www/html/myapp"
