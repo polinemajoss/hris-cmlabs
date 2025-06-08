@@ -1,19 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-const customMarkerIcon = L.icon({
-    iconUrl: '/marker-icon.svg', // Ganti dengan path ke ikon marker Anda
-    iconRetinaUrl: '/marker-icon.svg', // Ganti dengan path ke ikon marker retina Anda
-    shadowUrl: '/marker-shadow.png', // Ganti dengan path ke ikon bayangan marker Anda
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
 
 // Tipe data untuk props
 interface LocationPickerProps {

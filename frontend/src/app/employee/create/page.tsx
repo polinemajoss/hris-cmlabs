@@ -72,7 +72,7 @@ export default function CreateEmployeePage() {
       const response = await axiosInstance.post("/employees", payload);
       console.log("Karyawan berhasil ditambahkan:", response.data);
       router.push("/employee");
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const validationErrors = error.response.data.errors;
 
@@ -98,7 +98,7 @@ export default function CreateEmployeePage() {
             const label = fieldLabels[field] || field;
 
             if (Array.isArray(messages)) {
-              messages.forEach((msg: any) => {
+              messages.forEach((msg) => {
                 errorMessages.push(`- ${label}: ${msg}`);
               });
             } else {
@@ -110,9 +110,12 @@ export default function CreateEmployeePage() {
         } else {
           alert("Validasi gagal: Format error tidak dikenali.");
         }
-      } else {
+      } else if (error instanceof Error) {
         console.error("Error creating employee:", error.message);
         alert(`Gagal membuat karyawan: ${error.message}`);
+      } else {
+        console.error("Unknown error creating employee:", error);
+        alert("Gagal membuat karyawan: Terjadi kesalahan yang tidak diketahui.");
       }
     }
   };

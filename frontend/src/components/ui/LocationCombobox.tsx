@@ -54,7 +54,7 @@ export function LocationCombobox({
         console.error("API Key BinderByte tidak ditemukan di .env.local");
         // Anda bisa menambahkan notifikasi toast di sini
         if (typeof window !== "undefined" && "toast" in window) {
-          // @ts-ignore
+          // @ts-expect-error
           window.toast.error("API Key BinderByte tidak ditemukan di .env.local");
         }
         return;
@@ -68,7 +68,7 @@ export function LocationCombobox({
         .then(response => {
           // Pastikan struktur respons benar
           if (response.data && Array.isArray(response.data.value)) {
-            setLocations(response.data.value.map((loc: any) => ({
+            setLocations(response.data.value.map((loc: { id: string; name: string }) => ({
               id: loc.id,
               nama: loc.name
             })));

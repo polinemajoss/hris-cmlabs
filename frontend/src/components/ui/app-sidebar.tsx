@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ArrowUpCircleIcon, BarChartIcon, Calendar1Icon, CameraIcon, ClipboardCheckIcon, ClipboardListIcon, ClockIcon, DatabaseIcon, FileCodeIcon, FileIcon, FileTextIcon, FolderIcon, GemIcon, HelpCircleIcon, LayoutDashboardIcon, ListIcon, SearchIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { ClipboardCheckIcon, ClockIcon, GemIcon, HelpCircleIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon } from "lucide-react";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";

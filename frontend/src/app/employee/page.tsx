@@ -13,7 +13,6 @@ import { SectionCardsEmployee } from "../../components/employee/section-card-emp
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../../components/ui/sheet";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import axiosInstance from "../../lib/axios";
 import axios from "axios";
 
@@ -68,6 +67,7 @@ interface Employee {
   sp_type?: string;
   status: "Aktif" | "Tidak Aktif";
   avatar?: string | null;
+  email?: string;
 }
 
 export default function EmployeeDatabase() {
@@ -622,8 +622,11 @@ export default function EmployeeDatabase() {
                       setEditingEmployee(null);
                     }}
                     initialData={{
-                      ...editingEmployee,
-                      email: (editingEmployee as any).email ?? "",
+                      id: editingEmployee.id,
+                      first_name: editingEmployee.first_name,
+                      last_name: editingEmployee.last_name,
+                      gender: editingEmployee.gender,
+                      email: editingEmployee.email ?? "",
                       mobile_number: editingEmployee.mobile_number ?? "",
                       nik: editingEmployee.nik ?? "",
                       birth_place: editingEmployee.birth_place ?? "",

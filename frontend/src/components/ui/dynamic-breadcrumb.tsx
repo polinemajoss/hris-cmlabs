@@ -72,9 +72,6 @@ export function DynamicBreadcrumb() {
     );
   });
 
-  // Tambahkan item "Home" jika belum ada dan ada segmen
-  const hasHome = segments[0] === "" || segments.length > 0; // Cek jika ada segmen
-
   return (
     <Breadcrumb>
       <BreadcrumbList>

@@ -1,9 +1,7 @@
 // File: components/ui/EmployeeForm.tsx
 "use client";
 
-import imageCompression from "browser-image-compression";
-import React, { useEffect, useState, useRef } from "react";
-import { ChevronDownIcon, ImageIcon, Loader2 } from "lucide-react";
+import React, { useState, useRef } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -11,12 +9,6 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from ".
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { AvatarUploader } from '../ui/AvatarUploader';
 import { DatePicker } from "../ui/date-picker";
 
@@ -74,14 +66,6 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
     { value: "Lepas", label: "Lepas" },
   ];
 
-  const gradeOptions = [
-    { value: "Management", label: "Management" },
-    { value: "Executive", label: "Executive" },
-    { value: "Professional", label: "Professional" },
-    { value: "Support", label: "Support" },
-    { value: "Operational", label: "Operational" },
-  ];
-
   const bankOptions = [
     { value: "BCA", label: "BCA" },
     { value: "BNI", label: "BNI" },
@@ -131,20 +115,15 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
         }
   );
 
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref untuk input file
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: keyof EmployeeFormData, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value as any })); // Type assertion if value type is constrained
+    setForm((prev) => ({ ...prev, [name]: value as EmployeeFormData[typeof name] }));
   };
 
-  const handleDateChange = (dateString: string) => {
-    setForm((prev) => ({ ...prev, birth_date: dateString }));
-  };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +131,6 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
   };
 
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleAvatarUpload = async (file: File | null) => {
     if (!file) {
@@ -171,24 +149,19 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
       // Simpan URL yang dikembalikan oleh server ke dalam state form
       setForm(prev => ({ ...prev, avatar: response.data.url }));
       toast.success('Avatar berhasil diupload!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Tampilkan pesan error yang lebih spesifik dari backend jika ada
-      const errorMsg = err.response?.data?.errors?.avatar?.[0] || 'Gagal mengupload avatar.';
+      let errorMsg = 'Gagal mengupload avatar.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorObj = err as { response?: { data?: { errors?: { avatar?: string[] } } } };
+        errorMsg = errorObj.response?.data?.errors?.avatar?.[0] || errorMsg;
+      }
       toast.error('Upload Gagal', { description: errorMsg });
       console.error(err);
     } finally {
       setIsUploading(false);
     }
 };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleAvatarUpload(e.target.files[0]);
-    }
-  };
-
-  const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(undefined)
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
 

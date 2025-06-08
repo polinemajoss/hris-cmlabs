@@ -63,7 +63,12 @@ export default function EditEmployeePage() {
         } else {
           console.error("Gagal mengambil data karyawan:", err);
         }
-        if (typeof err === "object" && err !== null && "response" in err && (err as any).response?.status === 404) {
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err &&
+          (err as { response?: { status?: number } }).response?.status === 404
+        ) {
           setError("Karyawan tidak ditemukan.");
         } else {
           setError(`Gagal memuat data karyawan: ${(err as Error).message}`);

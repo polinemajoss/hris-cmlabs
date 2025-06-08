@@ -1,23 +1,17 @@
 "use client"
 
 import {
-  BellIcon,
-  CreditCardIcon,
-  LogOutIcon,
   MoreVerticalIcon,
-  UserCircleIcon,
 } from "lucide-react"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../../components/ui/avatar"
+} from "./avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -31,7 +25,6 @@ import {
 
 import { useAuth } from "../../lib/authContext" // Import context auth
 import { useRouter } from "next/navigation" // Import router untuk redirect
-import { useEffect } from "react" // Import useEffect untuk side effect
 
 export function NavUser({
   user,

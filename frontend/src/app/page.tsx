@@ -263,7 +263,7 @@ export default function DashboardPage() {
       try {
         await new Promise(resolve => setTimeout(resolve, 1500));
         console.log("Dashboard mock data loaded.");
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error loading dashboard mock data:", err);
         setDashboardError("Gagal memuat data dashboard mock.");
       } finally {
