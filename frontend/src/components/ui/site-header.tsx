@@ -42,17 +42,7 @@ const mockUser: MockUser = {
   role: "Admin",
 };
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/employee": "Employee",
-  "/checkclock": "Check Clock",
-  "/calendar": "Calendar",
-  "/document": "Document",
-  // tambahkan rute lain bila diperlukan
-};
-
 export function SiteHeader() {
-  const pathname = usePathname();
   const router = useRouter();
   const [search, setSearch] = useState("");
   // const { user, signOut } = useAuth(); // Hapus penggunaan useAuth

@@ -38,11 +38,6 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const { signOut } = useAuth() // Panggil logout dari context
   const router = useRouter()   // Inisialisasi router
-
-  const handleSignOut = async () => {
-    await signOut();              // Panggil fungsi logout dari authContext
-    router.push("/sign-in");     // Redirect ke halaman sign-in
-  };
   
   return (
     <SidebarMenu>
