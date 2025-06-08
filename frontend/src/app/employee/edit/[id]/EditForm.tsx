@@ -35,45 +35,19 @@ interface EmployeeData {
   user?: Record<string, unknown>;
 }
 
-export default function EditForm() { // Pastikan nama fungsinya EditForm
+export default function EditForm({ initialData }: { initialData: EmployeeData }) { // Pastikan nama fungsinya EditForm
   const router = useRouter();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) {
-        setError("ID karyawan tidak ditemukan.");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const response = await axiosInstance.get(`/employees/${id}`);
-        if (response.status === 200 && response.data) {
-          setEmployeeData(response.data);
-        } else {
-          setError("Data karyawan tidak ditemukan.");
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-          setError("Karyawan tidak ditemukan (404).");
-        } else {
-          setError("Gagal memuat data karyawan.");
-        }
-        console.error("Gagal mengambil data karyawan:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
   const handleUpdate = async (formData: EmployeeFormData) => {
+    if (!initialData.id) {
+      alert("ID karyawan tidak tersedia.");
+      return;
+    }
+
     if (!id || !employeeData) {
       alert("ID karyawan atau data karyawan tidak tersedia.");
       return;
@@ -91,6 +65,8 @@ export default function EditForm() { // Pastikan nama fungsinya EditForm
         ...formData,
         birth_date: formattedBirthDate,
     };
+
+    const response = await axiosInstance.put(`/employees/${initialData.id}`, payload);
 
     try {
       const response = await axiosInstance.put(`/employees/${id}`, payload);
@@ -115,26 +91,30 @@ export default function EditForm() { // Pastikan nama fungsinya EditForm
     <div className="p-4 max-w-3xl mx-auto">
       <EmployeeForm
         initialData={{
-          ...employeeData,
-          mobile_number: employeeData.mobile_number ?? "",
-          nik: employeeData.nik ?? "",
-          birth_place: employeeData.birth_place ?? "",
-          birth_date: employeeData.birth_date ?? "",
-          education: employeeData.education ?? "",
-          position: employeeData.position ?? "",
-          grade: employeeData.grade ?? "",
-          branch: employeeData.branch ?? "",
-          contract_type: employeeData.contract_type ?? "Tetap",
-          bank: employeeData.bank ?? "",
-          bank_account_number: employeeData.bank_account_number ?? "",
-          bank_account_name: employeeData.bank_account_name ?? "",
-          sp_type: employeeData.sp_type ?? "",
-          status: employeeData.status ?? "Aktif",
-          avatar: employeeData.avatar ?? "",
+          ...initialData,
+          // Tambahkan email jika ada di initialData.user
           email:
-            (employeeData.user && typeof employeeData.user === "object" && "email" in employeeData.user
-              ? (employeeData.user as { email?: string }).email ?? ""
-              : ""),
+            typeof initialData.user === "object" &&
+            initialData.user !== null &&
+            "email" in initialData.user &&
+            typeof initialData.user.email === "string"
+              ? initialData.user.email
+              : "",
+          mobile_number: initialData.mobile_number ?? "",
+          nik: initialData.nik ?? "",
+          birth_place: initialData.birth_place ?? "",
+          birth_date: initialData.birth_date ?? "",
+          education: initialData.education ?? "",
+          position: initialData.position ?? "",
+          grade: initialData.grade ?? "",
+          branch: initialData.branch ?? "",
+          contract_type: initialData.contract_type ?? "",
+          bank: initialData.bank ?? "",
+          bank_account_number: initialData.bank_account_number ?? "",
+          bank_account_name: initialData.bank_account_name ?? "",
+          sp_type: initialData.sp_type ?? "",
+          status: initialData.status ?? "",
+          avatar: initialData.avatar ?? "",
         }}
         onSubmit={handleUpdate}
         onCancel={() => router.push("/employee")}
