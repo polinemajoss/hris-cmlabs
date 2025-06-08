@@ -12,6 +12,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Check Files
+        run: ls -la 
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -21,10 +24,7 @@ jobs:
         run: npm install
 
       - name: Build Project
-        run: npm run build && npm run export # Hanya jika pakai next export
-
-      - name: Check Files
-        run: ls -la out/ # Ganti sesuai output build kamu
+        run: npm run build
 
       - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
