@@ -13,6 +13,7 @@ import { SectionCardsEmployee } from "../../components/employee/section-card-emp
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../../components/ui/sheet";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import axiosInstance from "../../lib/axios";
 import axios from "axios";
 
@@ -451,20 +452,22 @@ export default function EmployeeDatabase() {
                   currentEmployees.map((emp, i) => (
                     <TableRow key={emp.id} className="border-b-[6px] border-white">
                       <TableCell style={{ width: 40, minWidth: 40, maxWidth: 40 }} className="text-center whitespace-nowrap">
-                        {indexOfFirstItem + i + 1}
+                        {(indexOfFirstItem + i + 1).toString()}
                       </TableCell>
                       <TableCell className="p-2 align-middle">
                         <div className="flex justify-center items-center">
                             {emp.avatar ? (
-                                // Jika ada URL avatar, tampilkan <img>
-                                <img
-                                    src={emp.avatar} // Langsung gunakan URL dari backend
+                                <Image
+                                    src={emp.avatar}
                                     alt={`Avatar ${emp.first_name}`}
+                                    width={40}
+                                    height={40}
                                     className="h-10 w-10 rounded-full object-cover"
-                                    // Fallback jika URL gambar rusak atau tidak bisa dimuat
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.first_name)}+${encodeURIComponent(emp.last_name)}&background=random&color=fff`;
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.first_name)}+${encodeURIComponent(emp.last_name)}&background=random&color=fff`;
                                     }}
+                                    unoptimized
                                 />
                             ) : (
                                 // Jika tidak ada URL avatar, tampilkan div dengan inisial

@@ -5,32 +5,6 @@ import EditForm from "./EditForm";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
-interface EmployeeData {
-  id: string;
-  user_id?: string;
-  first_name: string;
-  last_name: string;
-  gender: "M" | "F";
-  mobile_number?: string;
-  nik?: string;
-  birth_place?: string;
-  birth_date?: string | null;
-  education?: string;
-  position?: string;
-  grade?: string;
-  branch?: string;
-  contract_type?: "Tetap" | "Kontrak" | "Lepas";
-  bank?: string;
-  bank_account_number?: string;
-  bank_account_name?: string;
-  sp_type?: string;
-  status?: "Aktif" | "Tidak Aktif";
-  avatar?: string;
-  created_at?: string;
-  updated_at?: string;
-  user?: Record<string, unknown>;
-}
-
 // -----------------------------------------------------------------------------
 // HAPUS SELURUH FUNGSI 'generateStaticParams' DARI SINI
 // -----------------------------------------------------------------------------
@@ -38,9 +12,7 @@ interface EmployeeData {
 // FUNGSI UNTUK MENGAMBIL DATA TETAP DIPERLUKAN
 async function getEmployeeData(id: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-    // UBAH: Gunakan 'cache: "no-store"' untuk memastikan data selalu baru
     const res = await fetch(`<span class="math-inline">\{apiUrl\}/employees/</span>{id}`, { cache: 'no-store' });
 
     if (res.status === 404) return null;
