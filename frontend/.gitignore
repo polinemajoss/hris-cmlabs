@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignore Laravel Log Files
+/backend/storage/logs/*.log
+
+# Ignore all log files
+*.log
