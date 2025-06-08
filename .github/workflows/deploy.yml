@@ -1,0 +1,50 @@
+# Nama workflow yang akan muncul di tab Actions GitHub
+name: Deploy Frontend to Azure VM
+
+# Pemicu: Jalankan workflow ini setiap kali ada push ke branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+# Pekerjaan yang akan dilakukan
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Langkah 1: Mengunduh semua kode dari repositori ke dalam runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Langkah 2 (OPSIONAL): Jika frontend Anda perlu di-build (React/Vue/Angular)
+      # Hapus tanda '#' di bawah jika Anda menggunakan framework JS
+      # - name: Build Frontend
+      #   run: |
+      #     cd frontend  # Masuk ke direktori frontend
+      #     npm install  # Install dependencies
+      #     npm run build # Jalankan proses build (biasanya menghasilkan folder 'dist' atau 'build')
+
+      # Langkah 3: Menyalin folder frontend ke server VM
+      - name: Copy frontend files to VM
+        uses: appleboy/scp-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_SSH_HOST }}
+          username: ${{ secrets.AZURE_SSH_USER }}
+          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
+          port: 22
+          # PENTING: Kita hanya menyalin isi dari folder 'frontend'
+          source: "frontend/"
+          # PERHATIKAN: Jika Anda menjalankan langkah build di atas, ganti 'source' menjadi "frontend/dist/" atau "frontend/build/"
+          target: "/var/www/hris-frontend"
+          strip_components: 1 # Ini akan menyalin isi folder, bukan foldernya itu sendiri
+
+      # Langkah 4: Memberi tahu kita bahwa proses selesai
+      - name: Post-deployment confirmation
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_SSH_HOST }}
+          username: ${{ secrets.AZURE_SSH_USER }}
+          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Frontend deployment successful! Website is live."
+            # Anda bisa menambahkan perintah lain di sini jika perlu
