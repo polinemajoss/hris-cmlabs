@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await axiosInstance.get("/user", { withCredentials: true });
       setUser(response.data);
-    } catch (_) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);

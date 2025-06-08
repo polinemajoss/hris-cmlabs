@@ -36,8 +36,6 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const { signOut } = useAuth() // Panggil logout dari context
-  const router = useRouter()   // Inisialisasi router
   
   return (
     <SidebarMenu>
