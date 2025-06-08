@@ -7,6 +7,9 @@ use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\CheckClockController;
+use App\Http\Controllers\AvatarUploadController;
+use App\Http\Controllers\api\AttendanceController;
+use App\Http\Controllers\api\CheckClockSettingController;
 
 // Public routes
 Route::post('/sign-up', [AuthController::class, 'signUp']);
@@ -34,11 +37,16 @@ Route::middleware(['web'])->group(function () {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
+
 // Protected Employee Routes
 // Anda sudah mengomentari baris ini, yang artinya 'employees' sekarang public.
 // Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('employees', EmployeeController::class);
+Route::apiResource('employees', EmployeeController::class);
 // });
+
+Route::apiResource('attendances', AttendanceController::class);
+Route::apiResource('check-clock-settings', CheckClockSettingController::class);
+
 
 // Anda juga bisa mengaktifkan route di bawah ini jika ingin mereka juga bisa diakses tanpa auth.
 // Cukup pindahkan mereka keluar dari group auth:sanctum (jika sebelumnya ada di sana)

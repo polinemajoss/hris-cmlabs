@@ -1,8 +1,9 @@
 // File: components/ui/EmployeeForm.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { ImageIcon } from "lucide-react";
+import imageCompression from 'browser-image-compression';
+import { useEffect, useState, useRef } from "react";
+import { ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Label } from "./label";
@@ -14,10 +15,13 @@ import {
   SelectValue,
 } from "./select";
 import { RadioGroup, RadioGroupItem } from "./radio-group";
+import axiosInstance from "@/lib/axios";
+import { toast } from "sonner";
 
 // Definisikan interface EmployeeFormData (tanpa user_id)
 // Tetap ekspor EmployeeFormData jika dibutuhkan di luar (seperti di EditEmployeePage)
 export interface EmployeeFormData {
+  email: string;
   first_name: string;
   last_name: string;
   mobile_number: string;
@@ -37,23 +41,18 @@ export interface EmployeeFormData {
   status?: "Aktif" | "Tidak Aktif" | "";
   avatar?: string;
 }
-
-// Interface untuk initialData (jika ini digunakan untuk mode edit)
-// Tambahkan 'id' karena initialData bisa jadi data employee lengkap dengan ID
 interface InitialEmployeeData extends EmployeeFormData {
   id: string; // atau tipe ID yang sesuai
 }
 
-// Ganti nama fungsi komponen dari AddEmployeeForm menjadi EmployeeForm
-function EmployeeForm({
-  onSubmit,
-  onCancel,
-  initialData = null,
-}: {
+interface EmployeeFormProps {
   onSubmit: (formData: EmployeeFormData) => void;
   onCancel: () => void;
-  initialData?: InitialEmployeeData | null; // Tipe initialData tetap
-}) {
+  initialData?: InitialEmployeeData | null;
+}
+
+const EmployeeForm = ({
+  onSubmit, onCancel, initialData = null }: EmployeeFormProps) => {
   const genderOptions = [
     { value: "M", label: "Laki-laki" },
     { value: "F", label: "Perempuan" },
@@ -104,26 +103,11 @@ function EmployeeForm({
   const [form, setForm] = useState<EmployeeFormData>(
     initialData
       ? {
-          first_name: initialData.first_name || "",
-          last_name: initialData.last_name || "",
-          mobile_number: initialData.mobile_number || "",
-          nik: initialData.nik || "",
-          gender: initialData.gender || "M",
-          education: initialData.education || "",
-          birth_place: initialData.birth_place || "",
-          birth_date: initialData.birth_date || null,
-          position: initialData.position || "",
-          branch: initialData.branch || "",
-          contract_type: initialData.contract_type || "Kontrak",
-          grade: initialData.grade || "",
-          bank: initialData.bank || "",
-          bank_account_number: initialData.bank_account_number || "",
-          bank_account_name: initialData.bank_account_name || "",
-          sp_type: initialData.sp_type || "",
+          ...initialData,
           status: initialData.status || "Aktif",
-          avatar: initialData.avatar || "",
         }
       : {
+          email: "",
           first_name: "",
           last_name: "",
           mobile_number: "",
@@ -145,6 +129,8 @@ function EmployeeForm({
         }
   );
 
+  const fileInputRef = useRef<HTMLInputElement>(null);    // Ref untuk input file
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -165,47 +151,83 @@ function EmployeeForm({
     onSubmit(form);
   };
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAvatarUpload = async (file: File) => {
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('avatar', file); // Pastikan key "avatar" sesuai dengan Laravel
+
+  try {
+    setIsUploading(true);
+    setError(null);
+
+    const response = await axiosInstance.post(
+      '/upload-avatar', // Pastikan endpoint sesuai route Laravel
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+
+    // Update form.avatar langsung
+    setForm((prev) => ({
+      ...prev,
+      avatar: response.data.url,
+    }));
+
+    toast.success("Gambar berhasil diupload!");
+
+  } catch (err: any) {
+    console.error('Upload Error:', err);
+    setError(
+      err.response?.data?.message || 
+      err.message || 
+      'Terjadi kesalahan saat upload'
+    );
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleAvatarUpload(e.target.files[0]);
+    }
+  };
+  
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4">
+      {/* Bagian Avatar */}
       <div className="flex items-center mb-4 gap-4">
-        <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+        <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative">
           {form.avatar ? (
             <img
               src={form.avatar}
               alt="Avatar Preview"
+              
               className="object-cover w-full h-full"
             />
           ) : (
             <ImageIcon size={48} className="text-gray-400" />
           )}
         </div>
-        <input
-          id="avatar-upload"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                setForm((prev) => ({
-                  ...prev,
-                  avatar: ev.target?.result as string,
-                }));
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-        />
+
+        {/* Tombol Upload */}
         <Button
           variant="outline"
           type="button"
-          onClick={() => document.getElementById("avatar-upload")?.click()}
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
         >
-          Upload Avatar
+          {isUploading ? "Mengupload..." : "Upload Avatar"}
         </Button>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="first_name">First Name</Label>
@@ -219,6 +241,20 @@ function EmployeeForm({
           <Label htmlFor="mobile_number">Mobile Number</Label>
           <Input id="mobile_number" name="mobile_number" placeholder="Enter the Mobile Number" value={form.mobile_number} onChange={handleChange} required />
         </div>
+        {!initialData && (
+          <div>
+            <Label htmlFor="email">Email untuk Akun Baru</Label>
+            <Input
+              id="email"
+              name="email" // <-- Atribut 'name' ini sangat PENTING
+              type="email"
+              placeholder="contoh@perusahaan.com"
+              value={form.email} // Terhubung ke state
+              onChange={handleChange} // Terhubung ke handler
+              required
+            />
+          </div>
+        )}
         <div>
           <Label htmlFor="nik">NIK</Label>
           <Input id="nik" name="nik" placeholder="Enter the NIK" value={form.nik} onChange={handleChange} required />
@@ -373,9 +409,14 @@ function EmployeeForm({
           </Select>
         </div>
       </div>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>Batal</Button>
+        <Button type="submit" disabled={isUploading}>
+          {initialData ? "Simpan Perubahan" : "Tambah Karyawan"}
+        </Button>
+      </div>
     </form>
   );
-}
+};
 
-// Ganti nama export default
 export default EmployeeForm;
