@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "../contexts/AuthContext"; // 1. Impor useAuth
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/ui/app-sidebar";
 // ChartAreaInteractive didefinisikan di dalam file ini, tidak perlu import dari components/ui
@@ -37,6 +38,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "../components/ui/toggle-group";
+import router from "next/router";
 
 // --- START: Definisi ChartAreaInteractive (dipindahkan dari komponen terpisah ke sini jika tidak di-import) ---
 const chartData = [
@@ -255,29 +257,25 @@ export default function DashboardPage() {
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
 
+  const { isAuthenticated, loading } = useAuth(); // 2. Ambil 'loading' dari context
+
   // Simulasi loading data dashboard
   useEffect(() => {
-    const loadDashboardData = async () => {
-      setDashboardLoading(true);
-      setDashboardError(null);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log("Dashboard mock data loaded.");
-      } catch (err: unknown) {
-        console.error("Error loading dashboard mock data:", err);
-        setDashboardError("Gagal memuat data dashboard mock.");
-      } finally {
-        setDashboardLoading(false);
-      }
-    };
+    if (loading) {
+      return;
+    }
 
-    loadDashboardData();
-  }, []);
+    // Hanya jika sudah selesai loading DAN ternyata tidak terautentikasi,
+    // baru kita arahkan ke halaman sign-in.
+    if (!loading && !isAuthenticated) {
+      router.push('/sign-in');
+    }
+  }, [isAuthenticated, loading, router]);
 
-  if (dashboardLoading) {
+  if (loading || !isAuthenticated) {
     return (
       <div className="flex h-screen items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
       </div>
     );
   }
