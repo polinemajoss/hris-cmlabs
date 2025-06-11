@@ -38,7 +38,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "../components/ui/toggle-group";
-import router from "next/router";
+import {useRouter} from "next/navigation";
 
 // --- START: Definisi ChartAreaInteractive (dipindahkan dari komponen terpisah ke sini jika tidak di-import) ---
 const chartData = [
@@ -254,6 +254,7 @@ const mockTableData = [
 
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
 

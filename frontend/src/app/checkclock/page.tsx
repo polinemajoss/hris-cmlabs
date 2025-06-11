@@ -6,6 +6,7 @@ import { SiteHeader } from "../../components/ui/site-header";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table";
 import AddCheckclockSheet from "../../components/checkclock/CheckclockSheet";
 import AttendanceDetailsSheet from "../../components/ui/AttendanceDetailsSheet";
+import { CheckclockTableSkeleton } from "@/components/skeletons/CheckclockTableSkeleton";
 
 interface Employee {
   id: string;
@@ -48,6 +49,7 @@ type CheckclockData = {
 import React, { ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
+import CheckclockSheet from "../../components/checkclock/CheckclockSheet";
 
 export default function CheckclockPage() {
   type AttendanceDetailsData = CheckclockData & {
@@ -87,24 +89,28 @@ export default function CheckclockPage() {
     fetchAttendances();
   }, []);
 
-  const handleAddAttendance = async (formData: FormData) => {
+  const handleAddAttendance = async (formData: FormData): Promise<boolean> => {
     try {
-      await axiosInstance.post("/attendances", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Endpoint '/attendances' ini sudah kita buat di backend sebelumnya
+      await axiosInstance.post('/attendances', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-      toast.success("Absensi berhasil ditambahkan!");
+      toast.success('Absensi berhasil ditambahkan!');
       fetchAttendances(); // Muat ulang data tabel setelah berhasil
-      return true; // Beri sinyal sukses agar sheet bisa ditutup
-    } catch (error: unknown) {
-      let message = "Silakan cek kembali data Anda.";
-      if (error && typeof error === "object" && "response" in error && error.response && typeof error.response === "object" && "data" in error.response && error.response.data && typeof error.response.data === "object" && "message" in error.response.data) {
-        // @ts-expect-error: We checked the structure above
-        message = error.response.data.message || message;
+      return true; // Kembalikan true untuk menandakan sukses
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Terjadi kesalahan.';
+      // Jika ada error validasi, tampilkan detailnya
+      if (error.response?.data?.errors) {
+          const errors = Object.values(error.response.data.errors).flat().join('\n');
+          toast.error(errorMessage, { description: errors });
+      } else {
+          toast.error('Gagal Menambah Absensi', { description: errorMessage });
       }
-      toast.error("Gagal menambah absensi", {
-        description: message,
-      });
-      return false; // Beri sinyal gagal
+      console.error(error);
+      return false; // Kembalikan false untuk menandakan gagal
     }
   };
 
@@ -139,7 +145,6 @@ export default function CheckclockPage() {
   const handleApprove = async () => {
     if (!selectedDetail) return;
     try {
-      // Endpoint ini akan kita buat di backend pada Langkah 3
       await axiosInstance.post(`/api/attendances/${selectedDetail.id}/approve`);
       toast.success("Absensi berhasil di-approve!");
       fetchAttendances(); // Muat ulang data
@@ -179,56 +184,53 @@ export default function CheckclockPage() {
                 </div>
 
                 <div className="overflow-x-auto mt-4">
-                  <Table className="w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Employee Name</TableHead>
-                        <TableHead>Jabatan</TableHead>
-                        <TableHead>Attendance Time</TableHead>
-                        <TableHead>Tipe</TableHead>
-                        <TableHead>Approval</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Details</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        Array.from({ length: 10 }).map((_, index) => (
-                          <TableRow key={`skeleton-${index}`}>
-                            <TableCell colSpan={7}>
-                              <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : error ? (
+                  {loading ? (
+                    // Tampilkan skeleton jika loading
+                    <CheckclockTableSkeleton />
+                  ) : error ? (
+                    // Tampilkan pesan error jika ada masalah
+                    <div className="text-center py-10 text-red-500">{error}</div>
+                  ) : (
+                    // Tampilkan tabel jika data sudah siap
+                    <Table className="w-full">
+                      <TableHeader>
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center text-red-500">{error}</TableCell>
+                          <TableHead>Employee Name</TableHead>
+                          <TableHead>Jabatan</TableHead>
+                          <TableHead>Attendance Time</TableHead>
+                          <TableHead>Tipe</TableHead>
+                          <TableHead>Approval</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Details</TableHead>
                         </TableRow>
-                      ) : filteredData.length > 0 ? (
-                        filteredData.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCell>{`${row.employee.first_name} ${row.employee.last_name}`}</TableCell>
-                          <TableCell>{row.employee.position}</TableCell>
-                          <TableCell>{new Date(row.attendance_time).toLocaleString("id-ID")}</TableCell>
-                          <TableCell>{row.type}</TableCell>
-                          <TableCell>
-                            <span className={row.approval_status === "Approved" ? "text-green-600" : "text-gray-500"}>{row.approval_status}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="px-2 py-1 rounded text-xs border">{row.status || "N/A"}</span>
-                          </TableCell>
-                          <TableCell>
-                            <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
-                          </TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredData.length > 0 ? (
+                          filteredData.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>{`${row.employee.first_name} ${row.employee.last_name}`}</TableCell>
+                              <TableCell>{row.employee.position}</TableCell>
+                              <TableCell>{new Date(row.attendance_time).toLocaleString("id-ID")}</TableCell>
+                              <TableCell>{row.type}</TableCell>
+                              <TableCell>
+                                <span className={row.approval_status === "Approved" ? "text-green-600" : "text-gray-500"}>{row.approval_status}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="px-2 py-1 rounded text-xs border">{row.status || "N/A"}</span>
+                              </TableCell>
+                              <TableCell>
+                                <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center">Tidak ada data absensi ditemukan.</TableCell>
                           </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center">Tidak ada data absensi ditemukan.</TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                        )}
+                      </TableBody>
+                    </Table>
+                  )}
                 </div>
 
                 {/* Attendance Details Sheet */}

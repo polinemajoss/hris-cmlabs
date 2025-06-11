@@ -25,7 +25,7 @@ interface EmployeeOption {
 
 export default function CheckclockSheet({ onAddAttendance }: AddCheckclockSheetProps) {
   const [employeeId, setEmployeeId] = useState("");
-  const [type, setType] = useState<string | null>(null);
+  const [type, setType] = useState<string>("");
   const [photoProof, setPhotoProof] = useState<File | null>(null);
   const [address, setAddress] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -113,16 +113,16 @@ export default function CheckclockSheet({ onAddAttendance }: AddCheckclockSheetP
             </div>
             <div>
               <Label htmlFor="tipe">Tipe Absensi</Label>
-              <Select value="type" onValueChange={(value) =>setType(value)} required>
+              <Select value={type} onValueChange={(value) => setType(value)} required>
                 <SelectTrigger id="tipe" className="w-full mt-1">
-                  <SelectValue placeholder={type ? undefined : 'Pilih Tipe Absensi'} />
+                  <SelectValue placeholder={type ? undefined : "Pilih Tipe Absensi"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="clockin">Clock In</SelectItem>
-                  <SelectItem value="clockout">Clock Out</SelectItem>
-                  <SelectItem value="absent">Absent</SelectItem>
-                  <SelectItem value="annual">Annual Leave</SelectItem>
-                  <SelectItem value="sick">Sick Leave</SelectItem>
+                  <SelectItem value="Masuk">Masuk (Clock In)</SelectItem>
+                  <SelectItem value="Pulang">Pulang (Clock Out)</SelectItem>
+                  <SelectItem value="Sakit">Izin Sakit (Sick Leave)</SelectItem>
+                  <SelectItem value="Cuti Tahunan">Cuti Tahunan (Annual Leave)</SelectItem>
+                  <SelectItem value="Absen">Absen</SelectItem>
                 </SelectContent>
               </Select>
             </div>
