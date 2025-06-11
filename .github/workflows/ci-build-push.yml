@@ -37,16 +37,14 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v4
         with:
-          context: ./backend # Set context ke folder backend
-          # Tidak perlu 'file:' karena Dockerfile ada di root context
+          context: ./backend # Set context ke folder backend. Docker akan otomatis mencari Dockerfile di sini.
           push: true
-          tags: wildaniiazizii/hris-backend:latest # Ganti dengan Docker ID dan nama image Anda
+          tags: wildaniiazizii/hris-backend:latest # Pastikan ini sesuai dengan Docker ID Anda
 
       # Langkah 6: Build dan Push image untuk FRONTEND
       - name: Build and push frontend image
         uses: docker/build-push-action@v4
         with:
-          context: ./frontend # Set context ke folder frontend
-          # Tidak perlu 'file:' karena Dockerfile ada di root context
+          context: ./frontend # Set context ke folder frontend. Docker akan otomatis mencari Dockerfile di sini.
           push: true
-          tags: wildaniiazizii/hris-frontend:latest # Ganti dengan Docker ID dan nama image Anda
+          tags: wildaniiazizii/hris-frontend:latest # Pastikan ini sesuai dengan Docker ID Anda
