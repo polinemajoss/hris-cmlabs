@@ -18,11 +18,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Langkah 2: Menyiapkan QEMU (diperlukan untuk build multi-platform)
+      # Langkah 2: Menyiapkan QEMU
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      # Langkah 3: Menyiapkan Docker Buildx (builder yang lebih canggih)
+      # Langkah 3: Menyiapkan Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -37,16 +37,16 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v4
         with:
-          context: ./backend # Lokasi Dockerfile backend
-          file: ./backend/Dockerfile
-          push: true # 'true' berarti push ke Docker Hub setelah build
+          context: ./backend # Set context ke folder backend
+          # Tidak perlu 'file:' karena Dockerfile ada di root context
+          push: true
           tags: wildaniiazizii/hris-backend:latest # Ganti dengan Docker ID dan nama image Anda
 
       # Langkah 6: Build dan Push image untuk FRONTEND
       - name: Build and push frontend image
         uses: docker/build-push-action@v4
         with:
-          context: ./frontend # Lokasi Dockerfile frontend
-          file: ./frontend/Dockerfile
-          push: true # 'true' berarti push ke Docker Hub setelah build
-          tags: wildaniiazizii/hris-frontend:latest 
+          context: ./frontend # Set context ke folder frontend
+          # Tidak perlu 'file:' karena Dockerfile ada di root context
+          push: true
+          tags: wildaniiazizii/hris-frontend:latest # Ganti dengan Docker ID dan nama image Anda
