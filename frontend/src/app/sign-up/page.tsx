@@ -74,7 +74,7 @@ export default function SignUpPage() {
 
     try {
       // Endpoint API disesuaikan dengan endpoint pendaftaran umum Anda
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/sign-up`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/sign-up`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
