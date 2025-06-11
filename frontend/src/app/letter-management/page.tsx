@@ -176,7 +176,7 @@ export default function LetterManagementPage() {
   const confirmDeleteLetter = (letter: Letter) => {
     setLetterToDelete(letter);
   };
-  
+
   return (
     <SidebarProvider>
       <div className="flex">
@@ -212,6 +212,20 @@ export default function LetterManagementPage() {
                       <Plus size={14} className="mr-1" /> Buat Surat
                     </button>
                   </SheetTrigger>
+                  <SheetContent>
+                    <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
+                      <SheetContent className="p-6 sm:max-w-md">
+                        <SheetHeader>
+                          <SheetTitle>Buat Surat Baru</SheetTitle>
+                        </SheetHeader>
+                        <LetterForm
+                          onSubmit={handleCreateLetter}
+                          onCancel={() => setIsCreateSheetOpen(false)}
+                          initialData={undefined} // Pass null for initialData
+                        />
+                      </SheetContent>
+                    </Sheet>
+                  </SheetContent>
                 </div>
               </div>
 
