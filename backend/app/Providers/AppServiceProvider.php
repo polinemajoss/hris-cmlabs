@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Laravel\Pail\PailServiceProvider; // Tambahkan ini di bagian atas jika belum ada
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,4 +16,10 @@ class AppServiceProvider extends ServiceProvider
     {
         //
     }
+    public function register(): void
+{
+    if ($this->app->isLocal()) {
+        $this->app->register(PailServiceProvider::class);
+    }
+}
 }
