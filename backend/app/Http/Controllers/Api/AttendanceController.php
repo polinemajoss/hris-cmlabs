@@ -40,7 +40,7 @@ class AttendanceController extends Controller
         // Validasi berdasarkan field di wireframe "Add Checkclock" 
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|string|exists:employees,id',
-            'type' => 'required|string|in:clockin,clockout, absent, annual, sick', // Disederhanakan untuk awal
+            'type' => 'required|string|in: Absen, CutiTahunan, Masuk, Pulang, Sakit', // Disederhanakan untuk awal
             'attendance_time' => 'required|date_format:Y-m-d H:i:s', // Contoh format: 2025-06-08 08:00:00
             'photo_proof' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
             'address_detail' => 'nullable|string',

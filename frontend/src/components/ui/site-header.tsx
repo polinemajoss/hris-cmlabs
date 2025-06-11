@@ -81,7 +81,6 @@ export function SiteHeader() {
         />
 
         {/* Judul Halaman */}
-        <DynamicBreadcrumb />
         <div className="relative flex-grow max-w-full hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input

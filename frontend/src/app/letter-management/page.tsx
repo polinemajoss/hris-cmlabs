@@ -1,101 +1,174 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SidebarProvider } from '../../components/ui/sidebar';
 import { AppSidebar } from '../../components/ui/app-sidebar';
 import { SiteHeader } from '../../components/ui/site-header';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table";
+import { Plus, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { toast } from "sonner";
+import axiosInstance from '@/lib/axios';
+import { LetterTableSkeleton } from '@/components/skeletons/LetterTableSkeleton';
+import { Button } from '@/components/ui/button'; // <-- 1. Import Button
 
-type LetterData = {
+// Interface untuk data surat dari API
+interface Letter {
   id: number;
   title: string;
   type: string;
   date: string;
-  status: string;
-};
+  status: 'Approved' | 'Pending' | 'Rejected';
+}
 
-const initialLetterData: LetterData[] = [
-  { id: 1, title: 'Surat Izin', type: 'Izin', date: '2025-06-01', status: 'Approved' },
-  { id: 2, title: 'Surat Cuti', type: 'Cuti', date: '2025-06-02', status: 'Pending' },
-  { id: 3, title: 'Surat Tugas', type: 'Tugas', date: '2025-06-03', status: 'Rejected' },
-];
+// Interface untuk data paginasi dari API (opsional, jika ada)
+interface PaginationMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
 
 export default function LetterManagementPage() {
-  const [letters, setLetters] = useState(initialLetterData);
+  const [letters, setLetters] = useState<Letter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
 
-  const filteredLetters = letters.filter((letter) =>
-    letter.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchLetters = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const types = searchParams.get('type');
+      const search = searchTerm;
+
+      const params = new URLSearchParams();
+      if (types) params.append('type', types);
+      if (search) params.append('search', search);
+
+      const response = await axiosInstance.get('/letters', { params });
+      
+      setLetters(response.data.data || []);
+      setPagination(response.data.meta || null);
+
+    } catch (err) {
+      const errorMsg = "Gagal memuat data surat dari server.";
+      setError(errorMsg);
+      // Notifikasi toast tetap ada
+      toast.error("Gagal Memuat Data", { description: errorMsg });
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams, searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchLetters();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [fetchLetters]);
+
+  const getStatusBadge = (status: Letter['status']) => {
+    switch (status) {
+      case 'Approved':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <SidebarProvider>
       <div className="flex">
         <AppSidebar />
         <div className="flex-1 min-h-screen bg-gray-50">
-          <div className="w-full">
-            <SiteHeader />
-          </div>
+          <SiteHeader />
           <main className="p-8">
-            <section className="flex flex-col gap-4 py-4 md:gap-6 md:py-0">
-              <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-6 w-full">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <h2 className="font-semibold text-lg whitespace-nowrap">Letter Management</h2>
-                  <div className="flex gap-3 flex-1">
-                    <input
-                      type="text"
-                      placeholder="Search Letters"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
-                      style={{ minHeight: '2rem' }}
-                    />
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                      Add Letter
-                    </button>
-                  </div>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 py-2 text-left">Title</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                        <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredLetters.map((letter) => (
-                        <tr key={letter.id}>
-                          <td className="border border-gray-300 px-4 py-2">{letter.title}</td>
-                          <td className="border border-gray-300 px-4 py-2">{letter.type}</td>
-                          <td className="border border-gray-300 px-4 py-2">{letter.date}</td>
-                          <td
-                            className={`border border-gray-300 px-4 py-2 ${
-                              letter.status === 'Approved'
-                                ? 'text-green-600'
-                                : letter.status === 'Pending'
-                                ? 'text-yellow-600'
-                                : 'text-red-600'
-                            }`}
-                          >
-                            {letter.status}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2 text-center">
-                            <button className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">
-                              Edit
-                            </button>
-                            <button className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 ml-2">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <section className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-6 w-full">
+              {/* Header: Judul, Search, dan Tombol Aksi */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 className="font-semibold text-lg whitespace-nowrap">Manajemen Surat</h2>
+                <div className="flex gap-3 flex-1">
+                  <input
+                    type="text"
+                    placeholder="Cari berdasarkan judul surat..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0"
+                    style={{ minHeight: '2rem' }}
+                  />
+                  <button className="px-3 py-1 bg-[#1E3A5F] text-white rounded transition flex items-center border border-transparent hover:bg-white hover:text-[#1E3A5F] hover:border-[#1E3A5F] text-xs h-8" style={{ minHeight: "2rem" }}>
+                    <Plus size={14} className="mr-1" /> Buat Surat
+                  </button>
                 </div>
               </div>
+
+              {/* Konten Utama: Skeleton, Error, atau Tabel Data */}
+              {loading ? (
+                <LetterTableSkeleton />
+              ) : error ? (
+                // --- 2. TAMPILAN ERROR BARU DENGAN TOMBOL ---
+                <div className="text-center py-10 flex flex-col items-center gap-4">
+                    <p className="text-red-500">{error}</p>
+                    <Button variant="outline" onClick={fetchLetters}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Coba Lagi
+                    </Button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">Judul</TableHead>
+                        <TableHead>Tipe</TableHead>
+                        <TableHead>Tanggal</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                        <TableHead className="text-center">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {letters.length > 0 ? (
+                        letters.map((letter) => (
+                          <TableRow key={letter.id}>
+                            <TableCell className="font-medium">{letter.title}</TableCell>
+                            <TableCell>{letter.type}</TableCell>
+                            <TableCell>{new Date(letter.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
+                            <TableCell className="text-center">
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(letter.status)}`}>
+                                {letter.status}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex gap-2 justify-center">
+                                 <button type="button" className="p-2 rounded-md bg-yellow-100 hover:bg-yellow-200 transition" title="Edit">
+                                      <Edit className="h-4 w-4 text-yellow-600" />
+                                 </button>
+                                 <button type="button" className="p-2 rounded-md bg-red-100 hover:bg-red-200 transition" title="Hapus">
+                                      <Trash2 className="h-4 w-4 text-red-600" />
+                                 </button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-10">
+                            Tidak ada data surat yang cocok dengan filter atau pencarian Anda.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </section>
           </main>
         </div>

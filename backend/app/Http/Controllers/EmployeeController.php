@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Employee;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
@@ -12,7 +14,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use App\Models\User; 
+ 
 
 
 class EmployeeController extends Controller
@@ -181,5 +183,22 @@ class EmployeeController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function downloadPDF(Employee $employee)
+    {
+        // 2. Siapkan data untuk dikirim ke view
+        $data = [
+            'employee' => $employee
+        ];
+
+        // 3. Load view dan data, lalu buat PDF
+        $pdf = PDF::loadView('pdf.employee-details', $data);
+
+        // 4. Atur nama file dan kirim sebagai response untuk di-download
+        // stream() akan menampilkan PDF di browser, download() akan langsung mengunduh file
+        $fileName = 'data-karyawan-' . strtolower(str_replace(' ', '-', $employee->first_name)) . '.pdf';
+        
+        return $pdf->stream($fileName);
     }
 }

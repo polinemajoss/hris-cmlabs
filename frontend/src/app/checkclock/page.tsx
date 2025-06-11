@@ -195,13 +195,13 @@ export default function CheckclockPage() {
                     <Table className="w-full">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Employee Name</TableHead>
+                          <TableHead>Nama Karyawan</TableHead>
                           <TableHead>Jabatan</TableHead>
-                          <TableHead>Attendance Time</TableHead>
+                          <TableHead>Waktu Kehadiran</TableHead>
                           <TableHead>Tipe</TableHead>
-                          <TableHead>Approval</TableHead>
+                          <TableHead>Persetujuan</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Details</TableHead>
+                          <TableHead>Rincian</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

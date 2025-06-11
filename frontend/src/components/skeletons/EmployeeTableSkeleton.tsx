@@ -12,72 +12,83 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function EmployeeTableSkeleton() {
-  // Menampilkan 8 baris skeleton sebagai placeholder
   const skeletonRows = Array.from({ length: 8 });
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md">
       <Table>
-        {/* Header Tabel */}
+        {/* Header Tabel dalam Bahasa Indonesia */}
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[80px]">
-              <Skeleton className="h-5 w-5" />
-            </TableHead>
-            <TableHead style={{ width: '300px' }}>Employee</TableHead>
-            <TableHead style={{ width: '150px' }}>NIK</TableHead>
-            <TableHead style={{ width: '200px' }}>Position</TableHead>
-            <TableHead style={{ width: '150px' }}>Branch</TableHead>
-            <TableHead style={{ width: '120px' }}>Status</TableHead>
-            <TableHead style={{ width: '100px' }} className="text-right">
-              Actions
-            </TableHead>
+            <TableHead style={{ width: '40px' }}>No</TableHead>
+            <TableHead style={{ width: '80px' }} className="text-center">Avatar</TableHead>
+            <TableHead style={{ width: '250px' }}>Nama</TableHead>
+            <TableHead>Jenis Kelamin</TableHead>
+            <TableHead>Nomor Telepon</TableHead>
+            <TableHead>Cabang</TableHead>
+            <TableHead>Jabatan</TableHead>
+            <TableHead>Grade</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Action</TableHead>
           </TableRow>
         </TableHeader>
 
-        {/* Body Tabel dengan Skeleton */}
+        {/* Body Tabel dengan Skeleton sesuai struktur baru */}
         <TableBody>
           {skeletonRows.map((_, index) => (
-            <TableRow key={index}>
-              {/* Kolom Checkbox */}
+            <TableRow key={`skeleton-emp-${index}`}>
+              {/* No */}
               <TableCell>
-                <Skeleton className="h-5 w-5" />
+                <Skeleton className="h-4 w-full" />
               </TableCell>
 
-              {/* Kolom Employee (Avatar + Nama) */}
+              {/* Avatar */}
+              <TableCell className="flex justify-center">
+                <Skeleton className="h-10 w-10 rounded-full" />
+              </TableCell>
+
+              {/* Nama */}
               <TableCell>
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="space-y-1">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-3 w-[150px]" />
-                  </div>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+
+              {/* Jenis Kelamin */}
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+              
+              {/* Nomor Telepon */}
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+
+              {/* Cabang */}
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+
+              {/* Jabatan */}
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+
+              {/* Grade */}
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+
+              {/* Status (Badge) */}
+              <TableCell className="text-center">
+                <Skeleton className="h-6 w-[80px] rounded-md mx-auto" />
+              </TableCell>
+
+              {/* Action (Tombol) */}
+              <TableCell className="text-center">
+                <div className="flex justify-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
                 </div>
-              </TableCell>
-
-              {/* Kolom NIK */}
-              <TableCell>
-                <Skeleton className="h-4 w-full" />
-              </TableCell>
-
-              {/* Kolom Position */}
-              <TableCell>
-                <Skeleton className="h-4 w-full" />
-              </TableCell>
-
-              {/* Kolom Branch */}
-              <TableCell>
-                <Skeleton className="h-4 w-full" />
-              </TableCell>
-
-              {/* Kolom Status (Badge) */}
-              <TableCell>
-                <Skeleton className="h-6 w-[80px] rounded-md" />
-              </TableCell>
-
-              {/* Kolom Actions (Tombol) */}
-              <TableCell className="text-right">
-                <Skeleton className="h-8 w-[80px] rounded-md" />
               </TableCell>
             </TableRow>
           ))}

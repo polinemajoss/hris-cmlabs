@@ -20,9 +20,11 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken; // Ini biasanya ada d
 
 // Jangan lupa tambahkan use untuk middleware BypassAuth Anda
 use App\Http\Middleware\BypassAuth; // <-- Pastikan ini ada!
+use App\Http\Middleware\HandleOptionsRequest;
 
 class Kernel extends HttpKernel
 {
+    
     /**
      * The application's global HTTP middleware stack.
      *
@@ -31,6 +33,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
+        HandleOptionsRequest::class,
         TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
