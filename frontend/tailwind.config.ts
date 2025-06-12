@@ -43,6 +43,22 @@ module.exports = {
           },
         },
       },
+      colors: {
+        primary: '#1E3A5F',
+        secondary: '#7CA5BF',
+        accent: '#BA3C54',
+        semantic: {
+          success: '#257047',
+          warning: '#FFAB00',
+          danger: '#C11106',
+          info: '#2D8EFF',
+        },
+        neutral: {
+          black: '#000000',
+          white: '#FFFFFF',
+          gray: '#595959',
+        },
+      },
     },
   },
-}
+};

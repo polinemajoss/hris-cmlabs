@@ -340,11 +340,6 @@ export default function EmployeeDatabase() {
         <AppSidebar />
         <div className="flex-1 min-h-screen bg-gray-50">
           <SiteHeader />
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCardsEmployee />
-            </div>
-          </div>
 
           <section className="flex flex-col md:flex-row justify-between items-center gap-4 px-10 py-4">
             <h2 className="font-semibold text-lg whitespace-nowrap">Informasi Seluruh Karyawan</h2>

@@ -39,6 +39,7 @@ import {
   ToggleGroupItem,
 } from "../components/ui/toggle-group";
 import {useRouter} from "next/navigation";
+import { SectionCardsEmployee } from "@/components/employee/section-card-employee";
 
 // --- START: Definisi ChartAreaInteractive (dipindahkan dari komponen terpisah ke sini jika tidak di-import) ---
 const chartData = [
@@ -114,6 +115,7 @@ function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari ko
   return (
     <Card className="@container/card">
       <CardHeader className="relative">
+        
         <CardTitle>Total Visitors</CardTitle>
         <CardDescription>
           <span className="@[540px]/card:block hidden">
@@ -294,7 +296,7 @@ export default function DashboardPage() {
           <div className="flex-1 overflow-auto">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <SectionCards />
+                <SectionCardsEmployee />
                 <div className="px-4 lg:px-6">
                   {/* Panggil ChartAreaInteractiveSelfContained sebagai komponen */}
                   <ChartAreaInteractiveSelfContained /> 
