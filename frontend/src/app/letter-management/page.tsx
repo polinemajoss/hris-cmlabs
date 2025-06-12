@@ -250,7 +250,9 @@ export default function LetterManagementPage() {
                         <TableHead className="w-[15%]">Penerima</TableHead> {/* New column */}
                         <TableHead className="w-[15%]">Tanggal</TableHead>
                         <TableHead className="text-center w-[15%]">Status</TableHead>
-                        <TableHead className="text-center w-[15%]">Aksi</TableHead>
+                        <TableHead className="text-center w-[15%]">Action</TableHead>
+                        <TableHead className="text-center w-[15%]">Detail</TableHead>
+
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -276,6 +278,26 @@ export default function LetterManagementPage() {
                               >
                                 {letter.status}
                               </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <button
+                                onClick={() => {
+                                  setEditingLetter({
+                                    id: letter.id,
+                                    title: letter.title,
+                                    type: letter.type,
+                                    date: letter.date,
+                                    status: letter.status,
+                                    content: letter.content,
+                                    recipient: letter.recipient,
+                                  });
+                                  setIsEditSheetOpen(true); // Membuka sheet edit
+                                }}
+                                className="p-2 rounded-md bg-primary text-neutral-white hover:bg-secondary transition"
+                                title="Detail"
+                              >
+                                Detail
+                              </button>
                             </TableCell>
                             <TableCell className="text-center">
                               <div className="flex gap-2 justify-center">
