@@ -1,26 +1,42 @@
 # backend/Dockerfile
+
+# Gunakan base image PHP 8.2 FPM
 FROM php:8.2-fpm
 
-# Install dependencies
+# Install dependensi yang dibutuhkan Laravel
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    libzip-dev \
+    libpq-dev \
+    nodejs \
+    npm
+
+# Install ekstensi PHP
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Buat direktori kerja
+# Set working directory
 WORKDIR /var/www
 
-# Salin source code Laravel
+# Copy source code
 COPY . .
 
-# Install dependency
-RUN composer install
+# Install dependensi composer
+RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist
 
-# Set permission
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Ubah kepemilikan file
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Expose port 9000 untuk FPM
+EXPOSE 9000
+
+# Jalankan PHP-FPM
+CMD ["php-fpm"]
