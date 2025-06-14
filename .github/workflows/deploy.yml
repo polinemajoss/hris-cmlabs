@@ -1,29 +1,41 @@
-name: CD - Deploy to Production Server
+# .github/workflows/deploy.yml
 
-# Pemicu: Jalankan setelah workflow 'CI - Build and Push Docker Images' berhasil
+name: Deploy to Azure VM
+
 on:
-  workflow_run:
-    workflows: ["CI - Build and Push Docker Images"]
-    types:
-      - completed
+  push:
+    branches:
+      - main # Atau branch lain yang kamu gunakan untuk production
 
 jobs:
   deploy:
-    # Jalankan pekerjaan ini HANYA JIKA workflow CI berhasil
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    # Gunakan runner yang sudah kita instal di VM kita
-    runs-on: self-hosted
-
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Navigate to project directory
-        run: cd ~/hris-cmlabs # Sesuaikan dengan path proyek Anda di VM
+    - name: Login to Azure (Opsional, jika perlu interaksi lain dengan Azure)
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Pull latest images from Docker Hub
-        run: docker compose pull
-
-      - name: Restart services with new images
-        run: docker compose up -d
+    - name: Deploy to VM via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /path/to/your/project/hris-cmlabs # Ganti dengan path di VM
+          git pull origin main
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" > .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          # Tambahkan variabel env lain yang diperlukan
+          
+          docker-compose -f docker-compose.yml up --build -d
+          # Jalankan migrasi dan seeding setelah container up
+          docker-compose exec backend php artisan migrate --force
+          docker-compose exec backend php artisan db:seed --force # Jika ada
