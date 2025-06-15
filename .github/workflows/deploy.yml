@@ -35,7 +35,7 @@ jobs:
         # password: ${{ secrets.VM_PASSWORD }} # Gunakan ini jika tidak pakai key, tapi kurang aman
         script: |
           # Navigasi ke direktori aplikasi Anda di VM
-          cd /var/www/html/hris-app # Sesuaikan path aplikasi Anda di VM
+          cd /var/www/hris-app # Sesuaikan path aplikasi Anda di VM
 
           # Pastikan Anda punya folder build atau dist untuk frontend
           # Contoh: menghapus folder frontend lama
@@ -62,7 +62,7 @@ jobs:
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
         source: "frontend/out/*,backend/*" # Atau "frontend/build/*", sesuaikan dengan output Next.js Anda
                                             # dan folder backend Anda
-        target: "/var/www/html/hris-app/" # Direktori root aplikasi Anda di VM
+        target: "/var/www/hris-app/" # Direktori root aplikasi Anda di VM
 
     - name: Run Backend Migrations and Restart Services
       uses: appleboy/ssh-action@v1.0.0 # Gunakan kembali ssh-action untuk menjalankan perintah di VM
@@ -71,7 +71,7 @@ jobs:
         username: ${{ secrets.AZURE_VM_USER }}
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
         script: |
-          cd /var/www/html/hris-app/backend # Masuk ke direktori backend Anda di VM
+          cd /var/www/hris-app/backend # Masuk ke direktori backend Anda di VM
 
           echo "Installing backend dependencies..."
           composer install --no-dev --optimize-autoloader # Contoh untuk PHP/Laravel
