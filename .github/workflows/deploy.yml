@@ -29,9 +29,9 @@ jobs:
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v1.0.0 # Action GitHub populer untuk SSH
       with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }} # Menggunakan SSH private key
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USER }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
         # password: ${{ secrets.VM_PASSWORD }} # Gunakan ini jika tidak pakai key, tapi kurang aman
         script: |
           # Navigasi ke direktori aplikasi Anda di VM
@@ -57,9 +57,9 @@ jobs:
     - name: Transfer Frontend Build and Backend Code
       uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk SCP (copy file)
       with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USER }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
         source: "frontend/out/*,backend/*" # Atau "frontend/build/*", sesuaikan dengan output Next.js Anda
                                             # dan folder backend Anda
         target: "/var/www/html/hris-app/" # Direktori root aplikasi Anda di VM
@@ -67,9 +67,9 @@ jobs:
     - name: Run Backend Migrations and Restart Services
       uses: appleboy/ssh-action@v1.0.0 # Gunakan kembali ssh-action untuk menjalankan perintah di VM
       with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USER }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
         script: |
           cd /var/www/html/hris-app/backend # Masuk ke direktori backend Anda di VM
 
