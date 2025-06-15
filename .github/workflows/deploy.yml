@@ -1,41 +1,50 @@
-# .github/workflows/deploy.yml
-
-name: Deploy to Azure VM
+name: Deploy HRIS CMLABS to Azure VM
 
 on:
   push:
     branches:
-      - main # Atau branch lain yang kamu gunakan untuk production
+      - main # atau branch lain yang Anda gunakan untuk production
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Login to Azure (Opsional, jika perlu interaksi lain dengan Azure)
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            # Navigasi ke direktori proyek
+            cd /var/www/hris-cmlabs
 
-    - name: Deploy to VM via SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /path/to/your/project/hris-cmlabs # Ganti dengan path di VM
-          git pull origin main
-          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" > .env
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
-          # Tambahkan variabel env lain yang diperlukan
-          
-          docker-compose -f docker-compose.yml up --build -d
-          # Jalankan migrasi dan seeding setelah container up
-          docker-compose exec backend php artisan migrate --force
-          docker-compose exec backend php artisan db:seed --force # Jika ada
+            # Tarik perubahan terbaru dari Git
+            git pull origin main
+
+            # --- DEPLOY BACKEND (LARAVEL) ---
+            echo "🚀 Deploying Laravel Backend..."
+            cd backend
+            echo "${{ secrets.DOT_ENV_LARAVEL }}" > .env
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            php artisan key:generate --force
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+
+            # --- DEPLOY FRONTEND (NEXT.JS) ---
+            echo "🚀 Deploying Next.js Frontend..."
+            cd ../frontend
+            echo "${{ secrets.DOT_ENV_NEXTJS }}" > .env.local
+            npm install
+            npm run build
+            pm2 start npm --name "hris-cmlabs-nextjs" -- start || pm2 restart hris-cmlabs-nextjs
+
+            echo "✅ Deployment for hris-cmlabs complete!"
