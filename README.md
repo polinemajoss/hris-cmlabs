@@ -65,9 +65,6 @@ hris-cmlabs/
 │   ├── tailwind.config.js          # Setup TailwindCSS
 │   ├── postcss.config.js
 │   └── package.json
-│
-├── nginx
-│   └── nginx.conf
 ├── docker-compose.yml              # Konfigurasi Docker untuk pengembangan
 ├── .env                            # File variabel lingkungan (Environment Variables)
 ├── README.md                       # Dokumentasi proyek (file ini)
