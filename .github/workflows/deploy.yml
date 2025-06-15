@@ -63,6 +63,7 @@ jobs:
         source: "frontend/out/*,backend/*" # Atau "frontend/build/*", sesuaikan dengan output Next.js Anda
                                             # dan folder backend Anda
         target: "/var/www/hris-app/" # Direktori root aplikasi Anda di VM
+        overwrite: true
 
     - name: Run Backend Migrations and Restart Services
       uses: appleboy/ssh-action@v1.0.0 # Gunakan kembali ssh-action untuk menjalankan perintah di VM
