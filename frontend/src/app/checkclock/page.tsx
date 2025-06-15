@@ -50,6 +50,8 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
 import CheckclockSheet from "../../components/checkclock/CheckclockSheet";
+import { AlertDialogHeader, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@radix-ui/react-alert-dialog";
 
 export default function CheckclockPage() {
   type AttendanceDetailsData = CheckclockData & {
@@ -69,6 +71,12 @@ export default function CheckclockPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  
 
   const fetchAttendances = async () => {
     setLoading(true);
@@ -155,6 +163,73 @@ export default function CheckclockPage() {
     }
   };
 
+  const handleDownloadPDF = async (employee: Employee) => {
+    try {
+      const res = await axiosInstance.get(`/employees/${employee.id}/download-pdf`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${employee.first_name}-${employee.last_name}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Gagal download PDF:", err);
+      alert("Gagal mendownload PDF");
+    }
+  };
+
+  const handleOpenEditSheet = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setIsEditSheetOpen(true);
+  };
+
+  const confirmDeleteEmployee = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+  };
+
+  const executeDeleteEmployee = async () => {
+    if (!employeeToDelete) return;
+    try {
+      await axiosInstance.delete(`/employees/${employeeToDelete.id}`);
+      fetchEmployees();
+      setEmployeeToDelete(null);
+    } catch (err: unknown) {
+      console.error("Error deleting employee:", err);
+      alert("Gagal menghapus karyawan");
+    }
+  };
+
+  const fetchEmployees = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Simulasi loading agar skeleton terlihat
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const res = await axiosInstance.get("/employees");
+      if (Array.isArray(res.data)) {
+        const mappedEmployees = res.data.map((emp) => ({
+          ...emp,
+          phone: emp.mobile_number || "",
+          avatarUrl: emp.avatar || undefined,
+        }));
+        setEmployees(mappedEmployees);
+      } else {
+        setError("Format data tidak valid dari API.");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Gagal memuat data karyawan: ${err.message}`);
+      } else {
+        setError("Gagal memuat data karyawan: Unknown error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="flex">
@@ -202,6 +277,7 @@ export default function CheckclockPage() {
                           <TableHead>Persetujuan</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Rincian</TableHead>
+                          <TableHead className="w-[12%] text-center">Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -221,6 +297,56 @@ export default function CheckclockPage() {
                               <TableCell>
                                 <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
                               </TableCell>
+                              <TableCell className="flex gap-2 justify-center">
+                                <button type="button" onClick={() => handleDownloadPDF(emp)} className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition" title="Download">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <path d="M12 18v-6" />
+                                        <path d="M9 15l3 3 3-3" />
+                                    </svg>
+                                </button>
+
+                                <button type="button" onClick={() => handleOpenEditSheet(emp)} className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition" title="Edit">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 20h9" />
+                                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                    </svg>
+                                </button>
+
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <button type="button" onClick={() => confirmDeleteEmployee(emp)} className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition" title="Delete">
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <polyline points="3 6 5 6 21 6" />
+                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                          <line x1="10" y1="11" x2="10" y2="17" />
+                                          <line x1="14" y1="11" x2="14" y2="17" />
+                                      </svg>
+                                    </button>
+                                  </AlertDialogTrigger>
+                                  {employeeToDelete && (
+                                    <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Data karyawan{" "}
+                                          <strong style={{ color: "red" }}>
+                                            {employeeToDelete.first_name} {employeeToDelete.last_name}
+                                          </strong>{" "}
+                                          akan dihapus secara permanen.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
+                                        <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={executeDeleteEmployee}>
+                                          Hapus
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  )}
+                                </AlertDialog>
+                            </TableCell>
                             </TableRow>
                           ))
                         ) : (
