@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App; // <-- TAMBAHKAN BARIS INI
-use Laravel\Pail\PailServiceProvider; // Ini sudah ada, bagus
-
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -20,7 +18,6 @@ class AppServiceProvider extends ServiceProvider
         // Untuk tujuan ini, saya akan asumsikan Anda ingin ini menjadi bagian dari register().
 
         if (App::environment('local')) {
-            $this->app->register(PailServiceProvider::class); // <-- Gunakan nama kelas yang disederhanakan
         }
     }
 
