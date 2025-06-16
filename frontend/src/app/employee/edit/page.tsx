@@ -3,30 +3,17 @@
 "use client";
 
 import * as React from "react";
-import { notFound, useRouter } from "next/navigation";
-// import type { Metadata } from 'next'; // Metadata tidak bekerja dinamis di Client Component page.tsx ini.
+import { notFound, useRouter, useSearchParams } from "next/navigation"; // <-- Tambahkan useSearchParams
 import axios from "axios";
 import axiosInstance from "../../../lib/axios";
 import EmployeeForm, { EmployeeFormData } from "../../../components/employee/EmployeeForm";
 import { toast } from "sonner";
 
-// --- Tipe Props Halaman ---
-// Ini adalah definisi PageProps yang paling akurat untuk rute non-dinamis
-// yang menerima searchParams di App Router.
-// Jika ini masih gagal, maka masalahnya ada pada tooling Next.js/TypeScript Anda.
-interface PageProps {
-    // params harus ada, tetapi akan berupa objek kosong untuk rute non-dinamis
-    params: Record<string, string | string[]>; // Menggunakan Record<string, string | string[]> yang lebih umum
-    // Meskipun untuk '/employee/edit' params akan {}.
-    searchParams?: {
-        id?: string; // Query parameter 'id'
-    };
-}
+// Catatan: generateMetadata tidak akan bekerja secara dinamis di Client Component page.tsx ini.
 
 // --- Interface untuk Data Karyawan dari API ---
-// Memastikan 'id' di API Response bisa string atau number
-interface EmployeeApiResponse extends Omit<EmployeeFormData, 'id'> { // Omit 'id' dari EmployeeFormData dulu
-    id: string | number; // Lalu definisikan ulang id sebagai string | number
+interface EmployeeApiResponse extends Omit<EmployeeFormData, 'id'> {
+    id: string | number; // ID dari API bisa string atau number
     user?: {
         email: string;
     };
@@ -35,14 +22,17 @@ interface EmployeeApiResponse extends Omit<EmployeeFormData, 'id'> { // Omit 'id
 }
 
 // --- Komponen Halaman Edit Karyawan ---
-export default function EditEmployeePage({ searchParams, params }: PageProps) { // Tambahkan params di destructuring
+// Props tidak lagi menerima params atau searchParams secara langsung
+export default function EditEmployeePage() {
     const router = useRouter();
-    const employeeId = searchParams?.id;
+    const searchParams = useSearchParams(); // <-- Ambil searchParams langsung dari hook
+    const employeeId = searchParams.get('id'); // <-- Dapatkan ID dari searchParams hook
 
     const [employeeData, setEmployeeData] = React.useState<EmployeeFormData | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
 
+    // --- Fungsi untuk Mengambil Data Karyawan (Client-Side) ---
     React.useEffect(() => {
         const fetchData = async () => {
             if (!employeeId) {
@@ -62,9 +52,8 @@ export default function EditEmployeePage({ searchParams, params }: PageProps) { 
                 } else {
                     const apiResponseData = Array.isArray(res.data) ? res.data[0] : res.data;
 
-                    // Pastikan id dari API dikonversi dengan aman menjadi string
                     const formattedData: EmployeeFormData = {
-                        id: String(apiResponseData.id || ""), // Konversi id yang bisa number/string/null/undefined ke string
+                        id: String(apiResponseData.id || ""),
                         first_name: apiResponseData.first_name || "",
                         last_name: apiResponseData.last_name || "",
                         gender: apiResponseData.gender || "",
@@ -97,8 +86,9 @@ export default function EditEmployeePage({ searchParams, params }: PageProps) { 
         };
 
         fetchData();
-    }, [employeeId]);
+    }, [employeeId]); // Dependency array: jalankan ulang saat employeeId berubah
 
+    // --- Fungsi handleUpdate untuk Submit Formulir ---
     const handleUpdate = async (formData: EmployeeFormData) => {
         if (!employeeId) {
             toast.error("ID karyawan tidak tersedia.");
@@ -167,6 +157,7 @@ export default function EditEmployeePage({ searchParams, params }: PageProps) { 
         }
     };
 
+    // --- Penanganan Tampilan Loading, Error, Not Found ---
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -188,6 +179,7 @@ export default function EditEmployeePage({ searchParams, params }: PageProps) { 
         return notFound();
     }
 
+    // --- Merender Formulir Karyawan ---
     return (
         <div className="p-4">
             <h1 className="text-2xl font-bold mb-4">Edit Karyawan</h1>
