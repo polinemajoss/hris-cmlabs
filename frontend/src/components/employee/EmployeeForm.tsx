@@ -1,7 +1,7 @@
-// File: components/ui/EmployeeForm.tsx
+// src/components/employee/EmployeeForm.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -13,18 +13,20 @@ import { AvatarUploader } from '../ui/AvatarUploader';
 import { DatePicker } from "../ui/date-picker";
 
 
-// Definisikan interface EmployeeFormData (tanpa user_id)
-// Tetap ekspor EmployeeFormData jika dibutuhkan di luar (seperti di EditEmployeePage)
+// --- Definisi interface EmployeeFormData ---
+// Ini adalah tipe data untuk seluruh form, baik untuk create maupun edit.
+// 'id' adalah opsional karena tidak ada saat membuat baru.
 export interface EmployeeFormData {
+  id?: string; // <--- ID sekarang adalah properti opsional di sini
   email: string;
   first_name: string;
   last_name: string;
   mobile_number: string;
   nik: string;
-  gender: "M" | "F" | "";
+  gender: "M" | "F" | ""; // "" untuk opsi "Pilih"
   education: string;
   birth_place: string;
-  birth_date: string | null;
+  birth_date: string | null; // Bisa string 'YYYY-MM-DD' atau null
   position: string;
   branch: string;
   contract_type: "Tetap" | "Kontrak" | "Lepas" | "";
@@ -33,87 +35,96 @@ export interface EmployeeFormData {
   bank_account_number: string;
   bank_account_name: string;
   sp_type: string;
-  status?: "Aktif" | "Tidak Aktif" | "";
+  status?: "Aktif" | "Tidak Aktif" | ""; // Opsional, dan "" untuk opsi "Pilih"
   avatar?: string;
 }
-interface InitialEmployeeData extends EmployeeFormData {
-  id: string; // atau tipe ID yang sesuai
-}
 
+// --- Interface EmployeeFormProps ---
+// initialData sekarang langsung bertipe EmployeeFormData | null
 interface EmployeeFormProps {
   onSubmit: (formData: EmployeeFormData) => void;
   onCancel: () => void;
-  initialData?: InitialEmployeeData | null;
+  initialData?: EmployeeFormData | null; // Data awal untuk form (bisa null/undefined untuk create)
+  isEditMode?: boolean; // <--- TAMBAHKAN PROPERTI INI
 }
 
-const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormProps) => {
-  const genderOptions = [
-    { value: "M", label: "Laki-laki" },
-    { value: "F", label: "Perempuan" },
-  ];
+const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false }: EmployeeFormProps) => { // <--- Inisialisasi isEditMode
+  // --- Opsi untuk Select dan RadioGroup ---
+  const genderOptions = [ { value: "M", label: "Laki-laki" }, { value: "F", label: "Perempuan" }, ];
+  const pendidikanOptions = [ { value: "SMA/SMK", label: "SMA/SMK" }, { value: "D3", label: "D3" }, { value: "S1", label: "S1" }, { value: "S2", label: "S2" }, { value: "S3", label: "S3" }, ];
+  const kontrakOptions = [ { value: "Tetap", label: "Tetap" }, { value: "Kontrak", label: "Kontrak" }, { value: "Lepas", label: "Lepas" }, ];
+  const bankOptions = [ { value: "BCA", label: "BCA" }, { value: "BNI", label: "BNI" }, { value: "BRI", label: "BRI" }, { value: "Mandiri", label: "Mandiri" }, { value: "CIMB Niaga", label: "CIMB Niaga" }, ];
+  const spOptions = [ { value: "SP 1", label: "SP 1" }, { value: "SP 2", label: "SP 2" }, { value: "SP 3", label: "SP 3" }, { value: "Tidak Ada", label: "Tidak Ada SP" }, ];
+  const statusOptions = [ { value: "Aktif", label: "Aktif" }, { value: "Tidak Aktif", label: "Tidak Aktif" }, ];
 
-  const pendidikanOptions = [
-    { value: "SMA/SMK", label: "SMA/SMK" },
-    { value: "D3", label: "D3" },
-    { value: "S1", label: "S1" },
-    { value: "S2", label: "S2" },
-    { value: "S3", label: "S3" },
-  ];
 
-  const kontrakOptions = [
-    { value: "Tetap", label: "Tetap" },
-    { value: "Kontrak", label: "Kontrak" },
-    { value: "Lepas", label: "Lepas" },
-  ];
+  // --- State Form ---
+  const [form, setForm] = useState<EmployeeFormData>(() => {
+    // Fungsi inisialisasi untuk useState, hanya berjalan sekali saat render pertama
+    if (initialData) {
+      return {
+        ...initialData,
+        id: initialData.id || "", // Pastikan ID adalah string, bahkan jika undefined
+        first_name: initialData.first_name || "",
+        last_name: initialData.last_name || "",
+        mobile_number: initialData.mobile_number || "",
+        nik: initialData.nik || "",
+        gender: initialData.gender || "",
+        education: initialData.education || "",
+        birth_place: initialData.birth_place || "",
+        birth_date: initialData.birth_date || null,
+        position: initialData.position || "",
+        branch: initialData.branch || "",
+        contract_type: initialData.contract_type || "",
+        grade: initialData.grade || "",
+        bank: initialData.bank || "",
+        bank_account_number: initialData.bank_account_number || "",
+        bank_account_name: initialData.bank_account_name || "",
+        sp_type: initialData.sp_type || "",
+        status: initialData.status || "Aktif",
+        avatar: initialData.avatar || "",
+        email: initialData.email || ""
+      };
+    } else {
+      return { // Default values untuk form baru (create mode)
+        email: "", first_name: "", last_name: "", mobile_number: "", nik: "", gender: "",
+        education: "", birth_place: "", birth_date: null, position: "", branch: "",
+        contract_type: "Kontrak", grade: "", bank: "", bank_account_number: "",
+        bank_account_name: "", sp_type: "", status: "Aktif", avatar: "",
+      };
+    }
+  });
 
-  const bankOptions = [
-    { value: "BCA", label: "BCA" },
-    { value: "BNI", label: "BNI" },
-    { value: "BRI", label: "BRI" },
-    { value: "Mandiri", label: "Mandiri" },
-    { value: "CIMB Niaga", label: "CIMB Niaga" },
-  ];
+  // --- Menggunakan useEffect untuk mengupdate form state saat initialData berubah ---
+  // Ini penting jika komponen dirender ulang dengan initialData yang berbeda (misalnya, jika form ini digunakan di modal)
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        ...initialData,
+        id: initialData.id || "",
+        first_name: initialData.first_name || "",
+        last_name: initialData.last_name || "",
+        mobile_number: initialData.mobile_number || "",
+        nik: initialData.nik || "",
+        gender: initialData.gender || "",
+        education: initialData.education || "",
+        birth_place: initialData.birth_place || "",
+        birth_date: initialData.birth_date || null,
+        position: initialData.position || "",
+        branch: initialData.branch || "",
+        contract_type: initialData.contract_type || "",
+        grade: initialData.grade || "",
+        bank: initialData.bank || "",
+        bank_account_number: initialData.bank_account_number || "",
+        bank_account_name: initialData.bank_account_name || "",
+        sp_type: initialData.sp_type || "",
+        status: initialData.status || "Aktif",
+        avatar: initialData.avatar || "",
+        email: initialData.email || ""
+      });
+    }
+  }, [initialData]);
 
-  const spOptions = [
-    { value: "SP 1", label: "SP 1" },
-    { value: "SP 2", label: "SP 2" },
-    { value: "SP 3", label: "SP 3" },
-    { value: "Tidak Ada", label: "Tidak Ada SP" },
-  ];
-
-  const statusOptions = [
-    { value: "Aktif", label: "Aktif" },
-    { value: "Tidak Aktif", label: "Tidak Aktif" },
-  ];
-
-  const [form, setForm] = useState<EmployeeFormData>(
-    initialData
-      ? {
-          ...initialData,
-          status: initialData.status || "Aktif",
-        }
-      : {
-          email: "",
-          first_name: "",
-          last_name: "",
-          mobile_number: "",
-          nik: "",
-          gender: "",
-          education: "",
-          birth_place: "",
-          birth_date: null,
-          position: "",
-          branch: "",
-          contract_type: "Kontrak",
-          grade: "",
-          bank: "",
-          bank_account_number: "",
-          bank_account_name: "",
-          sp_type: "",
-          status: "Aktif",
-          avatar: "",
-        }
-  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -124,6 +135,10 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
     setForm((prev) => ({ ...prev, [name]: value as EmployeeFormData[typeof name] }));
   };
 
+  const handleDateChange = (date: Date | undefined) => {
+    const formattedDate = date ? date.toISOString().split('T')[0] : null;
+    setForm((prev) => ({ ...prev, birth_date: formattedDate }));
+  };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,18 +154,14 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
     }
 
     const formData = new FormData();
-    formData.append('avatar', file); // Pastikan key-nya 'avatar'
+    formData.append('avatar', file);
 
     setIsUploading(true);
     try {
-      // (PERUBAHAN) Hapus objek headers dari pemanggilan axios.post
       const response = await axiosInstance.post('/upload-avatar', formData);
-      
-      // Simpan URL yang dikembalikan oleh server ke dalam state form
       setForm(prev => ({ ...prev, avatar: response.data.url }));
       toast.success('Avatar berhasil diupload!');
     } catch (err: unknown) {
-      // Tampilkan pesan error yang lebih spesifik dari backend jika ada
       let errorMsg = 'Gagal mengupload avatar.';
       if (err && typeof err === 'object' && 'response' in err) {
         const errorObj = err as { response?: { data?: { errors?: { avatar?: string[] } } } };
@@ -161,21 +172,39 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
     } finally {
       setIsUploading(false);
     }
-};
+  };
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+  // --- State Lokal untuk DatePicker ---
+  // Inisialisasi DatePicker dengan tanggal dari form.birth_date atau undefined
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    initialData && initialData.birth_date ? new Date(initialData.birth_date) : undefined
+  );
+
+  // Sinkronkan state DatePicker dengan form.birth_date
+  useEffect(() => {
+    if (form.birth_date) {
+      const date = new Date(form.birth_date);
+      if (!isNaN(date.getTime())) { // Pastikan tanggal valid
+        setSelectedDate(date);
+      } else {
+        setSelectedDate(undefined); // Jika tanggal tidak valid, reset DatePicker
+      }
+    } else {
+      setSelectedDate(undefined);
+    }
+  }, [form.birth_date]);
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4">
       {/* Bagian Avatar */}
       <div className="col-span-2">
-        <AvatarUploader 
-          onFileSelect={(file) => { 
-            if (file) { 
-              handleAvatarUpload(file); 
-            } else { 
-              setForm(prev => ({ ...prev, avatar: '' })); 
-            } 
+        <AvatarUploader
+          onFileSelect={(file) => {
+            if (file) {
+              handleAvatarUpload(file);
+            } else {
+              setForm(prev => ({ ...prev, avatar: '' }));
+            }
           }}
           initialImageUrl={form.avatar}
         />
@@ -195,6 +224,7 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
             <Label htmlFor="mobile_number" className="mb-1">Nomor Ponsel</Label>
             <Input id="mobile_number" name="mobile_number" placeholder="Masukkan nomor ponsel" value={form.mobile_number} onChange={handleChange} required />
           </div>
+            {/* Email field hanya muncul jika ini mode tambah (initialData tidak ada) */}
             {!initialData && (
               <div>
                 <Label htmlFor="email" className="mb-1">Email untuk Akun Baru</Label>
@@ -252,9 +282,12 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null }: EmployeeFormPr
           </div>
           <div>
             <Label htmlFor="birth_date" className="mb-1">Tanggal Lahir</Label>
-            <DatePicker 
-              value={selectedDate} 
-              onChange={setSelectedDate} 
+            <DatePicker
+              value={selectedDate}
+              onChange={(date) => {
+                setSelectedDate(date);
+                handleDateChange(date); // Perbarui state form juga
+              }}
             />
           </div>
           <div>
