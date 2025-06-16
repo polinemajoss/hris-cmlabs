@@ -1,23 +1,32 @@
 // src/app/employee/edit/page.tsx
+// Ini adalah Client Component penuh, sehingga 'use client' ada di bagian paling atas.
 "use client";
 
 import * as React from "react";
 import { notFound, useRouter } from "next/navigation";
+// import type { Metadata } from 'next'; // Metadata tidak bekerja dinamis di Client Component page.tsx ini.
 import axios from "axios";
 import axiosInstance from "../../../lib/axios";
 import EmployeeForm, { EmployeeFormData } from "../../../components/employee/EmployeeForm";
 import { toast } from "sonner";
 
+// --- Tipe Props Halaman ---
+// Ini adalah definisi PageProps yang paling akurat untuk rute non-dinamis
+// yang menerima searchParams di App Router.
+// Jika ini masih gagal, maka masalahnya ada pada tooling Next.js/TypeScript Anda.
 interface PageProps {
-    params: Record<string, never>;
+    // params harus ada, tetapi akan berupa objek kosong untuk rute non-dinamis
+    params: Record<string, string | string[]>; // Menggunakan Record<string, string | string[]> yang lebih umum
+    // Meskipun untuk '/employee/edit' params akan {}.
     searchParams?: {
-        id?: string;
+        id?: string; // Query parameter 'id'
     };
 }
 
-// Perbaiki EmployeeApiResponse agar 'id' bisa jadi string atau number, sesuai respons API
-interface EmployeeApiResponse extends EmployeeFormData {
-    id: string | number; // <--- UBAH DI SINI: id bisa string atau number dari API
+// --- Interface untuk Data Karyawan dari API ---
+// Memastikan 'id' di API Response bisa string atau number
+interface EmployeeApiResponse extends Omit<EmployeeFormData, 'id'> { // Omit 'id' dari EmployeeFormData dulu
+    id: string | number; // Lalu definisikan ulang id sebagai string | number
     user?: {
         email: string;
     };
@@ -25,7 +34,8 @@ interface EmployeeApiResponse extends EmployeeFormData {
     updated_at?: string;
 }
 
-export default function EditEmployeePage({ searchParams }: PageProps) {
+// --- Komponen Halaman Edit Karyawan ---
+export default function EditEmployeePage({ searchParams, params }: PageProps) { // Tambahkan params di destructuring
     const router = useRouter();
     const employeeId = searchParams?.id;
 
@@ -52,9 +62,9 @@ export default function EditEmployeePage({ searchParams }: PageProps) {
                 } else {
                     const apiResponseData = Array.isArray(res.data) ? res.data[0] : res.data;
 
+                    // Pastikan id dari API dikonversi dengan aman menjadi string
                     const formattedData: EmployeeFormData = {
-                        // Perbaikan di sini: Pastikan apiResponseData.id selalu diubah menjadi string
-                        id: String(apiResponseData.id || ""), // Gunakan String() untuk konversi aman dari number/null/undefined ke string
+                        id: String(apiResponseData.id || ""), // Konversi id yang bisa number/string/null/undefined ke string
                         first_name: apiResponseData.first_name || "",
                         last_name: apiResponseData.last_name || "",
                         gender: apiResponseData.gender || "",
