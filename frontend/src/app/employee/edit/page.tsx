@@ -4,12 +4,10 @@ import EditForm from "../../../components/employee/EditForm"; // Sesuaikan path 
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
-// ✅ Tipe Props yang benar untuk halaman Next.js di App Router
-// Next.js secara implisit mengoper objek ini ke komponen halaman dan generateMetadata
 type PageProps = {
-    params: {}; // Untuk rute statis (tanpa [id] di folder), params akan menjadi objek kosong
-    searchParams?: { // searchParams akan berisi query parameters
-        id?: string; // Query parameter 'id' diharapkan bertipe string
+    params: {}; // Rute ini tidak memiliki segmen dinamis di folder path-nya, jadi params adalah objek kosong
+    searchParams?: { // Ini adalah query parameters dari URL (misal ?id=...)
+        id?: string;
     };
 };
 
