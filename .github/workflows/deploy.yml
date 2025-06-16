@@ -18,6 +18,9 @@ jobs:
         run: |
           mkdir -p ~/.ssh # Membuat direktori ~/.ssh jika belum ada
           chmod 700 ~/.ssh # Mengatur izin agar hanya pemilik yang bisa membaca/menulis/menjalankan
+          # Menulis SSH_KNOWN_HOSTS secret ke file known_hosts
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts # Mengatur izin file known_hosts
 
       - name: Tambahkan Host Key VM ke known_hosts
         run: |
