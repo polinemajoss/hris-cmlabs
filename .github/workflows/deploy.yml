@@ -54,7 +54,7 @@ jobs:
           target: "/var/www/hris-cmlabs/" # Direktori root aplikasi di VM Azure
           overwrite: true # Menimpa file yang sudah ada di target
           rm: true # Menghapus isi folder target sebelum menyalin (untuk deployment yang bersih)
-          debug: false # Ubah ke 'true' jika Anda ingin melihat log SCP yang lebih detail
+          debug: true # Ubah ke 'true' jika Anda ingin melihat log SCP yang lebih detail
 
       - name: Run Backend Migrations and Restart Services
         uses: appleboy/ssh-action@v1.0.0 # Action GitHub untuk menjalankan perintah SSH di VM
