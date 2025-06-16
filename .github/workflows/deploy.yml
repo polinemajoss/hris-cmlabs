@@ -11,87 +11,88 @@ jobs:
     runs-on: ubuntu-latest # Runner yang akan menjalankan workflow ini
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
 
-    - name: Set up Node.js (for Next.js build)
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18' # Sesuaikan dengan versi Node.js yang Anda gunakan
+      - name: Set up Node.js (for Next.js build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18" # Sesuaikan dengan versi Node.js yang Anda gunakan
 
-    - name: Install Frontend Dependencies and Build
-      run: |
-        cd frontend # Masuk ke folder frontend Next.js Anda
-        npm install
-        npm run build
-      # Pastikan lokasi folder 'frontend' sesuai di proyek Anda
+      - name: Install Frontend Dependencies and Build
+        run: |
+          cd frontend # Masuk ke folder frontend Next.js Anda
+          npm install
+          npm run build
+        # Pastikan lokasi folder 'frontend' sesuai di proyek Anda
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.0.0 # Action GitHub populer untuk SSH
-      with:
-        host: ${{ secrets.AZURE_VM_HOST }}
-        username: ${{ secrets.AZURE_VM_USER }}
-        key: ${{ secrets.AZURE_VM_SSH_KEY }}
-        # password: ${{ secrets.VM_PASSWORD }} # Gunakan ini jika tidak pakai key, tapi kurang aman
-        script: |
-          # Navigasi ke direktori aplikasi Anda di VM
-          cd /var/www/hris-cmlabs # Sesuaikan path aplikasi Anda di VM
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0 # Action GitHub populer untuk SSH
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          # password: ${{ secrets.VM_PASSWORD }} # Gunakan ini jika tidak pakai key, tapi kurang aman
+          script: |
+            # Navigasi ke direktori aplikasi Anda di VM
+            cd /var/www/hris-cmlabs # Sesuaikan path aplikasi Anda di VM
 
-          # Pastikan Anda punya folder build atau dist untuk frontend
-          # Contoh: menghapus folder frontend lama
-          rm -rf frontend-build # Sesuaikan nama folder build frontend Anda
+            # Pastikan Anda punya folder build atau dist untuk frontend
+            # Contoh: menghapus folder frontend lama
+            rm -rf frontend-build # Sesuaikan nama folder build frontend Anda
 
-          # Membuat folder baru dan memindahkan build frontend ke sana
-          # Menggunakan rsync untuk menyalin file dari runner ke VM
-          # Atau Anda bisa menggunakan scp command di dalam script ini.
-          # Catatan: appleboy/ssh-action sudah menyediakan `command` untuk menjalankan script.
-          # Untuk transfer file, Anda mungkin perlu langkah terpisah atau menggunakan scp dalam script.
-          # Contoh sederhana (jika kode sudah di-clone di VM):
-          # git pull origin main # Tarik perubahan kode backend
-          # cp -r /path/to/github_actions_runner/workspace/your-repo/frontend/.next /var/www/html/hris-app/frontend-build # Ini tidak langsung, tapi konsepnya
+            # Membuat folder baru dan memindahkan build frontend ke sana
+            # Menggunakan rsync untuk menyalin file dari runner ke VM
+            # Atau Anda bisa menggunakan scp command di dalam script ini.
+            # Catatan: appleboy/ssh-action sudah menyediakan `command` untuk menjalankan script.
+            # Untuk transfer file, Anda mungkin perlu langkah terpisah atau menggunakan scp dalam script.
+            # Contoh sederhana (jika kode sudah di-clone di VM):
+            # git pull origin main # Tarik perubahan kode backend
+            # cp -r /path/to/github_actions_runner/workspace/your-repo/frontend/.next /var/www/html/hris-app/frontend-build # Ini tidak langsung, tapi konsepnya
 
-          # SOLUSI LEBIH BAIK UNTUK TRANSFER FILE:
-          # Menggunakan rsync action atau scp command di dalam script
-          # Contoh dengan scp (perlu `host`, `username`, `key` di `scp-action` atau `ssh-action`):
+            # SOLUSI LEBIH BAIK UNTUK TRANSFER FILE:
+            # Menggunakan rsync action atau scp command di dalam script
+            # Contoh dengan scp (perlu `host`, `username`, `key` di `scp-action` atau `ssh-action`):
 
-    - name: Transfer Frontend Build and Backend Code
-      uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk SCP (copy file)
-      with:
-        host: ${{ secrets.AZURE_VM_HOST }}
-        username: ${{ secrets.AZURE_VM_USER }}
-        key: ${{ secrets.AZURE_VM_SSH_KEY }}
-        source: "frontend/,backend/" 
-        target: "/var/www/hris-cmlabs/" # Direktori root aplikasi Anda di VM
-        overwrite: true
+      - name: Transfer Frontend Build and Backend Code
+        uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk SCP (copy file)
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "frontend/,backend/"
+          target: "/var/www/hris-cmlabs/" # Direktori root aplikasi Anda di VM
+          overwrite: true
+          rm: true
 
-    - name: Run Backend Migrations and Restart Services
-      uses: appleboy/ssh-action@v1.0.0 # Gunakan kembali ssh-action untuk menjalankan perintah di VM
-      with:
-        host: ${{ secrets.AZURE_VM_HOST }}
-        username: ${{ secrets.AZURE_VM_USER }}
-        key: ${{ secrets.AZURE_VM_SSH_KEY }}
-        script: |
-          # === BAGIAN BACKEND (LARAVEL) ===
-          cd /var/www/hris-cmlabs/backend # <--- UBAH DI SINI! (Ini direktori kerja untuk backend)
+      - name: Run Backend Migrations and Restart Services
+        uses: appleboy/ssh-action@v1.0.0 # Gunakan kembali ssh-action untuk menjalankan perintah di VM
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            # === BAGIAN BACKEND (LARAVEL) ===
+            cd /var/www/hris-cmlabs/backend # <--- UBAH DI SINI! (Ini direktori kerja untuk backend)
 
-          echo "Installing backend dependencies..."
-          composer install --no-dev --optimize-autoloader
+            echo "Installing backend dependencies..."
+            composer install --no-dev --optimize-autoloader
 
-          echo "Running database migrations..."
-          php artisan migrate --force
+            echo "Running database migrations..."
+            php artisan migrate --force
 
-          echo "Clearing backend cache..."
-          php artisan optimize:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+            echo "Clearing backend cache..."
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
 
-          # === BAGIAN FRONTEND (NEXT.JS) ===
-          cd /var/www/hris-cmlabs/frontend # <--- UBAH DI SINI! (Ini direktori kerja untuk frontend)
+            # === BAGIAN FRONTEND (NEXT.JS) ===
+            cd /var/www/hris-cmlabs/frontend # <--- UBAH DI SINI! (Ini direktori kerja untuk frontend)
 
-          echo "Restarting Next.js application with PM2..."
-          pm2 restart hris-cmlabs || pm2 start npm --name hris-cmlabs -- start # Pastikan 'hris-nextjs' adalah nama PM2 app Anda
+            echo "Restarting Next.js application with PM2..."
+            pm2 restart hris-cmlabs || pm2 start npm --name hris-cmlabs -- start # Pastikan 'hris-nextjs' adalah nama PM2 app Anda
 
-          # === RESTART WEB SERVER ===
-          echo "Reloading Nginx..."
-          sudo systemctl reload nginx
+            # === RESTART WEB SERVER ===
+            echo "Reloading Nginx..."
+            sudo systemctl reload nginx
