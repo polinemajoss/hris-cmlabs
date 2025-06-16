@@ -91,7 +91,7 @@ jobs:
           cd /var/www/hris-cmlabs/frontend # <--- UBAH DI SINI! (Ini direktori kerja untuk frontend)
 
           echo "Restarting Next.js application with PM2..."
-          pm2 restart hris-nextjs || pm2 start npm --name hris-nextjs -- start # Pastikan 'hris-nextjs' adalah nama PM2 app Anda
+          pm2 restart hris-cmlabs || pm2 start npm --name hris-cmlabs -- start # Pastikan 'hris-nextjs' adalah nama PM2 app Anda
 
           # === RESTART WEB SERVER ===
           echo "Reloading Nginx..."
