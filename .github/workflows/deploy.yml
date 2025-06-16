@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yml
-name: Deploy to Azure VM
+name: Deploy ke Azure VM
 
 on:
   push:
@@ -11,69 +11,77 @@ jobs:
     runs-on: ubuntu-latest # Runner yang akan menjalankan workflow ini
 
     steps:
-      - name: Checkout code
+      - name: Checkout Kode
         uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
 
-      - name: Set up Node.js
+      - name: Siapkan Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18" # Pastikan versi Node.js sesuai dengan proyek Anda
 
-      - name: Clean Next.js build cache on Runner
+      - name: Bersihkan Cache Build Frontend di Runner
         run: |
           rm -rf frontend/.next # Menghapus cache build Next.js di runner GitHub Actions
           rm -rf frontend/out   # Menghapus folder 'out' jika menggunakan next export
 
-      - name: Install Frontend Dependencies and Build
+      - name: Instal Dependensi Frontend dan Build
         run: |
           cd frontend # Pindah ke direktori frontend
           npm install
           npm run build # Membangun aplikasi Next.js (menghasilkan folder .next)
 
-      - name: Stop Services on VM before SCP
+      - name: Sinkronkan Kode ke VM Menggunakan Rsync
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
-            echo "Stopping Nginx..."
-            sudo systemctl stop nginx || true # Hentikan Nginx, '|| true' mencegah kegagalan workflow jika Nginx tidak berjalan
-            echo "Stopping PM2 processes..."
-            pm2 stop all || true # Hentikan semua proses PM2
-            pm2 delete all || true # Hapus semua proses PM2 dari daftar
-            pm2 save || true # Simpan konfigurasi PM2 yang bersih agar tidak auto-start yang salah
+            # Pastikan rsync terinstal di VM
+            if ! command -v rsync &> /dev/null
+            then
+                echo "rsync tidak ditemukan, menginstal..."
+                sudo apt update && sudo apt install -y rsync
+            fi
 
-      - name: Transfer Frontend Build and Backend Code
-        uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk menyalin file
-        with:
-          host: ${{ secrets.AZURE_VM_HOST }}
-          username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          source: "frontend/,backend/" # Menyalin seluruh folder frontend/ dan backend/ dari repo
-          target: "/var/www/hris-cmlabs/" # Direktori root aplikasi di VM Azure
-          overwrite: true # Menimpa file yang sudah ada di target
-          rm: true # Menghapus isi folder target sebelum menyalin (untuk deployment yang bersih)
-          debug: true # Ubah ke 'true' jika Anda ingin melihat log SCP yang lebih detail
+            # Hentikan layanan yang mungkin mengunci file sebelum sinkronisasi
+            echo "Menghentikan Nginx sebelum rsync..."
+            sudo systemctl stop nginx || true
+            echo "Menghentikan proses PM2 sebelum rsync..."
+            pm2 stop all || true
+            pm2 delete all || true
+            pm2 save || true # Simpan konfigurasi PM2 yang bersih
 
-      - name: Run Backend Migrations and Restart Services
-        uses: appleboy/ssh-action@v1.0.0 # Action GitHub untuk menjalankan perintah SSH di VM
-        with:
-          host: ${{ secrets.AZURE_VM_HOST }}
-          username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          script: |
-            echo "Starting backend deployment..."
+            # Pastikan direktori target ada dan memiliki izin yang benar
+            sudo mkdir -p /var/www/hris-cmlabs/frontend
+            sudo mkdir -p /var/www/hris-cmlabs/backend/public # Asumsi public folder di backend Laravel
+            sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
+            sudo chmod -R 775 /var/www/hris-cmlabs/
+
+            # Rsync untuk frontend: Menyalin semua dari runner ke VM
+            echo "Memulai rsync untuk frontend..."
+            rsync -avz --delete \
+              /home/runner/work/${{ github.repository }}/frontend/ \
+              ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/frontend/
+
+            # Rsync untuk backend: Menyalin semua dari runner ke VM
+            echo "Memulai rsync untuk backend..."
+            rsync -avz --delete \
+              /home/runner/work/${{ github.repository }}/backend/ \
+              ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/backend/
+
+            echo "Rsync selesai. Melanjutkan dengan perintah pasca-deployment."
+
             # === BAGIAN BACKEND (LARAVEL) ===
             cd /var/www/hris-cmlabs/backend # Pindah ke direktori backend
 
-            echo "Installing backend dependencies..."
+            echo "Menginstal dependensi backend..."
             composer install --no-dev --optimize-autoloader
 
-            echo "Running database migrations..."
+            echo "Menjalankan migrasi database..."
             php artisan migrate --force
 
-            echo "Clearing backend cache..."
+            echo "Membersihkan cache backend..."
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
@@ -82,11 +90,11 @@ jobs:
             # === BAGIAN FRONTEND (NEXT.JS) ===
             cd /var/www/hris-cmlabs/frontend # Pindah ke direktori frontend
 
-            echo "Starting Next.js application with PM2..."
+            echo "Memastikan aplikasi Next.js berjalan dengan PM2..."
             # Memulai aplikasi Next.js menggunakan PM2 dengan nama 'hris-nextjs'
             pm2 start npm --name hris-nextjs -- start
             pm2 save # Simpan status PM2 agar aplikasi otomatis berjalan setelah reboot VM
 
             # === RESTART WEB SERVER ===
-            echo "Reloading Nginx..."
+            echo "Me-reload Nginx..."
             sudo systemctl reload nginx # Me-reload Nginx untuk menerapkan konfigurasi terbaru (jika ada) dan proxy ke aplikasi yang sudah berjalan
