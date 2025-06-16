@@ -7,20 +7,11 @@ on:
       - main
 
 jobs:
-  deploy:
+  upload:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Kode
         uses: actions/checkout@v4
-
-      - name: Siapkan Direktori SSH dan Known Hosts (Ini masih perlu untuk key itu sendiri)
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          # Kita tetap menyimpan host key di sini, tapi perintah rsync akan mengabaikannya
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
 
       - name: Siapkan Node.js
         uses: actions/setup-node@v4
@@ -38,14 +29,38 @@ jobs:
           npm install
           npm run build
 
-      - name: Jalankan Deployment ke VM
+      - name: Upload Frontend ke VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "frontend/"
+          target: "/var/www/hris-cmlabs/frontend/"
+          rm: true
+
+      - name: Upload Backend ke VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "backend/"
+          target: "/var/www/hris-cmlabs/backend/"
+          rm: true
+
+  deploy:
+    needs: upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Jalankan Deployment di VM
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
-            set -x # Aktifkan mode debug untuk melihat perintah yang dijalankan
+            set -x
 
             # Pastikan rsync terinstal di VM
             if ! command -v rsync &> /dev/null
@@ -55,9 +70,9 @@ jobs:
             fi
 
             # Hentikan layanan yang mungkin mengunci file sebelum sinkronisasi
-            echo "Menghentikan Nginx sebelum rsync..."
+            echo "Menghentikan Nginx sebelum update..."
             sudo systemctl stop nginx || true
-            echo "Menghentikan proses PM2 sebelum rsync..."
+            echo "Menghentikan proses PM2 sebelum update..."
             pm2 stop all || true
             pm2 delete all || true
             pm2 save || true
@@ -67,23 +82,6 @@ jobs:
             sudo mkdir -p /var/www/hris-cmlabs/backend/public
             sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
             sudo chmod -R 775 /var/www/hris-cmlabs/
-
-            # Rsync untuk frontend: Menyalin semua dari runner ke VM
-            # MENGAKTIFKAN PENGABAIAN HOST KEY CHECKING DI SINI (HANYA UNTUK DEBUGGING)
-            echo "Memulai rsync untuk frontend (mengabaikan host key check)..."
-            rsync -avz --delete \
-              -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-              /home/runner/work/${{ github.repository }}/frontend/ \
-              ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/frontend/
-
-            # Rsync untuk backend: Menyalin semua dari runner ke VM
-            echo "Memulai rsync untuk backend (mengabaikan host key check)..."
-            rsync -avz --delete \
-              -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-              /home/runner/work/${{ github.repository }}/backend/ \
-              ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/backend/
-
-            echo "Rsync selesai. Melanjutkan dengan perintah pasca-deployment."
 
             # === BAGIAN BACKEND (LARAVEL) ===
             cd /var/www/hris-cmlabs/backend
