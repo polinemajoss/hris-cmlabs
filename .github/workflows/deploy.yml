@@ -60,8 +60,7 @@ jobs:
         host: ${{ secrets.AZURE_VM_HOST }}
         username: ${{ secrets.AZURE_VM_USER }}
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
-        source: "frontend/out/*,backend/*" # Atau "frontend/build/*", sesuaikan dengan output Next.js Anda
-                                            # dan folder backend Anda
+        source: "frontend/,backend/" 
         target: "/var/www/hris-cmlabs/" # Direktori root aplikasi Anda di VM
         overwrite: true
 
