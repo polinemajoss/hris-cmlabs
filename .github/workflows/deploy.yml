@@ -35,7 +35,7 @@ jobs:
         # password: ${{ secrets.VM_PASSWORD }} # Gunakan ini jika tidak pakai key, tapi kurang aman
         script: |
           # Navigasi ke direktori aplikasi Anda di VM
-          cd /var/www/hris-app # Sesuaikan path aplikasi Anda di VM
+          cd /var/www/hris-cmlabs # Sesuaikan path aplikasi Anda di VM
 
           # Pastikan Anda punya folder build atau dist untuk frontend
           # Contoh: menghapus folder frontend lama
@@ -62,7 +62,7 @@ jobs:
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
         source: "frontend/out/*,backend/*" # Atau "frontend/build/*", sesuaikan dengan output Next.js Anda
                                             # dan folder backend Anda
-        target: "/var/www/hris-app/" # Direktori root aplikasi Anda di VM
+        target: "/var/www/hris-cmlabs/" # Direktori root aplikasi Anda di VM
         overwrite: true
 
     - name: Run Backend Migrations and Restart Services
@@ -72,22 +72,27 @@ jobs:
         username: ${{ secrets.AZURE_VM_USER }}
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
         script: |
-          cd /var/www/hris-app/backend # Masuk ke direktori backend Anda di VM
+          # === BAGIAN BACKEND (LARAVEL) ===
+          cd /var/www/hris-cmlabs/backend # <--- UBAH DI SINI! (Ini direktori kerja untuk backend)
 
           echo "Installing backend dependencies..."
-          composer install --no-dev --optimize-autoloader # Contoh untuk PHP/Laravel
-          # npm install --production # Contoh untuk Node.js
+          composer install --no-dev --optimize-autoloader
 
           echo "Running database migrations..."
-          php artisan migrate --force # Contoh Laravel, `--force` untuk produksi
+          php artisan migrate --force
 
-          echo "Clearing cache..."
-          php artisan optimize:clear # Contoh Laravel
+          echo "Clearing backend cache..."
+          php artisan optimize:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
 
-          echo "Restarting backend service..."
-          sudo systemctl restart hris-backend # Ganti dengan nama service backend Anda (misalnya pm2 restart hris-app)
-                                            # Anda mungkin perlu mengkonfigurasi `sudoers` agar user SSH dapat menjalankan restart tanpa password
+          # === BAGIAN FRONTEND (NEXT.JS) ===
+          cd /var/www/hris-cmlabs/frontend # <--- UBAH DI SINI! (Ini direktori kerja untuk frontend)
 
-          echo "Reloading Nginx/Apache..."
-          sudo systemctl reload nginx # Jika menggunakan Nginx sebagai web server/reverse proxy
-          # sudo systemctl reload apache2 # Jika menggunakan Apache
+          echo "Restarting Next.js application with PM2..."
+          pm2 restart hris-nextjs || pm2 start npm --name hris-nextjs -- start # Pastikan 'hris-nextjs' adalah nama PM2 app Anda
+
+          # === RESTART WEB SERVER ===
+          echo "Reloading Nginx..."
+          sudo systemctl reload nginx
