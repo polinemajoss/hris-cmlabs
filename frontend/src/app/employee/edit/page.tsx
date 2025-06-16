@@ -4,17 +4,19 @@ import EditForm from "../../../components/employee/EditForm"; // Sesuaikan path 
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 
-// ✅ Props sekarang akan menerima searchParams
-type Props = {
-    searchParams?: {
-        id?: string;
+// ✅ Tipe Props yang benar untuk halaman Next.js di App Router
+// Next.js secara implisit mengoper objek ini ke komponen halaman dan generateMetadata
+type PageProps = {
+    params: {}; // Untuk rute statis (tanpa [id] di folder), params akan menjadi objek kosong
+    searchParams?: { // searchParams akan berisi query parameters
+        id?: string; // Query parameter 'id' diharapkan bertipe string
     };
 };
 
 async function getEmployeeData(id: string) {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-        const res = await fetch(`<span class="math-inline">\{apiUrl\}/employees/</span>{id}`, { cache: 'no-store' });
+        const res = await fetch(`${apiUrl}/employees/${id}`, { cache: 'no-store' });
 
         if (res.status === 404) return null;
         if (!res.ok) throw new Error(`Gagal mengambil data untuk karyawan ID ${id}`);
@@ -27,8 +29,8 @@ async function getEmployeeData(id: string) {
     }
 }
 
-// ✅ generateMetadata tidak lagi menerima 'params' tapi 'searchParams'
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+// ✅ generateMetadata menerima PageProps
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const id = searchParams?.id; // Ambil ID dari searchParams
 
     if (!id) {
@@ -46,8 +48,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     };
 }
 
-// ✅ export default async function EditEmployeePage({ searchParams }: Props) {
-export default async function EditEmployeePage({ searchParams }: Props) {
+// ✅ export default async function EditEmployeePage menerima PageProps
+export default async function EditEmployeePage({ searchParams }: PageProps) {
     const id = searchParams?.id; // Ambil ID dari searchParams
 
     if (!id) {
