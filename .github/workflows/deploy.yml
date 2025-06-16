@@ -4,15 +4,15 @@ name: Deploy ke Azure VM
 on:
   push:
     branches:
-      - main
+      - main # Workflow akan terpicu setiap push ke branch 'main'
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Runner yang akan menjalankan workflow ini
 
     steps:
       - name: Checkout Kode
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
 
       - name: Siapkan Direktori SSH dan Known Hosts
         run: |
@@ -22,30 +22,23 @@ jobs:
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts # Mengatur izin file known_hosts
 
-      - name: Tambahkan Host Key VM ke known_hosts
-        run: |
-          # Menambahkan host key VM ke known_hosts. Ini mencegah Host key verification failed.
-          ssh-keyscan -H ${{ secrets.AZURE_VM_HOST }} >> ~/.ssh/known_hosts
-          # Mengatur izin agar hanya pemilik yang bisa membaca/menulis known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
       - name: Siapkan Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "18" # Pastikan versi Node.js sesuai dengan proyek Anda
 
       - name: Bersihkan Cache Build Frontend di Runner
         run: |
-          rm -rf frontend/.next
-          rm -rf frontend/out
+          rm -rf frontend/.next # Menghapus cache build Next.js di runner GitHub Actions
+          rm -rf frontend/out   # Menghapus folder 'out' jika menggunakan next export
 
       - name: Instal Dependensi Frontend dan Build
         run: |
-          cd frontend
+          cd frontend # Pindah ke direktori frontend
           npm install
-          npm run build
+          npm run build # Membangun aplikasi Next.js (menghasilkan folder .next)
 
-      - name: Sinkronkan Kode ke VM Menggunakan Rsync
+      - name: Jalankan Deployment ke VM
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
@@ -68,6 +61,7 @@ jobs:
             pm2 save || true
 
             # Pastikan direktori target ada dan memiliki izin yang benar
+            # Ini sangat penting untuk memastikan rsync bisa menulis ke lokasi ini
             sudo mkdir -p /var/www/hris-cmlabs/frontend
             sudo mkdir -p /var/www/hris-cmlabs/backend/public
             sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
@@ -76,13 +70,13 @@ jobs:
             # Rsync untuk frontend: Menyalin semua dari runner ke VM
             echo "Memulai rsync untuk frontend..."
             rsync -avz --delete \
-              /home/runner/work/${{ github.repository_owner }}/${{ github.event.repository.name }}/frontend/ \
+              /home/runner/work/${{ github.repository }}/frontend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/frontend/
 
             # Rsync untuk backend: Menyalin semua dari runner ke VM
             echo "Memulai rsync untuk backend..."
             rsync -avz --delete \
-              /home/runner/work/${{ github.repository_owner }}/${{ github.event.repository.name }}/backend/ \
+              /home/runner/work/${{ github.repository }}/backend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/backend/
 
             echo "Rsync selesai. Melanjutkan dengan perintah pasca-deployment."
@@ -111,4 +105,4 @@ jobs:
 
             # === RESTART WEB SERVER ===
             echo "Me-restart Nginx..."
-            sudo systemctl restart nginx
+            sudo systemctl restart nginx # Menggunakan restart alih-alih reload agar Nginx aktif kembali
