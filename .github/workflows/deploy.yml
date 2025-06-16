@@ -4,39 +4,39 @@ name: Deploy ke Azure VM
 on:
   push:
     branches:
-      - main # Workflow akan terpicu setiap push ke branch 'main'
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest # Runner yang akan menjalankan workflow ini
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Kode
-        uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
+        uses: actions/checkout@v4
 
-      - name: Siapkan Direktori SSH dan Known Hosts
+      - name: Siapkan Direktori SSH dan Known Hosts (Ini masih perlu untuk key itu sendiri)
         run: |
-          mkdir -p ~/.ssh # Membuat direktori ~/.ssh jika belum ada
-          chmod 700 ~/.ssh # Mengatur izin agar hanya pemilik yang bisa membaca/menulis/menjalankan
-          # Menulis SSH_KNOWN_HOSTS secret ke file known_hosts
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          # Kita tetap menyimpan host key di sini, tapi perintah rsync akan mengabaikannya
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts # Mengatur izin file known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Siapkan Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18" # Pastikan versi Node.js sesuai dengan proyek Anda
+          node-version: "18"
 
       - name: Bersihkan Cache Build Frontend di Runner
         run: |
-          rm -rf frontend/.next # Menghapus cache build Next.js di runner GitHub Actions
-          rm -rf frontend/out   # Menghapus folder 'out' jika menggunakan next export
+          rm -rf frontend/.next
+          rm -rf frontend/out
 
       - name: Instal Dependensi Frontend dan Build
         run: |
-          cd frontend # Pindah ke direktori frontend
+          cd frontend
           npm install
-          npm run build # Membangun aplikasi Next.js (menghasilkan folder .next)
+          npm run build
 
       - name: Jalankan Deployment ke VM
         uses: appleboy/ssh-action@v1.0.0
@@ -46,6 +46,7 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
             set -x # Aktifkan mode debug untuk melihat perintah yang dijalankan
+
             # Pastikan rsync terinstal di VM
             if ! command -v rsync &> /dev/null
             then
@@ -62,21 +63,23 @@ jobs:
             pm2 save || true
 
             # Pastikan direktori target ada dan memiliki izin yang benar
-            # Ini sangat penting untuk memastikan rsync bisa menulis ke lokasi ini
             sudo mkdir -p /var/www/hris-cmlabs/frontend
             sudo mkdir -p /var/www/hris-cmlabs/backend/public
             sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
             sudo chmod -R 775 /var/www/hris-cmlabs/
 
             # Rsync untuk frontend: Menyalin semua dari runner ke VM
-            echo "Memulai rsync untuk frontend..."
+            # MENGAKTIFKAN PENGABAIAN HOST KEY CHECKING DI SINI (HANYA UNTUK DEBUGGING)
+            echo "Memulai rsync untuk frontend (mengabaikan host key check)..."
             rsync -avz --delete \
+              -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
               /home/runner/work/${{ github.repository }}/frontend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/frontend/
 
             # Rsync untuk backend: Menyalin semua dari runner ke VM
-            echo "Memulai rsync untuk backend..."
+            echo "Memulai rsync untuk backend (mengabaikan host key check)..."
             rsync -avz --delete \
+              -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
               /home/runner/work/${{ github.repository }}/backend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/backend/
 
@@ -106,4 +109,4 @@ jobs:
 
             # === RESTART WEB SERVER ===
             echo "Me-restart Nginx..."
-            sudo systemctl restart nginx # Menggunakan restart alih-alih reload agar Nginx aktif kembali
+            sudo systemctl restart nginx
