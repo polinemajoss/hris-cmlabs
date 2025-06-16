@@ -1,8 +1,9 @@
+// File: src/app/employee/edit/EditForm.tsx (atau lokasi aslinya)
 "use client";
 
-import axiosInstance from "../../../../lib/axios";
-import { useParams, useRouter } from "next/navigation";
-import EmployeeForm, { EmployeeFormData } from "../../../../components/employee/EmployeeForm";
+import axiosInstance from "../../lib/axios";
+import { useSearchParams, useRouter } from "next/navigation"; // UBAH useParams ke useSearchParams
+import EmployeeForm, { EmployeeFormData } from "./EmployeeForm";
 import axios from "axios";
 
 type EditFormProps = {
@@ -11,14 +12,15 @@ type EditFormProps = {
 
 export default function EditForm({ initialData }: EditFormProps) {
     const router = useRouter();
-    const { id } = useParams();
+    const searchParams = useSearchParams(); // Gunakan useSearchParams
+    const id = searchParams.get('id'); // Ambil ID dari query parameter 'id'
 
     const handleUpdate = async (formData: EmployeeFormData) => {
         if (!id) {
-            alert("ID karyawan tidak tersedia.");
+            alert("ID karyawan tidak tersedia di URL (query parameter).");
             return;
         }
-
+        // ... sisa kode handleUpdate sama ...
         let formattedBirthDate = null;
         if (formData.birth_date) {
             const date = new Date(formData.birth_date);
