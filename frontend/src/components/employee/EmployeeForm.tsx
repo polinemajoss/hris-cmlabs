@@ -13,20 +13,19 @@ import { AvatarUploader } from '../ui/AvatarUploader';
 import { DatePicker } from "../ui/date-picker";
 
 
-// --- Definisi interface EmployeeFormData ---
-// Ini adalah tipe data untuk seluruh form, baik untuk create maupun edit.
-// 'id' adalah opsional karena tidak ada saat membuat baru.
+// --- Definisikan interface EmployeeFormData ---
+// 'id' adalah properti opsional, karena tidak ada saat membuat karyawan baru.
 export interface EmployeeFormData {
-  id?: string; // <--- ID sekarang adalah properti opsional di sini
+  id?: string | number; // <--- Pastikan ini ada dan opsional
   email: string;
   first_name: string;
   last_name: string;
   mobile_number: string;
   nik: string;
-  gender: "M" | "F" | ""; // "" untuk opsi "Pilih"
+  gender: "M" | "F" | "";
   education: string;
   birth_place: string;
-  birth_date: string | null; // Bisa string 'YYYY-MM-DD' atau null
+  birth_date: string | null;
   position: string;
   branch: string;
   contract_type: "Tetap" | "Kontrak" | "Lepas" | "";
@@ -35,20 +34,21 @@ export interface EmployeeFormData {
   bank_account_number: string;
   bank_account_name: string;
   sp_type: string;
-  status?: "Aktif" | "Tidak Aktif" | ""; // Opsional, dan "" untuk opsi "Pilih"
+  status?: "Aktif" | "Tidak Aktif" | "";
   avatar?: string;
 }
 
 // --- Interface EmployeeFormProps ---
-// initialData sekarang langsung bertipe EmployeeFormData | null
+// initialData bertipe EmployeeFormData | null.
+// isEditMode adalah boolean opsional.
 interface EmployeeFormProps {
   onSubmit: (formData: EmployeeFormData) => void;
   onCancel: () => void;
   initialData?: EmployeeFormData | null; // Data awal untuk form (bisa null/undefined untuk create)
-  isEditMode?: boolean; // <--- TAMBAHKAN PROPERTI INI
+  isEditMode?: boolean; // <--- Tambahkan properti ini di sini
 }
 
-const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false }: EmployeeFormProps) => { // <--- Inisialisasi isEditMode
+const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false }: EmployeeFormProps) => { // <--- Inisialisasi isEditMode di sini
   // --- Opsi untuk Select dan RadioGroup ---
   const genderOptions = [ { value: "M", label: "Laki-laki" }, { value: "F", label: "Perempuan" }, ];
   const pendidikanOptions = [ { value: "SMA/SMK", label: "SMA/SMK" }, { value: "D3", label: "D3" }, { value: "S1", label: "S1" }, { value: "S2", label: "S2" }, { value: "S3", label: "S3" }, ];
@@ -60,11 +60,11 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
 
   // --- State Form ---
   const [form, setForm] = useState<EmployeeFormData>(() => {
-    // Fungsi inisialisasi untuk useState, hanya berjalan sekali saat render pertama
     if (initialData) {
       return {
         ...initialData,
-        id: initialData.id || "", // Pastikan ID adalah string, bahkan jika undefined
+        // Pastikan properti opsional memiliki nilai default string kosong jika null/undefined dari initialData
+        id: initialData.id || "",
         first_name: initialData.first_name || "",
         last_name: initialData.last_name || "",
         mobile_number: initialData.mobile_number || "",
@@ -96,7 +96,6 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
   });
 
   // --- Menggunakan useEffect untuk mengupdate form state saat initialData berubah ---
-  // Ini penting jika komponen dirender ulang dengan initialData yang berbeda (misalnya, jika form ini digunakan di modal)
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -175,7 +174,6 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
   };
 
   // --- State Lokal untuk DatePicker ---
-  // Inisialisasi DatePicker dengan tanggal dari form.birth_date atau undefined
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     initialData && initialData.birth_date ? new Date(initialData.birth_date) : undefined
   );
@@ -224,8 +222,8 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
             <Label htmlFor="mobile_number" className="mb-1">Nomor Ponsel</Label>
             <Input id="mobile_number" name="mobile_number" placeholder="Masukkan nomor ponsel" value={form.mobile_number} onChange={handleChange} required />
           </div>
-            {/* Email field hanya muncul jika ini mode tambah (initialData tidak ada) */}
-            {!initialData && (
+            {/* Email field hanya muncul jika ini mode tambah (initialData tidak ada atau initialData.id tidak ada) */}
+            {!initialData?.id && ( // Tampilkan jika tidak ada initialData atau jika initialData.id tidak ada (mode add)
               <div>
                 <Label htmlFor="email" className="mb-1">Email untuk Akun Baru</Label>
                 <Input
@@ -238,6 +236,13 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
                   required
                 />
               </div>
+            )}
+            {/* Jika ini mode edit (initialData ada dan punya ID), tampilkan email sebagai non-editable */}
+            {initialData?.id && (
+                <div>
+                    <Label htmlFor="email" className="mb-1">Email</Label>
+                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} disabled />
+                </div>
             )}
           <div>
             <Label htmlFor="nik" className="mb-1">NIK</Label>
