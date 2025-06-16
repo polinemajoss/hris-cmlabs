@@ -14,6 +14,11 @@ jobs:
       - name: Checkout Kode
         uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
 
+      - name: Hapus Host Key Lama dari known_hosts
+        run: |
+          # Menambahkan host key VM ke known_hosts. Ini mencegah Host key verification failed.
+          ssh-keyscan -H ${{ secrets.AZURE_VM_HOST }} >> ~/.ssh/known_hosts
+
       - name: Siapkan Node.js
         uses: actions/setup-node@v4
         with:
@@ -53,21 +58,23 @@ jobs:
             pm2 save || true # Simpan konfigurasi PM2 yang bersih
 
             # Pastikan direktori target ada dan memiliki izin yang benar
+            # Ini sangat penting jika `rsync --delete` gagal karena izin
             sudo mkdir -p /var/www/hris-cmlabs/frontend
-            sudo mkdir -p /var/www/hris-cmlabs/backend/public # Asumsi public folder di backend Laravel
+            sudo mkdir -p /var/www/hris-cmlabs/backend/public
             sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
             sudo chmod -R 775 /var/www/hris-cmlabs/
 
             # Rsync untuk frontend: Menyalin semua dari runner ke VM
+            # Source path: /home/runner/work/<repo_owner>/<repo_name>/frontend/
             echo "Memulai rsync untuk frontend..."
             rsync -avz --delete \
-              /home/runner/work/${{ github.repository }}/frontend/ \
+              /home/runner/work/${{ github.repository_owner }}/${{ github.event.repository.name }}/frontend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/frontend/
 
             # Rsync untuk backend: Menyalin semua dari runner ke VM
             echo "Memulai rsync untuk backend..."
             rsync -avz --delete \
-              /home/runner/work/${{ github.repository }}/backend/ \
+              /home/runner/work/${{ github.repository_owner }}/${{ github.event.repository.name }}/backend/ \
               ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/var/www/hris-cmlabs/backend/
 
             echo "Rsync selesai. Melanjutkan dengan perintah pasca-deployment."
@@ -91,10 +98,9 @@ jobs:
             cd /var/www/hris-cmlabs/frontend # Pindah ke direktori frontend
 
             echo "Memastikan aplikasi Next.js berjalan dengan PM2..."
-            # Memulai aplikasi Next.js menggunakan PM2 dengan nama 'hris-nextjs'
             pm2 start npm --name hris-nextjs -- start
             pm2 save # Simpan status PM2 agar aplikasi otomatis berjalan setelah reboot VM
 
             # === RESTART WEB SERVER ===
-            echo "Me-reload Nginx..."
-            sudo systemctl reload nginx # Me-reload Nginx untuk menerapkan konfigurasi terbaru (jika ada) dan proxy ke aplikasi yang sudah berjalan
+            echo "Me-restart Nginx..."
+            sudo systemctl restart nginx # <--- UBAH DARI reload KE restart
