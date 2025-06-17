@@ -241,9 +241,7 @@ export default function LetterManagementPage() {
                                   });
                                   setIsEditSheetOpen(true); // Membuka sheet edit
                                 }}
-                                className="p-2 rounded-md bg-primary text-white border border-transparent 
-                                          hover:bg-white hover:text-primary hover:border-primary 
-                                          transition-colors duration-200 ease-in-out"
+                                className="p-2 rounded-md border bg-white text-primary border-primary hover:bg-primary hover:text-white transition-colors duration-200 ease-in-out text-sm font-medium"
                                 title="Action"
                               >
                                 View
