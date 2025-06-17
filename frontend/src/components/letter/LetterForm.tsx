@@ -92,23 +92,23 @@ const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, i
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="title">Judul Surat</Label>
         <Input type="text" id="title" name="title" value={formData.title} onChange={handleChange} required />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="type">Tipe Surat</Label>
         <Input type="text" id="type" name="type" value={formData.type} onChange={handleChange} required />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="recipient">Penerima Surat</Label>
         <Input type="text" id="recipient" name="recipient" value={formData.recipient} onChange={handleChange} required />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="date">Tanggal</Label>
         <Input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="status">Status</Label>
         <Select onValueChange={(value) => handleSelectChange('status', value as LetterFormData['status'])} value={formData.status}>
           <SelectTrigger>
@@ -121,13 +121,13 @@ const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, i
           </SelectContent>
         </Select>
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="content">Konten Surat</Label>
         <Textarea id="content" name="content" value={formData.content} onChange={handleChange} rows={6} required />
       </div>
 
       {/* --- BAGIAN UPLOAD FILE BARU --- */}
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="attachment">Upload Bukti (PDF/Gambar)</Label>
         <Input
           id="attachment"
