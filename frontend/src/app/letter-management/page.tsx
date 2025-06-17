@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import LetterForm, { LetterFormData } from "../../components/letter/LetterForm"; // Import the LetterForm component and its type
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { SidebarInset } from "../../components/ui/sidebar";
 
 // Interface untuk data surat dari API
 interface Letter {
@@ -157,12 +158,12 @@ export default function LetterManagementPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex">
-        <AppSidebar />
-        <div className="flex-1 min-h-screen bg-gray-50">
+      <div className="flex h-screen">
+        <AppSidebar variant="inset" />
+        <SidebarInset className="flex-1 flex flex-col">
           <SiteHeader />
-          <main className="p-8">
-            <section className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-6 w-full">
+          <div className="flex-1 overflow-auto">
+            <div className="@container/main flex flex-1 flex-col gap-2">
               {/* Header: Judul, Search, dan Tombol Aksi */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <h2 className="font-semibold text-lg whitespace-nowrap">Manajemen Surat</h2>
@@ -310,9 +311,9 @@ export default function LetterManagementPage() {
                   </Table>
                 </div>
               )}
-            </section>
-          </main>
-        </div>
+            </div>
+          </div>
+        </SidebarInset>
       </div>
 
       {/* Sheet untuk Tambah Data */}

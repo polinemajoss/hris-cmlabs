@@ -2991,3 +2991,5 @@
 #60 D:\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('D:\\\\hris-cmlabs\\\\...')
 #61 {main}
 "} 
+[2025-06-17 13:56:30] local.INFO: Avatar upload request received. {"file_data":{"avatar":{"path":"./images.jpg","relativePath":"./images.jpg"}}} 
+[2025-06-17 13:56:30] local.INFO: No avatar file detected in the request.  

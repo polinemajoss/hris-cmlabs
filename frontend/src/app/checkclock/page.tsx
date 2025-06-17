@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarProvider } from "../../components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "../../components/ui/sidebar";
 import { AppSidebar } from "../../components/ui/app-sidebar";
 import { SiteHeader } from "../../components/ui/site-header";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table";
@@ -232,179 +232,177 @@ export default function CheckclockPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex">
-        <AppSidebar />
-        <div className="flex-1 min-h-screen bg-gray-50">
-          <div className="w-full">
+      <div className="flex h-screen">
+        <AppSidebar variant="inset"/>
+          <SidebarInset className="flex-1 flex flex-col">
             <SiteHeader />
-          </div>
-          <main className="p-4">
-            <section className="flex flex-col gap-4 py-4 md:gap-6 md:py-0">
-              <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-2 w-full">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <h2 className="font-semibold text-lg whitespace-nowrap">Checkclock Overview</h2>
-                  <div className="flex gap-3 flex-1">
-                    <input type="text" placeholder="Search Employee" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0" style={{ minHeight: "2rem" }} />
-                    <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F]" style={{ minHeight: "2rem" }}>
-                      <option value="">All Status</option>
-                      <option value="Waiting Approval">Waiting Approval</option>
-                      <option value="On Time">On Time</option>
-                      <option value="Late">Late</option>
-                      <option value="Absent">Absent</option>
-                      <option value="Annual Leave">Annual Leave</option>
-                      <option value="Sick Leave">Sick Leave</option>
-                    </select>
-                    <AddCheckclockSheet onAddAttendance={handleAddAttendance} />
-                  </div>
-                </div>
+              <main className="p-4">
+                <section className="flex flex-col gap-4 py-4 md:gap-6 md:py-0">
+                  <div className="bg-white rounded-xl border shadow px-8 py-6 flex flex-col gap-2 w-full">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <h2 className="font-semibold text-lg whitespace-nowrap">Checkclock Overview</h2>
+                      <div className="flex gap-3 flex-1">
+                        <input type="text" placeholder="Search Employee" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F] flex-1 min-w-0" style={{ minHeight: "2rem" }} />
+                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-3 py-1 border rounded text-xs h-8 focus:outline-none focus:border-[#1E3A5F]" style={{ minHeight: "2rem" }}>
+                          <option value="">All Status</option>
+                          <option value="Waiting Approval">Waiting Approval</option>
+                          <option value="On Time">On Time</option>
+                          <option value="Late">Late</option>
+                          <option value="Absent">Absent</option>
+                          <option value="Annual Leave">Annual Leave</option>
+                          <option value="Sick Leave">Sick Leave</option>
+                        </select>
+                        <AddCheckclockSheet onAddAttendance={handleAddAttendance} />
+                      </div>
+                    </div>
 
-                <div className="overflow-x-auto mt-4">
-                  {loading ? (
-                    // Tampilkan skeleton jika loading
-                    <CheckclockTableSkeleton />
-                  ) : error ? (
-                    // Tampilkan pesan error jika ada masalah
-                    <div className="text-center py-10 text-red-500">{error}</div>
-                  ) : (
-                    // Tampilkan tabel jika data sudah siap
-                    <Table className="w-full">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nama Karyawan</TableHead>
-                          <TableHead>Jabatan</TableHead>
-                          <TableHead>Waktu Kehadiran</TableHead>
-                          <TableHead>Tipe</TableHead>
-                          <TableHead>Persetujuan</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Rincian</TableHead>
-                          <TableHead className="w-[12%] text-center">Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredData.length > 0 ? (
-                          filteredData.map((row) => (
-                            <TableRow key={row.id}>
-                              <TableCell>{`${row.employee.first_name} ${row.employee.last_name}`}</TableCell>
-                              <TableCell>{row.employee.position}</TableCell>
-                              <TableCell>{new Date(row.attendance_time).toLocaleString("id-ID")}</TableCell>
-                              <TableCell>{row.type}</TableCell>
-                              <TableCell>
-                                <span className={row.approval_status === "Approved" ? "text-green-600" : "text-gray-500"}>{row.approval_status}</span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="px-2 py-1 rounded text-xs border">{row.status || "N/A"}</span>
-                              </TableCell>
-                              <TableCell>
-                                <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
-                              </TableCell>
-                              <TableCell className="flex gap-2 justify-center">
-                                <button type="button" onClick={() => handleDownloadPDF(row.employee)} className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition" title="Download">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                        <polyline points="14 2 14 8 20 8" />
-                                        <path d="M12 18v-6" />
-                                        <path d="M9 15l3 3 3-3" />
-                                    </svg>
-                                </button>
-
-                                <button type="button" onClick={() => handleOpenEditSheet(row.employee)} className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition" title="Edit">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M12 20h9" />
-                                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                                    </svg>
-                                </button>
-
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <button type="button" onClick={() => confirmDeleteEmployee(row.employee)} className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition" title="Delete">
-                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <polyline points="3 6 5 6 21 6" />
-                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                                          <line x1="10" y1="11" x2="10" y2="17" />
-                                          <line x1="14" y1="11" x2="14" y2="17" />
-                                      </svg>
-                                    </button>
-                                  </AlertDialogTrigger>
-                                  {employeeToDelete && (
-                                    <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Data karyawan{" "}
-                                          <strong style={{ color: "red" }}>
-                                            {employeeToDelete.first_name} {employeeToDelete.last_name}
-                                          </strong>{" "}
-                                          akan dihapus secara permanen.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
-                                        <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={executeDeleteEmployee}>
-                                          Hapus
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  )}
-                                </AlertDialog>
-                            </TableCell>
+                    <div className="overflow-x-auto mt-4">
+                      {loading ? (
+                        // Tampilkan skeleton jika loading
+                        <CheckclockTableSkeleton />
+                      ) : error ? (
+                        // Tampilkan pesan error jika ada masalah
+                        <div className="text-center py-10 text-red-500">{error}</div>
+                      ) : (
+                        // Tampilkan tabel jika data sudah siap
+                        <Table className="w-full">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nama Karyawan</TableHead>
+                              <TableHead>Jabatan</TableHead>
+                              <TableHead>Waktu Kehadiran</TableHead>
+                              <TableHead>Tipe</TableHead>
+                              <TableHead>Persetujuan</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Rincian</TableHead>
+                              <TableHead className="w-[12%] text-center">Action</TableHead>
                             </TableRow>
-                          ))
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center">Tidak ada data absensi ditemukan.</TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  )}
-                </div>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredData.length > 0 ? (
+                              filteredData.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell>{`${row.employee.first_name} ${row.employee.last_name}`}</TableCell>
+                                  <TableCell>{row.employee.position}</TableCell>
+                                  <TableCell>{new Date(row.attendance_time).toLocaleString("id-ID")}</TableCell>
+                                  <TableCell>{row.type}</TableCell>
+                                  <TableCell>
+                                    <span className={row.approval_status === "Approved" ? "text-green-600" : "text-gray-500"}>{row.approval_status}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="px-2 py-1 rounded text-xs border">{row.status || "N/A"}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <button className="border px-3 py-1 rounded" onClick={() => handleViewDetails(row)}>View</button>
+                                  </TableCell>
+                                  <TableCell className="flex gap-2 justify-center">
+                                    <button type="button" onClick={() => handleDownloadPDF(row.employee)} className="p-1 rounded bg-blue-100 hover:bg-blue-200 transition" title="Download">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                            <path d="M12 18v-6" />
+                                            <path d="M9 15l3 3 3-3" />
+                                        </svg>
+                                    </button>
 
-                {/* Attendance Details Sheet */}
-                <AttendanceDetailsSheet
-                  data={
-                    selectedDetail
-                      ? {
-                          name: selectedDetail.name,
-                          jabatan: selectedDetail.jabatan,
-                          date: selectedDetail.date,
-                          clockIn: selectedDetail.clockIn,
-                          clockOut: selectedDetail.clockOut,
-                          workHours: selectedDetail.workHours,
-                          approve: selectedDetail.approve,
-                          status: selectedDetail.status || "N/A",
-                          location: selectedDetail.location || "N/A",
-                          address: selectedDetail.address || "N/A",
-                          lat: selectedDetail.lat || "N/A",
-                          long: selectedDetail.long || "N/A",
-                          proof: selectedDetail.proof || "",
-                        }
-                      : null
-                  }
-                  isOpen={isDetailOpen}
-                  onClose={() => setIsDetailOpen(false)}
-                  onApprove={handleApprove}
-                />
-                {/* Pagination, dst */}
-                <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
-                  <select className="border rounded px-2 py-1">
-                    <option>10</option>
-                    <option>25</option>
-                    <option>50</option>
-                  </select>
-                  <div>Showing 1 to 10 out of {filteredData.length} records</div>
-                  <div className="flex space-x-1">
-                    <button className="px-2 py-1 border rounded hover:bg-gray-100">&lt;</button>
-                    <button className="px-2 py-1 border rounded bg-gray-200">1</button>
-                    <button className="px-2 py-1 border rounded hover:bg-gray-100">2</button>
-                    <button className="px-2 py-1 border rounded hover:bg-gray-100">3</button>
-                    <button className="px-2 py-1 border rounded hover:bg-gray-100">&gt;</button>
+                                    <button type="button" onClick={() => handleOpenEditSheet(row.employee)} className="p-1 rounded bg-yellow-100 hover:bg-yellow-200 transition" title="Edit">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 20h9" />
+                                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                        </svg>
+                                    </button>
+
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <button type="button" onClick={() => confirmDeleteEmployee(row.employee)} className="p-1 rounded-md bg-red-100 hover:bg-red-200 transition" title="Delete">
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <polyline points="3 6 5 6 21 6" />
+                                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                              <line x1="10" y1="11" x2="10" y2="17" />
+                                              <line x1="14" y1="11" x2="14" y2="17" />
+                                          </svg>
+                                        </button>
+                                      </AlertDialogTrigger>
+                                      {employeeToDelete && (
+                                        <AlertDialogContent className="shadow-[0_0_0_6px_rgba(239,68,68,0.10),0_4px_24px_0_rgba(239,68,68,0.18)]">
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Anda yakin?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Data karyawan{" "}
+                                              <strong style={{ color: "red" }}>
+                                                {employeeToDelete.first_name} {employeeToDelete.last_name}
+                                              </strong>{" "}
+                                              akan dihapus secara permanen.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel onClick={() => setEmployeeToDelete(null)}>Batal</AlertDialogCancel>
+                                            <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={executeDeleteEmployee}>
+                                              Hapus
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      )}
+                                    </AlertDialog>
+                                </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell colSpan={7} className="text-center">Tidak ada data absensi ditemukan.</TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </div>
+
+                    {/* Attendance Details Sheet */}
+                    <AttendanceDetailsSheet
+                      data={
+                        selectedDetail
+                          ? {
+                              name: selectedDetail.name,
+                              jabatan: selectedDetail.jabatan,
+                              date: selectedDetail.date,
+                              clockIn: selectedDetail.clockIn,
+                              clockOut: selectedDetail.clockOut,
+                              workHours: selectedDetail.workHours,
+                              approve: selectedDetail.approve,
+                              status: selectedDetail.status || "N/A",
+                              location: selectedDetail.location || "N/A",
+                              address: selectedDetail.address || "N/A",
+                              lat: selectedDetail.lat || "N/A",
+                              long: selectedDetail.long || "N/A",
+                              proof: selectedDetail.proof || "",
+                            }
+                          : null
+                      }
+                      isOpen={isDetailOpen}
+                      onClose={() => setIsDetailOpen(false)}
+                      onApprove={handleApprove}
+                    />
+                    {/* Pagination, dst */}
+                    <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                      <select className="border rounded px-2 py-1">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                      </select>
+                      <div>Showing 1 to 10 out of {filteredData.length} records</div>
+                      <div className="flex space-x-1">
+                        <button className="px-2 py-1 border rounded hover:bg-gray-100">&lt;</button>
+                        <button className="px-2 py-1 border rounded bg-gray-200">1</button>
+                        <button className="px-2 py-1 border rounded hover:bg-gray-100">2</button>
+                        <button className="px-2 py-1 border rounded hover:bg-gray-100">3</button>
+                        <button className="px-2 py-1 border rounded hover:bg-gray-100">&gt;</button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </section>
-          </main>
+                </section>
+              </main>
+          </SidebarInset>
         </div>
-      </div>
     </SidebarProvider>
   );
 }
