@@ -1,0 +1,45 @@
+# Tahap 1: Membangun aplikasi Laravel
+FROM php:8.2-fpm-alpine AS builder # Menggunakan image PHP-FPM Alpine sebagai base
+
+# Menginstal dependensi sistem dan ekstensi PHP yang dibutuhkan
+RUN apk add --no-cache \
+    git \
+    zip \
+    unzip \
+    postgresql-dev \
+    libpq \
+    nginx # NGINX akan kita pakai di tahap selanjutnya, bisa diinstal di sini
+
+RUN docker-php-ext-install pdo_mysql pdo_pgsql opcache # Menginstal ekstensi PHP untuk database dan performa
+
+WORKDIR /var/www/html # Mengatur direktori kerja
+
+# Menyalin composer.json dan composer.lock untuk instalasi dependensi PHP
+COPY backend/composer.json backend/composer.lock ./
+RUN composer install --no-dev --optimize-autoloader # Menginstal dependensi Composer
+
+COPY backend/ . # Menyalin semua kode backend Laravel Anda
+RUN php artisan optimize # Mengoptimalkan Laravel
+RUN php artisan config:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
+
+# Mengatur izin direktori yang dibutuhkan Laravel
+RUN chown -R www-data:www-data /var/www/html/storage \
+    && chown -R www-data:www-data /var/www/html/bootstrap/cache
+
+# Tahap 2: Image siap produksi
+FROM php:8.2-fpm-alpine
+
+RUN apk add --no-cache \
+    nginx # Memastikan NGINX terinstal
+RUN docker-php-ext-install pdo_mysql pdo_pgsql # Memastikan ekstensi PHP terinstal
+
+WORKDIR /var/www/html
+
+COPY --from=builder /var/www/html . # Menyalin hasil build dari tahap 'builder'
+
+EXPOSE 9000 # Memberitahu Docker bahwa PHP-FPM akan mendengarkan di port 9000
+             # NGINX akan berkomunikasi dengan port ini.
+
+CMD ["php-fpm"] # Perintah untuk menjalankan PHP-FPM

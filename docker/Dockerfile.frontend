@@ -1,0 +1,29 @@
+# Tahap 1: Membangun aplikasi Next.js
+FROM node:20-alpine AS builder # Menggunakan image Node.js Alpine sebagai base
+
+WORKDIR /app # Mengatur direktori kerja di dalam kontainer
+
+# Menyalin package.json dan yarn.lock untuk instalasi dependensi
+COPY frontend/package.json frontend/yarn.lock ./
+RUN yarn install --frozen-lockfile # Menginstal dependensi
+
+COPY frontend/ . # Menyalin semua kode frontend Anda
+RUN yarn build # Menjalankan proses build Next.js
+
+# Tahap 2: Menyiapkan image untuk produksi
+# Kita akan menyajikan Next.js menggunakan server Next.js itu sendiri.
+# Untuk skala produksi yang lebih besar, Anda bisa mempertimbangkan NGINX untuk melayani file statis.
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Menyalin hasil build dari tahap 'builder'
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./next.config.js # Jika Anda punya file ini
+
+EXPOSE 3000 # Memberitahu Docker bahwa kontainer ini akan mendengarkan di port 3000
+
+CMD ["yarn", "start"] # Perintah untuk menjalankan aplikasi Next.js
