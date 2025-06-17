@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea'; // Assuming you have a Textarea component
 import { Upload, X, Paperclip } from 'lucide-react';
+import { EmployeeCombobox, EmployeeOption } from '../../components/ui/EmployeeCombobox';
 
 export interface LetterFormData {
   id?: number; // Optional for create, required for update
@@ -23,14 +24,25 @@ interface LetterFormProps {
   onCancel: () => void;
   initialData?: LetterFormData; // Data awal untuk mode edit
   onDelete?: () => void; // Tambahkan properti ini
+  employees: EmployeeOption[]; // DITAMBAHKAN: Terima daftar karyawan
+
 }
 
 const baseButtonClassName = "px-4 py-2 border rounded transition-colors"; // You can adjust this as needed
 
-const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, initialData }) => {
+// Define available letter types
+const letterTypes: string[] = [
+  "izin",
+  "cuti",
+  "sakit",
+  "tugas",
+  "lainnya"
+];
+
+const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, initialData, employees }) => {
   const [formData, setFormData] = useState<LetterFormData>({
     title: '',
-    type: '',
+    type: 'Izin',
     date: new Date().toISOString().split('T')[0], // Default today's date
     status: 'Pending',
     content: '',
@@ -91,19 +103,38 @@ const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, i
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 h-full">
       <div className="flex flex-col gap-2">
         <Label htmlFor="title">Judul Surat</Label>
         <Input type="text" id="title" name="title" value={formData.title} onChange={handleChange} required />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="type">Tipe Surat</Label>
-        <Input type="text" id="type" name="type" value={formData.type} onChange={handleChange} required />
-      </div>
+          <Select
+            value={formData.type}
+            onValueChange={(value) => handleSelectChange('type', value)}
+            required
+          >
+            <SelectTrigger id="type">
+              <SelectValue placeholder="Pilih tipe surat..." />
+            </SelectTrigger>
+            <SelectContent>
+              {letterTypes.map((type: string) => (
+                <SelectItem key={type} value={type}>
+                  {/* Kapitalisasi huruf pertama untuk tampilan */}
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="recipient">Penerima Surat</Label>
-        <Input type="text" id="recipient" name="recipient" value={formData.recipient} onChange={handleChange} required />
-      </div>
+        <EmployeeCombobox
+            employees={employees}
+            value={formData.recipient}
+            onSelect={(employeeId) => handleSelectChange('recipient', employeeId)}
+          />      </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="date">Tanggal</Label>
         <Input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required />
@@ -167,33 +198,34 @@ const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, i
       </div>
 
       <div className="flex justify-between items-center pt-4 border-t">
-        {/* Tombol Hapus hanya muncul di mode edit */}
-        <div>
-          {initialData && onDelete && (
-            <div className="flex gap-2">
-              <Button
+          {/* Grup Tombol Aksi di Kiri */}
+          <div className="flex items-center gap-2">
+            {/* Tombol Hapus: HANYA muncul saat mode edit */}
+            {initialData && onDelete && (
+              <button
                 type="button"
                 onClick={onDelete}
                 className={`${baseButtonClassName} bg-white text-red-600 border-red-600 hover:bg-red-600 hover:text-white`}
               >
                 Hapus Surat
-              </Button>
-              <Button
-                type="submit"
-                className={`${baseButtonClassName} bg-white text-primary border-primary hover:bg-primary hover:text-white`}
-              >
-                {initialData ? 'Perbarui Surat' : 'Buat Surat'}
-              </Button>
-            </div>
-          )}
-        </div>
+              </button>
+            )}
 
-        {/* Tombol Aksi Utama (Batal, Buat/Update) di kanan */}
-        <div className="flex gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Batal
-          </Button>
-        </div>
+            {/* Tombol Submit: SELALU muncul */}
+            <button
+              type="submit"
+              className={`${baseButtonClassName} bg-white text-primary border-primary hover:bg-primary hover:text-white`}
+            >
+              {initialData ? 'Perbarui Surat' : 'Buat Surat'}
+            </button>
+          </div>
+
+          {/* Tombol Batal di Kanan */}
+          <div>
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Batal
+            </Button>
+          </div>
       </div>
     </form>
   );

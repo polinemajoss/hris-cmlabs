@@ -16,6 +16,7 @@ import { Textarea } from "../../components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import LetterForm, { LetterFormData } from "../../components/letter/LetterForm"; // Import the LetterForm component and its type
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { EmployeeOption } from "../../components/ui/EmployeeCombobox"; // DITAMBAHKAN
 
 // Interface untuk data surat dari API
 interface Letter {
@@ -43,13 +44,24 @@ export default function LetterManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); 
+  const [employeeOptions, setEmployeeOptions] = useState<EmployeeOption[]>([]); // DITAMBAHKAN: State untuk karyawan
 
   // State untuk Sheet dan Data Edit/Hapus
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [editingLetter, setEditingLetter] = useState<LetterFormData | null>(null); // Use LetterFormData here
   const [letterToDelete, setLetterToDelete] = useState<Letter | null>(null); // Use Letter for delete confirmation
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("/employees"); 
+      setEmployeeOptions(response.data.data || []);
+    } catch (err) {
+      toast.error("Gagal Memuat Data Karyawan");
+      console.error(err);
+    }
+  }, []);
 
   const fetchLetters = useCallback(async () => {
     setLoading(true);
@@ -85,6 +97,13 @@ export default function LetterManagementPage() {
 
     return () => clearTimeout(timer);
   }, [fetchLetters, searchTerm]); // Add searchTerm to dependency array for re-fetching on search change
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchEmployees();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [fetchEmployees]);
 
   const getStatusBadge = (status: Letter["status"]) => {
     switch (status) {
@@ -186,7 +205,7 @@ export default function LetterManagementPage() {
                       <SheetHeader>
                         <SheetTitle>Buat Surat Baru</SheetTitle>
                       </SheetHeader>
-                      <LetterForm onSubmit={handleCreateLetter} onCancel={() => setIsCreateSheetOpen(false)} initialData={undefined} />
+                      <LetterForm onSubmit={handleCreateLetter} onCancel={() => setIsCreateSheetOpen(false)} initialData={undefined} employees={[]} />
                     </SheetContent>
                   </Sheet>
                 </div>
@@ -271,8 +290,13 @@ export default function LetterManagementPage() {
           <SheetHeader>
             <SheetTitle>Buat Surat Baru</SheetTitle>
           </SheetHeader>
-          <LetterForm onSubmit={handleCreateLetter} onCancel={() => setIsCreateSheetOpen(false)} initialData={undefined} /> {/* Pass null for initialData */}
-        </SheetContent>
+          <LetterForm
+              onSubmit={handleCreateLetter}
+              onCancel={() => setIsCreateSheetOpen(false)}
+              initialData={undefined}
+              employees={employeeOptions}
+            />        
+            </SheetContent>
       </Sheet>
 
      {/* Sheet untuk Edit Data */}
@@ -289,21 +313,21 @@ export default function LetterManagementPage() {
           <SheetHeader>
             <SheetTitle>Edit Surat</SheetTitle>
           </SheetHeader>
-          {editingLetter && (
-            <LetterForm
-              onSubmit={handleEditLetter}
-              onCancel={() => setIsEditSheetOpen(false)}
-              initialData={editingLetter}
-              // DITAMBAHKAN: Prop onDelete untuk memicu konfirmasi hapus dari dalam form
-              onDelete={() => {
-                if (editingLetter) {
-                  setIsEditSheetOpen(false); // Tutup sheet edit
-                  // Casting 'as Letter' diperlukan jika tipe tidak sepenuhnya cocok
-                  confirmDeleteLetter(editingLetter as Letter); // Buka dialog konfirmasi
-                }
-              }}
-            />
-          )}
+         {editingLetter && (
+              <LetterForm
+                onSubmit={handleEditLetter}
+                onCancel={() => setIsEditSheetOpen(false)}
+                initialData={editingLetter}
+                onDelete={() => {
+                  if (editingLetter) {
+                    setIsEditSheetOpen(false); // Tutup sheet edit
+                    // Casting 'as Letter' diperlukan jika tipe tidak sepenuhnya cocok
+                    confirmDeleteLetter(editingLetter as Letter); // Buka dialog konfirmasi
+                  }
+                }}
+                employees={employeeOptions}
+              />
+            )}
         </SheetContent>
       </Sheet>
 
