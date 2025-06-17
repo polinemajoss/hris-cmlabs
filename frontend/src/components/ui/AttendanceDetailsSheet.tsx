@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from './sheet';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 
 
@@ -26,9 +26,9 @@ interface AttendanceDetailsProps {
 }
 
 const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen, onClose, onApprove }) => {
-  if (!data) return null;
-
   const [isApproveDialogOpen, setIsApproveDialogOpen] = React.useState(false);
+
+  if (!data) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -140,7 +140,7 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               <DialogHeader>
                 <DialogTitle>Approve Attendance</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to approve this employee's attendance?<br />
+                  Are you sure you want to approve this employee&apos;s attendance?<br />
                   This action cannot be undone.
                 </DialogDescription>
               </DialogHeader>

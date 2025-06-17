@@ -1,0 +1,124 @@
+# .github/workflows/deploy.yml
+name: Deploy ke Azure VM
+
+on:
+  push:
+    branches:
+      - main # Workflow akan terpicu setiap push ke branch 'main'
+
+jobs:
+  upload: # Job pertama: Membangun dan mengupload file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Kode
+        uses: actions/checkout@v4 # Mengambil kode dari repositori GitHub
+
+      - name: Siapkan Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18" # Pastikan versi Node.js sesuai dengan proyek Anda
+
+      - name: Bersihkan Cache Build Frontend di Runner
+        run: |
+          rm -rf frontend/.next # Menghapus cache build Next.js di runner GitHub Actions
+          rm -rf frontend/out   # Menghapus folder 'out' jika menggunakan next export
+
+      - name: Instal Dependensi Frontend dan Build
+        run: |
+          cd frontend # Pindah ke direktori frontend
+          npm install
+          npm run build # Membangun aplikasi Next.js (menghasilkan folder .next)
+
+      - name: Siapkan Direktori SSH dan Known Hosts
+        # Ini penting untuk autentikasi SCP di langkah upload.
+        # Menulis SSH_KNOWN_HOSTS secret ke file known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts # Mengatur izin file known_hosts
+
+      - name: Upload Frontend ke VM
+        uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk menyalin file Frontend
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "frontend/" # Menyalin seluruh folder frontend/
+          target: "/var/www/hris-cmlabs/" # Target direktori induk di VM
+          overwrite: true # Menimpa file yang sudah ada
+          rm: true # Menghapus isi folder target sebelum menyalin (PENTING untuk clean deployment)
+
+      - name: Upload Backend ke VM
+        uses: appleboy/scp-action@v0.1.7 # Action GitHub untuk menyalin file Backend
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "backend/" # Menyalin seluruh folder backend/
+          target: "/var/www/hris-cmlabs/" # Target direktori induk di VM
+          overwrite: true
+          rm: true # Menghapus isi folder target sebelum menyalin
+
+  deploy: # Job kedua: Menjalankan perintah deployment di VM
+    needs: upload # Job ini akan berjalan setelah job 'upload' selesai dan sukses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Jalankan Perintah Deployment di VM
+        uses: appleboy/ssh-action@v1.0.0 # Action GitHub untuk menjalankan perintah SSH di VM
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            set -x # Aktifkan mode debug untuk melihat perintah yang dijalankan
+
+            # Pastikan rsync terinstal di VM (Meskipun SCP digunakan, rsync mungkin berguna di kemudian hari atau untuk debug)
+            if ! command -v rsync &> /dev/null
+            then
+                echo "rsync tidak ditemukan, menginstal..."
+                sudo apt update && sudo apt install -y rsync
+            fi
+
+            # Hentikan layanan yang mungkin mengunci file sebelum memproses kode baru
+            echo "Menghentikan Nginx sebelum update..."
+            sudo systemctl stop nginx || true
+            echo "Menghentikan proses PM2 sebelum update..."
+            pm2 stop all || true
+            pm2 delete all || true
+            pm2 save || true
+
+            # Pastikan direktori target ada dan memiliki izin yang benar
+            # Ini penting karena scp-action rm:true mungkin menghapus folder root jika itu satu-satunya yang ada
+            sudo mkdir -p /var/www/hris-cmlabs/frontend
+            sudo mkdir -p /var/www/hris-cmlabs/backend/public
+            sudo chown -R ${{ secrets.AZURE_VM_USER }}:www-data /var/www/hris-cmlabs/
+            sudo chmod -R 775 /var/www/hris-cmlabs/
+
+            echo "Melanjutkan dengan perintah pasca-deployment."
+
+            # === BAGIAN BACKEND (LARAVEL) ===
+            cd /var/www/hris-cmlabs/backend # Pindah ke direktori backend
+
+            echo "Menginstal dependensi backend..."
+            composer install --no-dev --optimize-autoloader
+
+            echo "Menjalankan migrasi database..."
+            php artisan migrate --force
+
+            echo "Membersihkan cache backend..."
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # === BAGIAN FRONTEND (NEXT.JS) ===
+            cd /var/www/hris-cmlabs/frontend # Pindah ke direktori frontend
+
+            echo "Memastikan aplikasi Next.js berjalan dengan PM2..."
+            pm2 start npm --name hris-nextjs -- start
+            pm2 save
+
+            # === RESTART WEB SERVER ===
+            echo "Me-restart Nginx..."
+            sudo systemctl restart nginx # Menggunakan restart agar Nginx aktif kembali

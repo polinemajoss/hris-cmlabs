@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "../contexts/AuthContext"; // 1. Impor useAuth
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/ui/app-sidebar";
 // ChartAreaInteractive didefinisikan di dalam file ini, tidak perlu import dari components/ui
@@ -37,6 +38,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "../components/ui/toggle-group";
+import {useRouter} from "next/navigation";
+import { SectionCardsEmployee } from "@/components/employee/section-card-employee";
 
 // --- START: Definisi ChartAreaInteractive (dipindahkan dari komponen terpisah ke sini jika tidak di-import) ---
 const chartData = [
@@ -112,6 +115,7 @@ function ChartAreaInteractiveSelfContained() { // Ubah nama untuk menghindari ko
   return (
     <Card className="@container/card">
       <CardHeader className="relative">
+        
         <CardTitle>Total Visitors</CardTitle>
         <CardDescription>
           <span className="@[540px]/card:block hidden">
@@ -252,32 +256,29 @@ const mockTableData = [
 
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
 
+  const { isAuthenticated, loading } = useAuth(); // 2. Ambil 'loading' dari context
+
   // Simulasi loading data dashboard
   useEffect(() => {
-    const loadDashboardData = async () => {
-      setDashboardLoading(true);
-      setDashboardError(null);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log("Dashboard mock data loaded.");
-      } catch (err: any) {
-        console.error("Error loading dashboard mock data:", err);
-        setDashboardError("Gagal memuat data dashboard mock.");
-      } finally {
-        setDashboardLoading(false);
-      }
-    };
+    if (loading) {
+      return;
+    }
 
-    loadDashboardData();
-  }, []);
+    // Hanya jika sudah selesai loading DAN ternyata tidak terautentikasi,
+    // baru kita arahkan ke halaman sign-in.
+    if (!loading && !isAuthenticated) {
+      router.push('/sign-in');
+    }
+  }, [isAuthenticated, loading, router]);
 
-  if (dashboardLoading) {
+  if (loading || !isAuthenticated) {
     return (
       <div className="flex h-screen items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-50"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
       </div>
     );
   }
@@ -295,7 +296,7 @@ export default function DashboardPage() {
           <div className="flex-1 overflow-auto">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <SectionCards />
+                <SectionCardsEmployee />
                 <div className="px-4 lg:px-6">
                   {/* Panggil ChartAreaInteractiveSelfContained sebagai komponen */}
                   <ChartAreaInteractiveSelfContained /> 
