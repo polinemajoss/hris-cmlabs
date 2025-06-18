@@ -9,9 +9,8 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from ".
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
-import { AvatarUploader } from '../ui/AvatarUploader';
+import { AvatarUploader } from "../ui/AvatarUploader";
 import { DatePicker } from "../ui/date-picker";
-
 
 export interface EmployeeFormData {
   id?: string;
@@ -41,15 +40,43 @@ interface EmployeeFormProps {
   onCancel: () => void;
   initialData?: EmployeeFormData | null;
   isEditMode?: boolean;
+  readOnly?: boolean; // tambahkan ini
 }
 
-const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false }: EmployeeFormProps) => {
-  const genderOptions = [ { value: "M", label: "Laki-laki" }, { value: "F", label: "Perempuan" }, ];
-  const pendidikanOptions = [ { value: "SMA/SMK", label: "SMA/SMK" }, { value: "D3", label: "D3" }, { value: "S1", label: "S1" }, { value: "S2", label: "S2" }, { value: "S3", label: "S3" }, ];
-  const kontrakOptions = [ { value: "Tetap", label: "Tetap" }, { value: "Kontrak", label: "Kontrak" }, { value: "Lepas", label: "Lepas" }, ];
-  const bankOptions = [ { value: "BCA", label: "BCA" }, { value: "BNI", label: "BNI" }, { value: "BRI", label: "BRI" }, { value: "Mandiri", label: "Mandiri" }, { value: "CIMB Niaga", label: "CIMB Niaga" }, ];
-  const spOptions = [ { value: "SP 1", label: "SP 1" }, { value: "SP 2", label: "SP 2" }, { value: "SP 3", label: "SP 3" }, { value: "Tidak Ada", label: "Tidak Ada SP" }, ];
-  const statusOptions = [ { value: "Aktif", label: "Aktif" }, { value: "Tidak Aktif", label: "Tidak Aktif" }, ];
+const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false, readOnly = false }: EmployeeFormProps) => {
+  const genderOptions = [
+    { value: "M", label: "Laki-laki" },
+    { value: "F", label: "Perempuan" },
+  ];
+  const pendidikanOptions = [
+    { value: "SMA/SMK", label: "SMA/SMK" },
+    { value: "D3", label: "D3" },
+    { value: "S1", label: "S1" },
+    { value: "S2", label: "S2" },
+    { value: "S3", label: "S3" },
+  ];
+  const kontrakOptions = [
+    { value: "Tetap", label: "Tetap" },
+    { value: "Kontrak", label: "Kontrak" },
+    { value: "Lepas", label: "Lepas" },
+  ];
+  const bankOptions = [
+    { value: "BCA", label: "BCA" },
+    { value: "BNI", label: "BNI" },
+    { value: "BRI", label: "BRI" },
+    { value: "Mandiri", label: "Mandiri" },
+    { value: "CIMB Niaga", label: "CIMB Niaga" },
+  ];
+  const spOptions = [
+    { value: "SP 1", label: "SP 1" },
+    { value: "SP 2", label: "SP 2" },
+    { value: "SP 3", label: "SP 3" },
+    { value: "Tidak Ada", label: "Tidak Ada SP" },
+  ];
+  const statusOptions = [
+    { value: "Aktif", label: "Aktif" },
+    { value: "Tidak Aktif", label: "Tidak Aktif" },
+  ];
 
   const [form, setForm] = useState<EmployeeFormData>(() => {
     if (initialData) {
@@ -74,14 +101,29 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
         sp_type: initialData.sp_type || "",
         status: initialData.status || "Aktif",
         avatar: initialData.avatar || "",
-        email: initialData.email || ""
+        email: initialData.email || "",
       };
     } else {
       return {
-        email: "", first_name: "", last_name: "", mobile_number: "", nik: "", gender: "",
-        education: "", birth_place: "", birth_date: null, position: "", branch: "",
-        contract_type: "Kontrak", grade: "", bank: "", bank_account_number: "",
-        bank_account_name: "", sp_type: "", status: "Aktif", avatar: "",
+        email: "",
+        first_name: "",
+        last_name: "",
+        mobile_number: "",
+        nik: "",
+        gender: "",
+        education: "",
+        birth_place: "",
+        birth_date: null,
+        position: "",
+        branch: "",
+        contract_type: "Kontrak",
+        grade: "",
+        bank: "",
+        bank_account_number: "",
+        bank_account_name: "",
+        sp_type: "",
+        status: "Aktif",
+        avatar: "",
       };
     }
   });
@@ -109,11 +151,10 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
         sp_type: initialData.sp_type || "",
         status: initialData.status || "Aktif",
         avatar: initialData.avatar || "",
-        email: initialData.email || ""
+        email: initialData.email || "",
       });
     }
   }, [initialData]);
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -125,7 +166,7 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    const formattedDate = date ? date.toISOString().split('T')[0] : null;
+    const formattedDate = date ? date.toISOString().split("T")[0] : null;
     setForm((prev) => ({ ...prev, birth_date: formattedDate }));
   };
 
@@ -138,34 +179,37 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
 
   const handleAvatarUpload = async (file: File | null) => {
     if (!file) {
-      setForm(prev => ({ ...prev, avatar: '' }));
+      setForm((prev) => ({ ...prev, avatar: "" }));
       return;
     }
 
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append("avatar", file);
 
     setIsUploading(true);
     try {
-      const response = await axiosInstance.post('/upload-avatar', formData);
-      setForm(prev => ({ ...prev, avatar: response.data.url }));
-      toast.success('Avatar berhasil diupload!');
+      // Jangan set Content-Type, biarkan axios handle FormData
+      const response = await axiosInstance.post("/upload-avatar", formData);
+      if (response.data && response.data.url) {
+        setForm((prev) => ({ ...prev, avatar: response.data.url }));
+        toast.success("Avatar berhasil diupload!");
+      } else {
+        toast.error("Upload Gagal", { description: "Server tidak mengembalikan URL avatar." });
+      }
     } catch (err: unknown) {
-      let errorMsg = 'Gagal mengupload avatar.';
-      if (err && typeof err === 'object' && 'response' in err) {
+      let errorMsg = "Gagal mengupload avatar.";
+      if (err && typeof err === "object" && "response" in err) {
         const errorObj = err as { response?: { data?: { errors?: { avatar?: string[] } } } };
         errorMsg = errorObj.response?.data?.errors?.avatar?.[0] || errorMsg;
       }
-      toast.error('Upload Gagal', { description: errorMsg });
+      toast.error("Upload Gagal", { description: errorMsg });
       console.error(err);
     } finally {
       setIsUploading(false);
     }
   };
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    initialData && initialData.birth_date ? new Date(initialData.birth_date) : undefined
-  );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialData && initialData.birth_date ? new Date(initialData.birth_date) : undefined);
 
   useEffect(() => {
     if (form.birth_date) {
@@ -189,7 +233,7 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
             if (file) {
               handleAvatarUpload(file);
             } else {
-              setForm(prev => ({ ...prev, avatar: '' }));
+              setForm((prev) => ({ ...prev, avatar: "" }));
             }
           }}
           initialImageUrl={form.avatar}
@@ -198,176 +242,212 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
       </div>
 
       <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="first_name" className="mb-1">
+            Nama Depan
+          </Label>
+          <Input id="first_name" name="first_name" placeholder="Masukkan nama depan" value={form.first_name} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="last_name" className="mb-1">
+            Nama Belakang
+          </Label>
+          <Input id="last_name" name="last_name" placeholder="Masukkan nama belakang" value={form.last_name} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="mobile_number" className="mb-1">
+            Nomor Ponsel
+          </Label>
+          <Input id="mobile_number" name="mobile_number" placeholder="Masukkan nomor ponsel" value={form.mobile_number} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        {!initialData?.id && (
           <div>
-            <Label htmlFor="first_name" className="mb-1">Nama Depan</Label>
-            <Input id="first_name" name="first_name" placeholder="Masukkan nama depan" value={form.first_name} onChange={handleChange} required />
+            <Label htmlFor="email" className="mb-1">
+              Email untuk Akun Baru
+            </Label>
+            <Input id="email" name="email" type="email" placeholder="contoh@perusahaan.com" value={form.email} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
           </div>
+        )}
+        {initialData?.id && (
           <div>
-            <Label htmlFor="last_name" className="mb-1">Nama Belakang</Label>
-            <Input id="last_name" name="last_name" placeholder="Masukkan nama belakang" value={form.last_name} onChange={handleChange} required />
+            <Label htmlFor="email" className="mb-1">
+              Email
+            </Label>
+            <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
           </div>
-          <div>
-            <Label htmlFor="mobile_number" className="mb-1">Nomor Ponsel</Label>
-            <Input id="mobile_number" name="mobile_number" placeholder="Masukkan nomor ponsel" value={form.mobile_number} onChange={handleChange} required />
-          </div>
-            {!initialData?.id && (
-              <div>
-                <Label htmlFor="email" className="mb-1">Email untuk Akun Baru</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="contoh@perusahaan.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            )}
-            {initialData?.id && (
-                <div>
-                    <Label htmlFor="email" className="mb-1">Email</Label>
-                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} disabled />
-                </div>
-            )}
-          <div>
-            <Label htmlFor="nik" className="mb-1">NIK</Label>
-            <Input id="nik" name="nik" placeholder="Masukkan NIK" value={form.nik} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="gender" className="mb-1">Jenis Kelamin</Label>
-            <Select
-              value={form.gender}
-              onValueChange={(value) => handleSelectChange("gender", value)}
-            >
-              <SelectTrigger id="gender" className="w-full min-w-0">
-                <SelectValue placeholder="Pilih Jenis Kelamin" />
-              </SelectTrigger>
-              <SelectContent>
-                {genderOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="education" className="mb-1">Pendidikan Terakhir</Label>
-            <Select value={form.education} onValueChange={(value) => handleSelectChange("education", value)}>
-              <SelectTrigger id="education" className="w-full min-w-0">
-                <SelectValue placeholder="Pilih Pendidikan Terakhir" />
-              </SelectTrigger>
-              <SelectContent>
-                {pendidikanOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="birth_place" className="mb-1">Tempat Lahir</Label>
-            <Input id="birth_place" name="birth_place" placeholder="Masukkan tempat lahir" value={form.birth_place} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="birth_date" className="mb-1">Tanggal Lahir</Label>
-            <DatePicker
-              value={selectedDate}
-              onChange={(date) => {
-                setSelectedDate(date);
-                handleDateChange(date); // Perbarui state form juga
-              }}
-            />
-          </div>
-          <div>
-            <Label htmlFor="position" className="mb-1">Jabatan</Label>
-            <Input id="position" name="position" placeholder="Masukkan posisi/jabatan" value={form.position} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="branch" className="mb-1">Cabang</Label>
-            <Input id="branch" name="branch" placeholder="Masukkan cabang" value={form.branch} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="contract_type" className="mb-1">Tipe Kontrak</Label>
-            <RadioGroup id="contract_type" value={form.contract_type} onValueChange={(value) => handleSelectChange("contract_type", value)} className="flex gap-4 mt-2">
-              {kontrakOptions.map((opt) => (
-                <div key={opt.value} className="flex items-center gap-2">
-                  <RadioGroupItem value={opt.value} id={`contract_type-${opt.value}`} />
-                  <Label htmlFor={`contract_type-${opt.value}`}>{opt.label}</Label>
-                </div>
+        )}
+        <div>
+          <Label htmlFor="nik" className="mb-1">
+            NIK
+          </Label>
+          <Input id="nik" name="nik" placeholder="Masukkan NIK" value={form.nik} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="gender" className="mb-1">
+            Jenis Kelamin
+          </Label>
+          <Select value={form.gender} onValueChange={(value) => handleSelectChange("gender", value)} disabled={readOnly}>
+            <SelectTrigger id="gender" className="w-full min-w-0">
+              <SelectValue placeholder="Pilih Jenis Kelamin" />
+            </SelectTrigger>
+            <SelectContent>
+              {genderOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
               ))}
-            </RadioGroup>
-          </div>
-          <div>
-            <Label htmlFor="grade" className="mb-1">Grade</Label>
-            <Input id="grade" name="grade" placeholder="Masukkan grade" value={form.grade} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="bank" className="mb-1">Bank</Label>
-            <Select value={form.bank} onValueChange={(value) => handleSelectChange("bank", value)}>
-              <SelectTrigger id="bank" className="w-full min-w-0">
-                <SelectValue placeholder="Pilih bank" />
-              </SelectTrigger>
-              <SelectContent>
-                {bankOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="bank_account_number" className="mb-1">Nomor Rekening</Label>
-            <Input id="bank_account_number" name="bank_account_number" placeholder="Masukkan nomor rekening" value={form.bank_account_number} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="bank_account_name" className="mb-1">Atas Nama Rekening</Label>
-            <Input id="bank_account_name" name="bank_account_name" placeholder="Masukkan nama pemilik rekening" value={form.bank_account_name} onChange={handleChange} required />
-          </div>
-          <div>
-            <Label htmlFor="sp_type" className="mb-1">Tipe SP</Label>
-            <Select value={form.sp_type} onValueChange={(value) => handleSelectChange("sp_type", value)}>
-              <SelectTrigger id="sp_type" className="w-full min-w-0">
-                <SelectValue placeholder="Pilih tipe SP" />
-              </SelectTrigger>
-              <SelectContent>
-                {spOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="status" className="mb-1">Status Karyawan</Label>
-            <Select
-              value={form.status}
-              onValueChange={(value) => handleSelectChange("status", value)}
-            >
-              <SelectTrigger id="status" className="w-full min-w-0">
-                <SelectValue placeholder="Pilih status karyawan" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="education" className="mb-1">
+            Pendidikan Terakhir
+          </Label>
+          <Select value={form.education} onValueChange={(value) => handleSelectChange("education", value)} disabled={readOnly}>
+            <SelectTrigger id="education" className="w-full min-w-0">
+              <SelectValue placeholder="Pilih Pendidikan Terakhir" />
+            </SelectTrigger>
+            <SelectContent>
+              {pendidikanOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="birth_place" className="mb-1">
+            Tempat Lahir
+          </Label>
+          <Input id="birth_place" name="birth_place" placeholder="Masukkan tempat lahir" value={form.birth_place} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="birth_date" className="mb-1">
+            Tanggal Lahir
+          </Label>
+          <DatePicker
+            value={selectedDate}
+            onChange={
+              readOnly
+                ? () => {}
+                : (date) => {
+                    setSelectedDate(date);
+                    handleDateChange(date);
+                  }
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="position" className="mb-1">
+            Jabatan
+          </Label>
+          <Input id="position" name="position" placeholder="Masukkan posisi/jabatan" value={form.position} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="branch" className="mb-1">
+            Cabang
+          </Label>
+          <Input id="branch" name="branch" placeholder="Masukkan cabang" value={form.branch} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="contract_type" className="mb-1">
+            Tipe Kontrak
+          </Label>
+          <RadioGroup id="contract_type" value={form.contract_type} onValueChange={(value) => handleSelectChange("contract_type", value)} className="flex gap-4 mt-2" disabled={readOnly}>
+            {kontrakOptions.map((opt) => (
+              <div key={opt.value} className="flex items-center gap-2">
+                <RadioGroupItem value={opt.value} id={`contract_type-${opt.value}`} />
+                <Label htmlFor={`contract_type-${opt.value}`}>{opt.label}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+        <div>
+          <Label htmlFor="grade" className="mb-1">
+            Grade
+          </Label>
+          <Input id="grade" name="grade" placeholder="Masukkan grade" value={form.grade} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="bank" className="mb-1">
+            Bank
+          </Label>
+          <Select value={form.bank} onValueChange={(value) => handleSelectChange("bank", value)} disabled={readOnly}>
+            <SelectTrigger id="bank" className="w-full min-w-0">
+              <SelectValue placeholder="Pilih bank" />
+            </SelectTrigger>
+            <SelectContent>
+              {bankOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="bank_account_number" className="mb-1">
+            Nomor Rekening
+          </Label>
+          <Input id="bank_account_number" name="bank_account_number" placeholder="Masukkan nomor rekening" value={form.bank_account_number} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="bank_account_name" className="mb-1">
+            Atas Nama Rekening
+          </Label>
+          <Input id="bank_account_name" name="bank_account_name" placeholder="Masukkan nama pemilik rekening" value={form.bank_account_name} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
+        </div>
+        <div>
+          <Label htmlFor="sp_type" className="mb-1">
+            Tipe SP
+          </Label>
+          <Select value={form.sp_type} onValueChange={(value) => handleSelectChange("sp_type", value)} disabled={readOnly}>
+            <SelectTrigger id="sp_type" className="w-full min-w-0">
+              <SelectValue placeholder="Pilih tipe SP" />
+            </SelectTrigger>
+            <SelectContent>
+              {spOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="status" className="mb-1">
+            Status Karyawan
+          </Label>
+          <Select value={form.status} onValueChange={(value) => handleSelectChange("status", value)} disabled={readOnly}>
+            <SelectTrigger id="status" className="w-full min-w-0">
+              <SelectValue placeholder="Pilih status karyawan" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Batal
-        </Button>
-        <Button type="submit" disabled={isUploading}>
-          {initialData ? "Simpan Perubahan" : "Tambah Karyawan"}
-        </Button>
+      <div className="grid grid-cols-2 gap-2 pt-4">
+        {!readOnly ? (
+          <>
+            <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+              Batal
+            </Button>
+            <Button type="submit" disabled={isUploading} className="w-full">
+              {initialData ? "Simpan Perubahan" : "Tambah Karyawan"}
+            </Button>
+          </>
+        ) : (
+          <Button type="button" variant="outline" onClick={onCancel} className="w-full col-span-2">
+            Tutup
+          </Button>
+        )}
       </div>
     </form>
   );

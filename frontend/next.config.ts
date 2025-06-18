@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
     // meskipun ada error ESLint.
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

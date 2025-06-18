@@ -2992,6 +2992,10 @@
 #61 {main}
 "} 
 <<<<<<< HEAD
+[2025-06-17 13:56:30] local.INFO: Avatar upload request received. {"file_data":{"avatar":{"path":"./images.jpg","relativePath":"./images.jpg"}}} 
+[2025-06-17 13:56:30] local.INFO: No avatar file detected in the request.  
+=======
+<<<<<<< HEAD
 [2025-06-17 08:49:04] local.ERROR: SQLSTATE[22007]: Invalid datetime format: 1292 Truncated incorrect INTEGER value: 'a0cc2879-7421-4d69-a74a-36074f51f9f8' (Connection: mysql, SQL: delete from `personal_access_tokens` where `personal_access_tokens`.`tokenable_type` = App\Models\User and `personal_access_tokens`.`tokenable_id` = a0cc2879-7421-4d69-a74a-36074f51f9f8 and `personal_access_tokens`.`tokenable_id` is not null) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 22007): SQLSTATE[22007]: Invalid datetime format: 1292 Truncated incorrect INTEGER value: 'a0cc2879-7421-4d69-a74a-36074f51f9f8' (Connection: mysql, SQL: delete from `personal_access_tokens` where `personal_access_tokens`.`tokenable_type` = App\\Models\\User and `personal_access_tokens`.`tokenable_id` = a0cc2879-7421-4d69-a74a-36074f51f9f8 and `personal_access_tokens`.`tokenable_id` is not null) at C:\\Users\\hawa\\Documents\\Hawa\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:822)
 [stacktrace]
 #0 C:\\Users\\hawa\\Documents\\Hawa\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(776): Illuminate\\Database\\Connection->runQueryCallback('delete from `pe...', Array, Object(Closure))
@@ -3511,6 +3515,7 @@
 #65 {main}
 >>>>>>> 04d00d3feb4c65735f771fd1c1f00a65621faa0b
 "} 
+<<<<<<< HEAD
 [2025-06-18 04:56:03] local.ERROR: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it (Connection: mysql, SQL: select * from `users` where `email` = budi.santoso@cmlabs.co limit 1) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 2002): SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it (Connection: mysql, SQL: select * from `users` where `email` = budi.santoso@cmlabs.co limit 1) at C:\\Users\\hawa\\Documents\\Hawa\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:822)
 [stacktrace]
 #0 C:\\Users\\hawa\\Documents\\Hawa\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(976): Illuminate\\Database\\Connection->runQueryCallback('select * from `...', Array, Object(Closure))
@@ -3630,3 +3635,6 @@
 #60 C:\\Users\\hawa\\Documents\\Hawa\\hris-cmlabs\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\hawa\\\\D...')
 #61 {main}
 "} 
+=======
+>>>>>>> 58e6b60a4c63144b84962f569fb63ad3f9970509
+>>>>>>> 3a3d14c9947a3f7fd95488edb0bf4a05b6e916c2
