@@ -2,10 +2,12 @@ import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from './sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
+import { Download, Trash2 } from 'lucide-react';
 
 
 interface AttendanceDetailsProps {
   data: {
+    id: string; // Added id property
     name: string;
     jabatan: string;
     date: string;
@@ -24,20 +26,48 @@ interface AttendanceDetailsProps {
   onClose: () => void;
   onApprove: () => void;
 }
-
 const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen, onClose, onApprove }) => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = React.useState(false);
+
+  // Dummy implementation for PDF download
+  const handleDownloadPDF = (attendanceData: typeof data) => {
+    // Replace this with actual PDF generation/download logic
+    alert('Download PDF for: ' + attendanceData?.name);
+  };
+
+  // Dummy implementation for delete
+const handleDelete = (id: string, name: string) => {
+  const confirmDelete = window.confirm(`Anda yakin ingin menghapus data karyawan "${name}" ini?`);
+  if (confirmDelete) {
+    // Replace this with actual delete logic
+    alert(`Data karyawan "${name}" berhasil dihapus.`);
+  }
+};
 
   if (!data) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="max-w-lg w-full p-6">
-        <SheetHeader>
-          <SheetTitle className="text-lg font-semibold">Attendance Details</SheetTitle>
-          <SheetClose asChild>
-          </SheetClose>
+      <SheetContent side="right" className="p-6 sm:max-w-4xl w-full">
+        <SheetHeader className="flex flex-row justify-between items-center w-full">
+        <SheetTitle className="text-lg font-semibold">Attendance Details</SheetTitle>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleDownloadPDF(data)}
+              className="px-4 py-2 bg-white border border-[#257047] text-[#257047] rounded hover:bg-[#257047] hover:text-white transition"
+            >
+              Download PDF
+            </button>
+            <button
+              onClick={() => handleDelete(data.id, data.name)}
+              className="px-4 py-2 bg-white border border-[#C11106] text-[#C11106] rounded hover:bg-[#C11106] hover:text-white transition"
+            >
+              Delete
+            </button>
+          </div>
         </SheetHeader>
+
         <div className="flex flex-col gap-6 mt-4">
           {/* Employee Info */}
           <div className="flex items-center gap-4 border-b pb-4">
@@ -64,7 +94,6 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               </span>
             </div>
           </div>
-
           {/* Attendance Information */}
           <div className="border-b pb-4">
             <h4 className="font-semibold mb-2">Attendance Information</h4>
@@ -91,7 +120,6 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               </div>
             </div>
           </div>
-
           {/* Location Information */}
           <div className="border-b pb-4">
             <h4 className="font-semibold mb-2">Location Information</h4>
@@ -114,7 +142,6 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               </div>
             </div>
           </div>
-
           {/* Proof of Attendance */}
           <div className="border-b pb-4">
             <h4 className="font-semibold mb-2">Proof of Attendance</h4>
@@ -123,7 +150,6 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               <button className="text-blue-500 hover:underline">View</button>
             </div>
           </div>
-
           {/* Approve Button */}
           <div className="mt-4">
             <button
@@ -134,7 +160,6 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
               {data.approve ? 'Approved' : 'Approve'}
             </button>
           </div>
-
           <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
             <DialogContent className="max-w-md w-full">
               <DialogHeader>
