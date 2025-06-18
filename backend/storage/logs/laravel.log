@@ -3516,3 +3516,5 @@
 >>>>>>> 04d00d3feb4c65735f771fd1c1f00a65621faa0b
 "} 
 >>>>>>> 58e6b60a4c63144b84962f569fb63ad3f9970509
+[2025-06-18 06:01:33] local.INFO: Avatar upload request received. {"file_data":{"avatar":{"path":"./DSC00603.JPG","relativePath":"./DSC00603.JPG"}}} 
+[2025-06-18 06:01:33] local.INFO: No avatar file detected in the request.  
