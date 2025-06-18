@@ -48,9 +48,9 @@ const handleDelete = (id: string, name: string) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="p-6 sm:max-w-4xl w-full">
+      <SheetContent side="right" className="p-6 sm:max-w-2xl w-full">
         <SheetHeader className="flex flex-row justify-between items-center w-full">
-        <SheetTitle className="text-lg font-semibold">Attendance Details</SheetTitle>
+        <SheetTitle className="text-xl font-semibold">Attendance Details</SheetTitle>
 
           <div className="flex gap-2">
             <button
