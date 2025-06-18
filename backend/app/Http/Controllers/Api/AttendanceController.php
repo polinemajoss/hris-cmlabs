@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf; // Pastikan Anda sudah menginstal laravel-dompdf
 
 class AttendanceController extends Controller
 {
@@ -123,5 +124,28 @@ class AttendanceController extends Controller
             Log::error('Error approving attendance: ' . $e->getMessage());
             return response()->json(['message' => 'Gagal melakukan approval.'], 500);
         }
+    }
+
+    public function downloadPDF($attendanceId)
+    {
+        $attendance = Attendance::findOrFail($attendanceId);
+
+        // Data untuk PDF
+        $data = [
+            'name' => $attendance->employee->name,
+            'date' => $attendance->date,
+            'clockIn' => $attendance->clock_in,
+            'clockOut' => $attendance->clock_out,
+            'workHours' => $attendance->work_hours,
+            'status' => $attendance->status,
+            'location' => $attendance->location,
+            'address' => $attendance->address,
+        ];
+
+        // Generate PDF
+        $pdf = Pdf::loadView('pdf.attendance', $data);
+
+        // Unduh PDF
+        return $pdf->download('attendance_' . $attendanceId . '.pdf');
     }
 }

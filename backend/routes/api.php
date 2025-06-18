@@ -53,10 +53,13 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::apiResource('employees', EmployeeController::class);
 Route::post('/upload-avatar', [AvatarUploadController::class, 'store']);
 Route::get('/employees/{employee}/download-pdf', [EmployeeController::class, 'downloadPDF']);
+
 // Absensi
 Route::apiResource('attendances', AttendanceController::class);
 Route::post('/attendances/{attendance}/approve', [AttendanceController::class, 'approve']);
 Route::apiResource('check-clock-settings', CheckClockSettingController::class);
+Route::get('/attendances/{attendance}/download-pdf', [AttendanceController::class, 'downloadPDF']);
+
 
 // Gaji
 Route::apiResource('salaries', SalaryController::class);
