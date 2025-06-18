@@ -362,6 +362,7 @@ export default function CheckclockPage() {
                       data={
                         selectedDetail
                           ? {
+                              id: selectedDetail.id,
                               name: selectedDetail.name,
                               jabatan: selectedDetail.jabatan,
                               date: selectedDetail.date,
