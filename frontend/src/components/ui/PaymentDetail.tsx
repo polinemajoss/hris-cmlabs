@@ -49,17 +49,16 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-[1200px] grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto h-full">
-        {/* Left Column Card */}
+        {/* Kartu Kolom Kiri */}
         <Card className="border-0 shadow-none">
           <CardContent className="space-y-6">
-            {/* Logo and Title */}
+            {/* Logo dan Judul */}
             <div className="flex items-center gap-2 mb-4">
               <Image 
                 src="/images/hris-logo.png" 
-                alt="HRIS Logo" 
+                alt="Logo HRIS" 
                 width={50} 
                 height={50} 
-                // className="rounded-lg"
               />
             </div>
 
@@ -68,16 +67,16 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
                 {packageName ? `${packageName}` : "Paket yang dipilih"}
               </h1>
               <h2 className="text-lg mb-2">
-                Upgrade to {packageName} ({packageType})
+                Upgrade ke {packageName} ({packageType})
               </h2>
               <button onClick={onClose} className="text-blue-600 hover:underline">
-                Change plan
+                Ganti paket
               </button>
             </div>
 
-            {/* Billing Period */}
+            {/* Periode Penagihan */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Billing Period</h3>
+              <h3 className="text-lg font-semibold">Periode Penagihan</h3>
               <RadioGroup 
                 value={selectedBilling}
                 onValueChange={setSelectedBilling}
@@ -87,8 +86,8 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
                   <div className="flex items-center gap-2">
                     <RadioGroupItem value="single" id="single" />
                     <div>
-                      <div>Single Payment</div>
-                      <div className="text-sm text-gray-500">Rp {pricePerDay.toLocaleString()} / User / Day</div>
+                      <div>Pembayaran Sekali</div>
+                      <div className="text-sm text-gray-500">Rp {pricePerDay.toLocaleString()} / Pengguna / Hari</div>
                     </div>
                   </div>
                 </Label>
@@ -96,18 +95,18 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
                   <div className="flex items-center gap-2">
                     <RadioGroupItem value="monthly" id="monthly" />
                     <div>
-                      <div>Monthly</div>
-                      <div className="text-sm text-gray-500">Rp {pricePerUser.toLocaleString()} / User</div>
+                      <div>Bulanan</div>
+                      <div className="text-sm text-gray-500">Rp {pricePerUser.toLocaleString()} / Pengguna</div>
                     </div>
                   </div>
                 </Label>
               </RadioGroup>
             </div>
 
-            {/* Size Matters */}
+            {/* Ukuran Tim */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Size Matters</h3>
-              <p className="text-sm text-gray-600">Choose the right fit for your team!</p>
+              <h3 className="text-lg font-semibold">Ukuran Tim</h3>
+              <p className="text-sm text-gray-600">Pilih ukuran yang sesuai untuk tim Anda!</p>
               <RadioGroup 
                 value={selectedSize}
                 onValueChange={setSelectedSize}
@@ -128,9 +127,9 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
               </RadioGroup>
             </div>
 
-            {/* Number of Employees */}
+            {/* Jumlah Karyawan */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Number of Employees</h3>
+              <h3 className="text-lg font-semibold">Jumlah Karyawan</h3>
               <div className="flex items-center gap-4">
                 <Button 
                   variant="outline" 
@@ -155,35 +154,35 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
               </div>
             </div>
 
-            <Button className="w-full">Continue to Payment</Button>
+            <Button className="w-full">Lanjut ke Pembayaran</Button>
           </CardContent>
         </Card>
 
-        {/* Right Column Card */}
+        {/* Kartu Kolom Kanan */}
         <Card className="bg-gray-100 flex flex-col shadow-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-medium mb-2">Order Summary</CardTitle>
+            <CardTitle className="text-2xl font-medium mb-2">Ringkasan Pesanan</CardTitle>
           </CardHeader>
           <CardContent className="py-2 px-8 flex-1 flex flex-col">
             <div className="flex-1 space-y-4 text-base">
               <div className="flex justify-between">
-                <span className="font-medium">Package</span>
+                <span className="font-medium">Paket</span>
                 <span> {packageName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">Billing Period</span>
-                <span> {selectedBilling === 'single' ? 'Single Payment' : 'Monthly'}</span>
+                <span className="font-medium">Periode Penagihan</span>
+                <span> {selectedBilling === 'single' ? 'Pembayaran Sekali' : 'Bulanan'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">Team Size</span>
+                <span className="font-medium">Ukuran Tim</span>
                 <span> {selectedSize}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">Number of Employees</span>
+                <span className="font-medium">Jumlah Karyawan</span>
                 <span> {employeeCount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">Price per User</span>
+                <span className="font-medium">Harga per Pengguna</span>
                 <span> Rp {pricePerUser.toLocaleString()}</span>
               </div>
             </div>
@@ -196,7 +195,7 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
                 <span>Rp {subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tax</span>
+                <span>Pajak</span>
                 <span>Rp 0</span>
               </div>
             </div>
@@ -204,12 +203,12 @@ export function PaymentDetail({ packageName, packageType, isOpen, onClose }: Pay
             <Separator className="my-6"/>
 
             <div className="flex justify-between font-semibold text-lg mb-6">
-              <span>Total at renewal</span>
+              <span>Total saat perpanjangan</span>
               <span>Rp {subtotal.toLocaleString()}</span>
             </div>
 
             <Button className="w-full bg-gray-700 text-white hover:bg-gray-600">
-              Confirm and upgrade
+              Konfirmasi dan upgrade
             </Button>
           </CardContent>
         </Card>

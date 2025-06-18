@@ -3,26 +3,45 @@
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useState } from "react";
 import { PaymentDetail } from "../../components/ui/PaymentDetail";
+import { useRouter } from "next/navigation";
 
 export default function PaymentPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState({ name: "", type: "" });
+  const router = useRouter(); 
+
 
   const handlePackageSelect = (packageName: string, packageType: string) => {
     setSelectedPackage({ name: packageName, type: packageType });
     setIsDetailOpen(true);
   };
 
+  const handleGoBack = () => {
+  router.back(); 
+  };
+
   return (
-    <div className="container mx-auto py-10 px-4">
-      <h1 className="text-4xl font-extrabold text-center mb-6 text-gray-900">
-        HRIS Pricing Plans
+      <div className="container mx-auto py-10 px-4 relative"> {/* Pastikan ada 'relative' di sini */}
+      <div className="absolute top-4 left-4 z-10"> {/* Tambahkan z-index jika perlu */}
+        <Button 
+          variant="ghost" 
+          // HAPUS size="icon" di sini
+          onClick={handleGoBack}
+          // Sesuaikan className untuk menampung ikon dan teks
+          className="rounded-full px-4 py-2 text-gray-700 hover:bg-gray-200 flex items-center gap-2" 
+        >
+          <ArrowLeft className="h-5 w-5" /> {/* Ukuran ikon bisa disesuaikan */}
+          <span>Kembali</span> {/* HAPUS className="sr-only" di sini */}
+        </Button>
+      </div>
+            <h1 className="text-4xl font-extrabold text-center mb-6 text-gray-900">
+        Paket Harga HRIS
       </h1>
       <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
-        Choose the plan that best suits your business! This HRIS offers both subscription and pay-as-you-go payment options, available in the following packages:
+        Pilih paket yang paling sesuai dengan bisnis Anda! HRIS ini menawarkan opsi pembayaran berlangganan dan bayar sesuai pemakaian, tersedia dalam paket berikut:
       </p>
 
       <Tabs defaultValue="package" className="mb-10">
@@ -31,130 +50,130 @@ export default function PaymentPage() {
             value="package"
             className="px-6 py-2 text-sm font-medium border border-gray-300 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
-            Package
+            Paket
           </TabsTrigger>
           <TabsTrigger
             value="seat"
             className="px-6 py-2 text-sm font-medium border border-gray-300 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
-            Seat
+            Harga
           </TabsTrigger>
         </TabsList>
         <TabsContent value="package">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Package 1 */}
+            {/* Paket 1 */}
             <Card className="bg-gray-100 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  Standard
+                  Standar
                 </CardTitle>
                 <p className="text-sm text-gray-500">
-                  Perfect for small teams and startups
+                  Cocok untuk tim kecil dan startup
                 </p>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    GPS-based attendance validation
+                    Validasi absensi berbasis GPS
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Employee data management
+                    Manajemen data karyawan
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Leave & time-off requests
+                    Permintaan cuti & izin
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Overtime management (government regulations)
+                    Manajemen lembur (regulasi pemerintah)
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Fixed work schedule management
+                    Manajemen jadwal kerja tetap
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Automatic tax calculation
+                    Perhitungan pajak otomatis
                   </li>
                 </ul>
                 <Button 
                   className="mt-4 w-full bg-black text-white hover:bg-gray-800"
-                  onClick={() => handlePackageSelect("Standard", "Package")}
+                  onClick={() => handlePackageSelect("Standar", "Paket")}
                 >
-                  Select a Package →
+                  Pilih Paket →
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Package 2 */}
+            {/* Paket 2 */}
             <Card className="bg-gray-300 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Premium
                 </CardTitle>
-                <p className="text-sm text-gray-500">Best for growing business</p>
+                <p className="text-sm text-gray-500">Terbaik untuk bisnis berkembang</p>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    All Standard features
+                    Semua fitur Standar
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Clock-in & clock-out attendance settings
+                    Pengaturan absensi masuk & pulang
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Fingerprint integration
+                    Integrasi fingerprint
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Employee document management
+                    Manajemen dokumen karyawan
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Sick leave & time-off settings
+                    Pengaturan cuti sakit & izin
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Shift management
+                    Manajemen shift
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Comprehensive reports
+                    Laporan komprehensif
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Overtime management (government & custom regulations)
+                    Manajemen lembur (regulasi pemerintah & custom)
                   </li>
                 </ul>
                 <Button 
                   className="mt-4 w-full bg-black text-white hover:bg-gray-800"
-                  onClick={() => handlePackageSelect("Premium", "Package")}
+                  onClick={() => handlePackageSelect("Premium", "Paket")}
                 >
-                  Select a Package →
+                  Pilih Paket →
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Package 3 */}
+            {/* Paket 3 */}
             <Card className="bg-gray-100 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Ultra
                 </CardTitle>
                 <p className="text-sm text-gray-500">
-                  For large enterprises and organizations
+                  Untuk perusahaan dan organisasi besar
                 </p>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    All Premium features
+                    Semua fitur Premium
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
@@ -162,56 +181,56 @@ export default function PaymentPage() {
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Automated check-out attendance
+                    Absensi pulang otomatis
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Employee turnover dashboard
+                    Dashboard turnover karyawan
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Custom dashboard for statistics & analysis
+                    Dashboard custom untuk statistik & analisis
                   </li>
                 </ul>
                 <Button 
                   className="mt-4 w-full bg-black text-white hover:bg-gray-800"
-                  onClick={() => handlePackageSelect("Ultra", "Package")}
+                  onClick={() => handlePackageSelect("Ultra", "Paket")}
                 >
-                  Select a Package →
+                  Pilih Paket →
                 </Button>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        {/* SEAT CONTENT */}
+        {/* KONTEN KURSI */}
         <TabsContent value="seat">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-            {/* Seat 1 */}
+            {/* Kursi 1 */}
             <Card className="bg-gray-100 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  STANDARD
+                  STANDAR
                 </CardTitle>
                 <div className="flex items-baseline gap-1">
                   <p className="text-2xl font-bold text-gray-900">Rp 15.000</p>
                 </div>
-                <p className="text-sm text-gray-500">For 1-50 users monthly</p>
+                <p className="text-sm text-gray-500">Untuk 1-50 pengguna per bulan</p>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">
-                  Perfect for small teams with up to 50 employees
+                  Cocok untuk tim kecil hingga 50 karyawan
                 </p>
                 <Button 
                   className="w-full bg-gray-800 text-white hover:bg-gray-700"
-                  onClick={() => handlePackageSelect("Standard", "Seat")}
+                  onClick={() => handlePackageSelect("Standar", "Kursi")}
                 >
                   Upgrade Paket →
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Seat 2 */}
+            {/* Kursi 2 */}
             <Card className="bg-gray-100 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
@@ -220,22 +239,22 @@ export default function PaymentPage() {
                 <div className="flex items-baseline gap-1">
                   <p className="text-2xl font-bold text-gray-900">Rp 12.000</p>
                 </div>
-                <p className="text-sm text-gray-500">For 51-100 users monthly</p>
+                <p className="text-sm text-gray-500">Untuk 51-100 pengguna per bulan</p>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">
-                  Ideal for growing teams of 51-100 employees
+                  Ideal untuk tim berkembang 51-100 karyawan
                 </p>
                 <Button 
                   className="w-full bg-gray-800 text-white hover:bg-gray-700"
-                  onClick={() => handlePackageSelect("Premium", "Seat")}
+                  onClick={() => handlePackageSelect("Premium", "Kursi")}
                 >
                   Upgrade Paket →
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Seat 3 */}
+            {/* Kursi 3 */}
             <Card className="bg-gray-100 border border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
@@ -244,15 +263,15 @@ export default function PaymentPage() {
                 <div className="flex items-baseline gap-1">
                   <p className="text-2xl font-bold text-gray-900">Rp 19.000</p>
                 </div>
-                <p className="text-sm text-gray-500">For 101+ users monthly</p>
+                <p className="text-sm text-gray-500">Untuk 101+ pengguna per bulan</p>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">
-                  Best for large organizations with 101+ employees
+                  Terbaik untuk organisasi besar dengan 101+ karyawan
                 </p>
                 <Button 
                   className="w-full bg-gray-800 text-white hover:bg-gray-700"
-                  onClick={() => handlePackageSelect("Ultra", "Seat")}
+                  onClick={() => handlePackageSelect("Ultra", "Kursi")}
                 >
                   Upgrade Paket →
                 </Button>
