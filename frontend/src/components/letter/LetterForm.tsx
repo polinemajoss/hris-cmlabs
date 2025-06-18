@@ -99,7 +99,8 @@ const LetterForm: React.FC<LetterFormProps> = ({ onSubmit, onCancel, onDelete, i
   };
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
-    throw new Error('Function not implemented.');
+  event.preventDefault(); // <-- TAMBAHKAN INI untuk mencegah reload halaman
+  onSubmit(formData); 
   }
 
   return (

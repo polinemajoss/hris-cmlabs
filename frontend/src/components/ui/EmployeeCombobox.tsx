@@ -66,8 +66,8 @@ export function EmployeeCombobox({
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
           <CommandInput placeholder={searchText} />
-          <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+          <CommandList className="max-h-60 overflow-y-auto"> 
+            <CommandEmpty>Tidak ada karyawan ditemukan.</CommandEmpty>
             <CommandGroup>
               {employees.map((employee) => (
                 <CommandItem

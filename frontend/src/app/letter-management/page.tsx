@@ -56,7 +56,25 @@ export default function LetterManagementPage() {
   const fetchEmployees = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/employees"); 
-      setEmployeeOptions(response.data.data || []);
+      console.log("Raw employee response:", response.data); 
+      const rawEmployees = response.data; // response.data adalah array dari objek Employee
+      if (!Array.isArray(rawEmployees)) {
+          console.error("Expected an array for employees, but got:", rawEmployees);
+          setEmployeeOptions([]); // Set kosong jika bukan array
+          return;
+      }
+    const formattedEmployees: EmployeeOption[] = rawEmployees.map((employee: any) => {
+      const employeeName = employee.user?.name // Prioritaskan user.name jika ada
+                             || `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+
+      return {
+        id: String(employee.id), // ID karyawan dari tabel employees
+        name: employeeName,
+        first_name: employee.first_name || "",
+        last_name: employee.last_name || "",
+      };
+    });
+    setEmployeeOptions(formattedEmployees);
     } catch (err) {
       toast.error("Gagal Memuat Data Karyawan");
       console.error(err);
