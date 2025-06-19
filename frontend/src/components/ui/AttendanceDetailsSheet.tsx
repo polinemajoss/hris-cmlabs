@@ -30,9 +30,35 @@ const AttendanceDetailsSheet: React.FC<AttendanceDetailsProps> = ({ data, isOpen
   const [isApproveDialogOpen, setIsApproveDialogOpen] = React.useState(false);
 
   // Dummy implementation for PDF download
-  const handleDownloadPDF = (attendanceData: typeof data) => {
-    // Replace this with actual PDF generation/download logic
-    alert('Download PDF for: ' + attendanceData?.name);
+  const handleDownloadPDF = async (attendanceData: typeof data) => {
+    if (!attendanceData) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/attendances/${attendanceData.id}/download-pdf`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Sesuaikan dengan mekanisme autentikasi Anda
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to download PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${attendanceData.id}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF');
+    }
   };
 
   // Dummy implementation for delete
@@ -48,9 +74,9 @@ const handleDelete = (id: string, name: string) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="p-6 sm:max-w-4xl w-full">
+      <SheetContent side="right" className="p-6 sm:max-w-2xl w-full">
         <SheetHeader className="flex flex-row justify-between items-center w-full">
-        <SheetTitle className="text-lg font-semibold">Attendance Details</SheetTitle>
+        <SheetTitle className="text-xl font-semibold">Attendance Details</SheetTitle>
 
           <div className="flex gap-2">
             <button
