@@ -20,6 +20,7 @@ return array(
     'App\\Http\\Kernel' => $baseDir . '/app/Http/Kernel.php',
     'App\\Http\\Middleware\\Authenticate' => $baseDir . '/app/Http/Middleware/Authenticate.php',
     'App\\Http\\Middleware\\BypassAuth' => $baseDir . '/app/Http/Middleware/BypassAuth.php',
+    'App\\Http\\Middleware\\CheckUserRole' => $baseDir . '/app/Http/Middleware/CheckUserRole.php',
     'App\\Http\\Middleware\\HandleOptionsRequest' => $baseDir . '/app/Http/Middleware/HandleOptionsRequest.php',
     'App\\Models\\Attendance' => $baseDir . '/app/Models/Attendance.php',
     'App\\Models\\CheckClockSetting' => $baseDir . '/app/Models/CheckClockSetting.php',

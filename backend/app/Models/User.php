@@ -18,7 +18,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin',
+        'role',
     ];    
 
     protected $hidden = [
@@ -31,7 +31,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
+            'role' => 'string',
         ];
     }
 
@@ -50,6 +50,6 @@ class User extends Authenticatable
     // Relasi ke employee (jika ingin menambahkan nanti)
     public function employee()
     {
-        return $this->hasOne(Employee::class);
+        return $this->hasOne(Employee::class, 'user_id', 'id');
     }
 }

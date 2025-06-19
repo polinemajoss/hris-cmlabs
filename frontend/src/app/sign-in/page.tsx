@@ -1,17 +1,9 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,18 +12,19 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from '@/contexts/AuthContext';
-import axiosInstance from '@/lib/axios';
+import { useAuth } from "@/contexts/AuthContext"; // Pastikan path benar
+import axiosInstance from "@/lib/axios"; // Pastikan path benar
 
 export default function SignIn() {
-  const { signIn } = useAuth();
+  const { signIn, isAuthenticated, loading: authLoading } = useAuth(); // Ambil signIn dan status auth dari context
+  const router = useRouter();
 
   // State untuk form email
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
-  
+
   // State untuk form ID Employee
   const [companyUsername, setCompanyUsername] = useState("");
   const [employeeId, setEmployeeId] = useState("");
@@ -41,15 +34,22 @@ export default function SignIn() {
 
   // State untuk "Remember Me"
   const [rememberMe, setRememberMe] = useState(false);
-  
+
   // Memeriksa localStorage saat komponen dimuat
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
       setEmail(rememberedEmail);
       setRememberMe(true);
     }
   }, []);
+
+  // Redirect jika sudah terautentikasi
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/"); // Redirect ke halaman utama jika sudah login
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   // Fungsi submit untuk email/phone
   const handleSignInEmail = async (e: React.FormEvent) => {
@@ -57,29 +57,31 @@ export default function SignIn() {
     setLoadingEmail(true);
 
     try {
-      const response = await axiosInstance.post('/sign-in', {
+      const response = await axiosInstance.post("/sign-in", {
         email: email,
-        password: password
+        password: password,
       });
 
-      const data = response.data;
+      const data = response.data; // Respons dari Laravel AuthController
 
-      if (data.token && data.user) {
+      // Pastikan 'access_token' dan 'user' (dengan 'role') ada di respons
+      if (data.access_token && data.user && data.user.role) {
         toast.success("Login Berhasil!");
-        
+
         // Logika Remember Me
         if (rememberMe) {
-          localStorage.setItem('rememberedEmail', email);
+          localStorage.setItem("rememberedEmail", email);
         } else {
-          localStorage.removeItem('rememberedEmail');
+          localStorage.removeItem("rememberedEmail");
         }
 
-        // Panggil signIn dari context (yang sekarang akan me-redirect)
-        signIn(data.user, data.token); 
+        // Panggil signIn dari context, meneruskan data user lengkap dan token
+        signIn(data.user, data.access_token);
+        // Redirect ke halaman utama setelah sign in berhasil
+        router.push("/");
       } else {
-        toast.error("Login Gagal", { description: "Respons dari server tidak valid." });
+        toast.error("Login Gagal", { description: "Respons dari server tidak valid (token atau data user tidak lengkap)." });
       }
-
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Email atau password salah.";
       toast.error("Login Gagal", {
@@ -91,8 +93,38 @@ export default function SignIn() {
   };
 
   const handleSignInId = async (e: React.FormEvent) => {
-    // ... (logika untuk sign in via ID tetap sama)
+    e.preventDefault();
+    setLoadingId(true);
+    try {
+      // --- INI PERLU BACKEND ENDPOINT YANG TERPISAH UNTUK LOGIN DENGAN ID KARYAWAN ---
+      // Contoh:
+      // const response = await axiosInstance.post('/sign-in-id-employee', {
+      //   company_username: companyUsername,
+      //   employee_id: employeeId,
+      //   password: employeePassword,
+      // });
+
+      // const data = response.data;
+      // if (data.access_token && data.user && data.user.role) {
+      //     toast.success("Login dengan ID Berhasil!");
+      //     signIn(data.user, data.access_token);
+      // } else {
+      //     toast.error("Login Gagal", { description: "Respons dari server tidak valid untuk login ID." });
+      // }
+
+      toast.info("Fitur Login dengan ID Employee belum diimplementasikan di backend."); // Placeholder
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Login ID gagal.";
+      toast.error("Login Gagal", { description: errorMessage });
+    } finally {
+      setLoadingId(false);
+    }
   };
+
+  // Jangan tampilkan form login jika masih loading autentikasi atau sudah terautentikasi
+  if (authLoading || isAuthenticated) {
+    return <div className="flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-r from-[#1E3A5F] to-[#7CA5BF] bg-size-200 animate-gradient-xy">Loading...</div>;
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-r from-[#1E3A5F] to-[#7CA5BF] bg-size-200 animate-gradient-xy">
@@ -102,6 +134,7 @@ export default function SignIn() {
             <Image src="/images/hris-logo.png" alt="HRIS Logo" width={60} height={50} />
           </CardTitle>
           <CardAction>
+            {/* Mungkin button ini memanggil signIn sebagai guest user */}
             <Button variant="link" style={{ color: "#1E3A5F" }} className="cursor-pointer">
               Try it for free
             </Button>
@@ -117,7 +150,7 @@ export default function SignIn() {
                 Sign In with ID Employee
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="email" className="mt-4">
               <form onSubmit={handleSignInEmail}>
                 <Card className="shadow-md">
@@ -133,34 +166,18 @@ export default function SignIn() {
                     <div className="grid gap-3">
                       <Label htmlFor="password">Password</Label>
                       <div className="relative">
-                        <Input 
-                          id="password" 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="Enter your password" 
-                          value={password} 
-                          onChange={(e) => setPassword(e.target.value)} 
-                          required
-                          className="pr-10"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
+                        <Input id="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="pr-10" />
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </Button>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="remember-me"
-                          checked={rememberMe}
-                          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                        />
-                        <Label htmlFor="remember-me" className="cursor-pointer">Remember Me</Label>
+                        <Checkbox id="remember-me" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked as boolean)} />
+                        <Label htmlFor="remember-me" className="cursor-pointer">
+                          Remember Me
+                        </Label>
                       </div>
                       <Link href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
                         Forgot Password?
@@ -175,7 +192,7 @@ export default function SignIn() {
                 </Card>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="id" className="mt-4">
               <form onSubmit={handleSignInId}>
                 <Card>
@@ -192,27 +209,11 @@ export default function SignIn() {
                       <Label htmlFor="employee-id">Employee ID</Label>
                       <Input id="employee-id" placeholder="Enter your employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required />
                     </div>
-                    {/* --- IKON MATA UNTUK PASSWORD EMPLOYEE --- */}
                     <div className="grid gap-3">
                       <Label htmlFor="employee-password">Password</Label>
-                       <div className="relative">
-                        <Input 
-                          id="employee-password" 
-                          type={showEmployeePassword ? "text" : "password"} 
-                          placeholder="Enter your password" 
-                          value={employeePassword} 
-                          onChange={(e) => setEmployeePassword(e.target.value)} 
-                          required 
-                          className="pr-10"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent"
-                          onClick={() => setShowEmployeePassword(!showEmployeePassword)}
-                          aria-label={showEmployeePassword ? "Hide password" : "Show password"}
-                        >
+                      <div className="relative">
+                        <Input id="employee-password" type={showEmployeePassword ? "text" : "password"} placeholder="Enter your password" value={employeePassword} onChange={(e) => setEmployeePassword(e.target.value)} required className="pr-10" />
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent" onClick={() => setShowEmployeePassword(!showEmployeePassword)} aria-label={showEmployeePassword ? "Hide password" : "Show password"}>
                           {showEmployeePassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </Button>
                       </div>
@@ -241,10 +242,7 @@ export default function SignIn() {
           <span className="text-sm text-muted-foreground">
             Don’t have an account yet?{" "}
             <Link href="/sign-up" passHref>
-              <Button
-                variant="link"
-                className="cursor-pointer p-0 h-auto align-baseline text-blue-600 hover:text-blue-700"
-              >
+              <Button variant="link" className="cursor-pointer p-0 h-auto align-baseline text-blue-600 hover:text-blue-700">
                 Sign Up now and get started
               </Button>
             </Link>

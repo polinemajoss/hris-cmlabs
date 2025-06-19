@@ -13,7 +13,7 @@ import {
 } from "./sidebar"; // Asumsi sidebar.tsx
 
 // Interface untuk item navigasi yang diteruskan dari AppSidebar
-interface NavItem {
+export interface NavItem {
   name: string;
   url: string;
   icon: React.ElementType; // Menggunakan React.ElementType untuk komponen ikon
@@ -34,16 +34,28 @@ export function NavMain({ items }: NavMainProps) {
       {items.map((item) => (
         <React.Fragment key={item.name}>
           {item.subItems && item.subItems.length > 0 ? (
-            // Tampilkan parent sebagai SidebarMenuItem biasa, lalu render subItems di bawahnya
             <>
               <SidebarMenuItem>
-                <SidebarMenuButton className={`flex items-center justify-between w-full pr-2 ${pathname.startsWith(item.url) ? "bg-accent text-accent-foreground" : ""}`}>
+                <SidebarMenuButton className={`flex items-center justify-between w-full pr-2 text-gray-700 ${pathname.startsWith(item.url) ? "bg-accent text-accent-foreground" : ""}`}>
                   <div className="flex items-center gap-2">
-                    <item.icon className="h-5 w-5" />
+                    {/* Icon dihapus */}
                     <span>{item.name}</span>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {/* Submenu */}
+              <div className="pl-8">
+                {item.subItems.map((sub) => (
+                  <SidebarMenuItem key={sub.name}>
+                    <SidebarMenuButton asChild>
+                      <Link href={sub.url} className={`flex items-center gap-2 text-sm w-full text-left ${pathname === sub.url ? "bg-accent text-accent-foreground" : ""}`}>
+                        <span>{sub.name}</span>
+                        {typeof sub.count === "number" && <span className="ml-auto text-xs bg-muted px-2 py-0.5 rounded">{sub.count}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </div>
             </>
           ) : (
             // Ini adalah item menu tunggal (misalnya Dashboard, Salary Management)

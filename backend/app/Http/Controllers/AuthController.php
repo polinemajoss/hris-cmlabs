@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Facades\Socialite; // Diimpor tapi di-comment, jadi biarkan saja
 use Illuminate\Support\Str;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\RedirectResponse; // Diimpor tapi di-comment, jadi biarkan saja
 use Illuminate\Support\Facades\Log;
 
 
@@ -28,9 +28,11 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_admin' => false, // default, ubah sesuai kebutuhan
+            'role' => 'employee', // <<< DEFAULT ROLE UNTUK USER BARU ADALAH 'employee'
+            // 'is_admin' => false, // <<< HAPUS BARIS INI KARENA SUDAH MENGGUNAKAN 'role'
         ]);
-        // Hapus token lama jika ada
+
+        // Hapus token lama jika ada (jika user ini sudah pernah login/register sebelumnya tapi tokennya hang)
         $user->tokens()->delete();
 
         // Buat token baru
@@ -42,8 +44,9 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role, // <<< PASTIKAN ROLE JUGA DIKIRIM SAAT REGISTRASI
             ],
-            'token' => $token
+            'access_token' => $token // Menggunakan 'access_token' untuk konsistensi dengan signIn
         ])->cookie(
             'token', $token, 60 * 24 * 7, '/', 'localhost', false, true
         );
@@ -55,52 +58,59 @@ class AuthController extends Controller
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-    
+
         $user = User::where('email', $request->email)->first();
-    
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Email or Password is incorrect',
             ], 401);
         }
-    
-        // Hapus semua token lama (opsional)
+
+        // Hapus semua token lama (opsional, tapi bagus untuk keamanan)
         $user->tokens()->delete();
-    
+
         // Buat token baru
         $token = $user->createToken('signin_token')->plainTextToken;
-    
-        // Kembalikan token dalam response
+
+        // Kembalikan token dan role dalam response
         return response()->json([
             'message' => 'Login successful',
             'user' => [
                 'id' => $user->id,
                 'email' => $user->email,
                 'name' => $user->name,
+                'role' => $user->role, // <<< PASTIKAN ROLE DIKEMBALIKAN DI SINI
             ],
-            'token' => $token, // Pastikan token dikembalikan di sini
+            'access_token' => $token, // Menggunakan 'access_token' untuk konsistensi
         ]);
     }
 
 
     // Try For Free
     public function tryForFree()
-{
-    // Buat user guest dummy (tanpa login)
-    $guestUser = User::firstOrCreate(
-        ['email' => 'guest@hris.local'],
-        [
-            'name' => 'Guest User',
-            'password' => bcrypt('guest123'), // bisa random atau fix
-            'role' => 'guest'
-        ]
-    );
+    {
+        // Buat user guest dummy (tanpa login)
+        $guestUser = User::firstOrCreate(
+            ['email' => 'guest@hris.local'],
+            [
+                'name' => 'Guest User',
+                'password' => bcrypt('guest123'), // bisa random atau fix
+                'role' => 'guest' // <<< ROLE UNTUK USER GUEST
+            ]
+        );
 
-    $token = $guestUser->createToken('guest_token')->plainTextToken;
+        $token = $guestUser->createToken('guest_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Try for free successful',
-            'user' => $guestUser,
+            'user' => [
+                'id' => $guestUser->id,
+                'name' => $guestUser->name,
+                'email' => $guestUser->email,
+                'role' => $guestUser->role, // <<< PASTIKAN ROLE GUEST JUGA DIKEMBALIKAN
+            ],
+            'access_token' => $token // Konsisten menggunakan access_token
         ])->cookie(
             'token', $token, 60, '/', 'localhost', false, true
         );
@@ -133,15 +143,16 @@ class AuthController extends Controller
     //     $googleProvider = Socialite::driver('google');
     //     $googleUser = $googleProvider->stateless()->user();
 
-    //        $user = User::updateOrCreate(
-    //         ['email' => $googleUser->getEmail()],
-    //         [
-    //             'name' => $googleUser->getName(),
-    //             'email_verified_at' => now(),
-    //             'password' => bcrypt(Str::random(16)),
-    //         ]
-    //     );
-    //          // Hapus token lama agar tidak bentrok
+    //         $user = User::updateOrCreate(
+    //             ['email' => $googleUser->getEmail()],
+    //             [
+    //                 'name' => $googleUser->getName(),
+    //                 'email_verified_at' => now(),
+    //                 'password' => bcrypt(Str::random(16)),
+    //                 'role' => 'employee' // <<< SET ROLE DEFAULT UNTUK USER GOOGLE
+    //             ]
+    //         );
+    //         // Hapus token lama agar tidak bentrok
     //         $user->tokens()->delete();
 
     //         // Buat token Sanctum

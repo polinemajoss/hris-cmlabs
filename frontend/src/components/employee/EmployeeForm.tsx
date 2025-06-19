@@ -7,7 +7,8 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/lib/axios"; // Pastikan ini diimpor dengan benar
+import axios from "axios"; // <<< INI PENTING: Import axios
 import { toast } from "sonner";
 import { AvatarUploader } from "../ui/AvatarUploader";
 import { DatePicker } from "../ui/date-picker";
@@ -25,7 +26,7 @@ export interface EmployeeFormData {
   birth_date: string | null;
   position: string;
   branch: string;
-  contract_type: "Tetap" | "Kontrak" | "Lepas" | "";
+  contract_type?: "Tetap" | "Kontrak" | "Lepas";
   grade: string;
   bank: string;
   bank_account_number: string;
@@ -40,7 +41,7 @@ interface EmployeeFormProps {
   onCancel: () => void;
   initialData?: EmployeeFormData | null;
   isEditMode?: boolean;
-  readOnly?: boolean; // tambahkan ini
+  readOnly?: boolean;
 }
 
 const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = false, readOnly = false }: EmployeeFormProps) => {
@@ -79,32 +80,8 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
   ];
 
   const [form, setForm] = useState<EmployeeFormData>(() => {
-    if (initialData) {
-      return {
-        ...initialData,
-        id: initialData.id || "",
-        first_name: initialData.first_name || "",
-        last_name: initialData.last_name || "",
-        mobile_number: initialData.mobile_number || "",
-        nik: initialData.nik || "",
-        gender: initialData.gender || "",
-        education: initialData.education || "",
-        birth_place: initialData.birth_place || "",
-        birth_date: initialData.birth_date || null,
-        position: initialData.position || "",
-        branch: initialData.branch || "",
-        contract_type: initialData.contract_type || "",
-        grade: initialData.grade || "",
-        bank: initialData.bank || "",
-        bank_account_number: initialData.bank_account_number || "",
-        bank_account_name: initialData.bank_account_name || "",
-        sp_type: initialData.sp_type || "",
-        status: initialData.status || "Aktif",
-        avatar: initialData.avatar || "",
-        email: initialData.email || "",
-      };
-    } else {
-      return {
+    return (
+      initialData || {
         email: "",
         first_name: "",
         last_name: "",
@@ -124,35 +101,13 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
         sp_type: "",
         status: "Aktif",
         avatar: "",
-      };
-    }
+      }
+    );
   });
 
   useEffect(() => {
     if (initialData) {
-      setForm({
-        ...initialData,
-        id: initialData.id || "",
-        first_name: initialData.first_name || "",
-        last_name: initialData.last_name || "",
-        mobile_number: initialData.mobile_number || "",
-        nik: initialData.nik || "",
-        gender: initialData.gender || "",
-        education: initialData.education || "",
-        birth_place: initialData.birth_place || "",
-        birth_date: initialData.birth_date || null,
-        position: initialData.position || "",
-        branch: initialData.branch || "",
-        contract_type: initialData.contract_type || "",
-        grade: initialData.grade || "",
-        bank: initialData.bank || "",
-        bank_account_number: initialData.bank_account_number || "",
-        bank_account_name: initialData.bank_account_name || "",
-        sp_type: initialData.sp_type || "",
-        status: initialData.status || "Aktif",
-        avatar: initialData.avatar || "",
-        email: initialData.email || "",
-      });
+      setForm(initialData);
     }
   }, [initialData]);
 
@@ -166,8 +121,8 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    const formattedDate = date ? date.toISOString().split("T")[0] : null;
-    setForm((prev) => ({ ...prev, birth_date: formattedDate }));
+    const formattedBirthDate = date ? date.toISOString().split("T")[0] : null;
+    setForm((prev) => ({ ...prev, birth_date: formattedBirthDate }));
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -188,7 +143,7 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
 
     setIsUploading(true);
     try {
-      // Jangan set Content-Type, biarkan axios handle FormData
+      // Use axiosInstance directly, not as a function
       const response = await axiosInstance.post("/upload-avatar", formData);
       if (response.data && response.data.url) {
         setForm((prev) => ({ ...prev, avatar: response.data.url }));
@@ -198,12 +153,20 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
       }
     } catch (err: unknown) {
       let errorMsg = "Gagal mengupload avatar.";
-      if (err && typeof err === "object" && "response" in err) {
-        const errorObj = err as { response?: { data?: { errors?: { avatar?: string[] } } } };
-        errorMsg = errorObj.response?.data?.errors?.avatar?.[0] || errorMsg;
+      if (axios.isAxiosError(err)) {
+        // <<< PERBAIKAN: Menggunakan axios.isAxiosError
+        const validationErrors = err.response?.data?.errors; // Gunakan optional chaining
+        if (validationErrors && typeof validationErrors === "object" && validationErrors.avatar) {
+          errorMsg = validationErrors.avatar[0];
+        } else if (err.response?.data?.message) {
+          // <<< PERBAIKAN: Gunakan err.response?.data?.message
+          errorMsg = err.response.data.message;
+        }
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
       }
       toast.error("Upload Gagal", { description: errorMsg });
-      console.error(err);
+      console.error(err); // Menggunakan 'err' yang benar
     } finally {
       setIsUploading(false);
     }
@@ -256,7 +219,7 @@ const EmployeeForm = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
         </div>
         <div>
           <Label htmlFor="mobile_number" className="mb-1">
-            Nomor Ponsel
+            Nomor Telepon
           </Label>
           <Input id="mobile_number" name="mobile_number" placeholder="Masukkan nomor ponsel" value={form.mobile_number} onChange={handleChange} required readOnly={readOnly} disabled={readOnly} />
         </div>

@@ -172,7 +172,7 @@ export default function DatabaseKaryawan() {
         ...formData,
         gender: normalizedGender,
         birth_date: formattedBirthDate || undefined,
-        contract_type: formData.contract_type === "" ? undefined : formData.contract_type,
+        contract_type: !formData.contract_type ? undefined : formData.contract_type,
         status: formData.status === "" ? undefined : (formData.status as "Aktif" | "Tidak Aktif"),
       };
 
@@ -258,7 +258,7 @@ export default function DatabaseKaryawan() {
         user_id: karyawanDilihat.user_id,
         gender: normalizedGender,
         birth_date: formattedBirthDate || undefined,
-        contract_type: formData.contract_type === "" ? undefined : formData.contract_type,
+        contract_type: !formData.contract_type ? undefined : formData.contract_type,
         status: formData.status === "" ? undefined : (formData.status as "Aktif" | "Tidak Aktif"),
       };
 
@@ -581,7 +581,11 @@ export default function DatabaseKaryawan() {
               const newCustomValue = e.target.value;
               setCustomValue(newCustomValue);
               // Add to filter if not empty and not already selected as a predefined option
-              if (newCustomValue && !options.map((o) => o.toLowerCase()).includes(newCustomValue.toLowerCase()) && !selectedFilters.includes(newCustomValue)) {
+              if (
+                newCustomValue &&
+                !options.map((o) => o.toLowerCase()).includes(newCustomValue.toLowerCase()) &&
+                !selectedFilters.includes(newCustomValue)
+              ) {
                 setFilters((prev) => [...prev, newCustomValue]);
               } else if (!newCustomValue) {
                 // If custom input is cleared, remove its old value from filters
@@ -820,7 +824,7 @@ export default function DatabaseKaryawan() {
                                           </TableCell>
                                           <TableCell className="text-center">
                                             <span
-                                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold justify-center`}
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold justify-center"
                                               style={{
                                                 minWidth: 90,
                                                 width: 90,
@@ -1006,7 +1010,7 @@ export default function DatabaseKaryawan() {
                   position: karyawanDilihat.position ?? "",
                   grade: karyawanDilihat.grade ?? "",
                   branch: karyawanDilihat.branch ?? "",
-                  contract_type: karyawanDilihat.contract_type ?? "",
+                  contract_type: (karyawanDilihat.contract_type as "Tetap" | "Kontrak" | "Lepas") ?? "",
                   bank: karyawanDilihat.bank ?? "",
                   bank_account_number: karyawanDilihat.bank_account_number ?? "",
                   bank_account_name: karyawanDilihat.bank_account_name ?? "",
@@ -1030,61 +1034,6 @@ export default function DatabaseKaryawan() {
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Dialog Filter (This is the section that was modified) */}
-      <Dialog open={dialogFilterTerbuka} onOpenChange={setDialogFilterTerbuka}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Filter Data Karyawan</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-2">
-            {/* Gender Filter */}
-            {renderFilterTags(
-              "Jenis Kelamin",
-              ["M", "F"], // Internal values
-              filterGender,
-              setFilterGender,
-              genderKustom,
-              setGenderKustom,
-              { M: "Laki-Laki", F: "Perempuan" } // Display map for user-friendly labels
-            )}
-
-            {/* Status Filter */}
-            {renderFilterTags("Status", ["Aktif", "Tidak Aktif"], filterStatus, setFilterStatus, statusKustom, setStatusKustom)}
-
-            {/* Branch Filter */}
-            {renderFilterTags(
-              "Cabang",
-              [...new Set(daftarKaryawan.map((emp) => emp.branch).filter(Boolean))] as string[], // Extract unique non-empty branches
-              filterCabang,
-              setFilterCabang,
-              cabangKustom,
-              setCabangKustom
-            )}
-          </div>
-          <DialogFooter>
-            <button
-              className="px-3 py-1 rounded bg-gray-200 text-gray-700 text-xs"
-              onClick={() => {
-                setFilterGender([]);
-                setFilterStatus([]);
-                setFilterCabang([]);
-                setGenderKustom("");
-                setStatusKustom("");
-                setCabangKustom("");
-              }}
-              type="button"
-            >
-              Reset
-            </button>
-            <DialogClose asChild>
-              <button className="px-3 py-1 rounded bg-[#1E3A5F] text-white text-xs" type="button">
-                Terapkan
-              </button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </SidebarProvider>
   );
 }

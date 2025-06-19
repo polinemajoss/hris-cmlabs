@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext"; // Import provider
-import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext"; // Pastikan path benar
+import { Toaster } from "@/components/ui/sonner"; // Sonner for toasts
 
 export const metadata: Metadata = {
   title: "HRIS - CMLABS",

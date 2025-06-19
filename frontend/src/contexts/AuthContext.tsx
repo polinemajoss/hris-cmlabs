@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axios';
 import Cookies from 'js-cookie'; // Gunakan js-cookie untuk manajemen cookie yang lebih mudah
 
-// Tipe data untuk User
+// Tipe data untuk User (disesuaikan dengan adanya 'role')
 interface User {
   id: string;
   name: string;
   email: string;
-  is_admin: boolean;
+  role: string; // <<< INI PENTING: Mengganti is_admin dengan role
   avatar?: string;
   // tambahkan properti lain yang dikembalikan oleh API Anda
 }
@@ -20,6 +20,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
+  // Fungsi signIn sekarang menerima 'role' juga
   signIn: (user: User, token: string) => void;
   signOut: () => void;
 }
@@ -42,7 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ambil data user dari server untuk verifikasi token
       axiosInstance.get('/user')
         .then(response => {
-          setUser(response.data);
+          // Pastikan respons dari /user endpoint juga mengembalikan 'role'
+          setUser(response.data as User); // Casting ke User
           setToken(tokenFromCookie);
         })
         .catch(() => {
@@ -60,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fungsi signIn yang sudah diperbaiki
-  const signIn = (userData: User, token: string) => {
+  const signIn = (userData: User, token: string) => { // <<< userData sekarang punya 'role'
     // 1. Simpan data ke state
     setUser(userData);
     setToken(token);
@@ -72,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
     // 4. INI BAGIAN PENTING: Arahkan ke halaman dashboard
-    router.push('/');
+    router.push('/employee'); // Mengarahkan ke /employee sesuai pembahasan sebelumnya
   };
 
   const signOut = async () => {
@@ -100,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {loading ? <div className="flex h-screen items-center justify-center">Loading...</div> : children}
     </AuthContext.Provider>
   );
-};
+}
 
 // Custom hook untuk menggunakan context
 export const useAuth = () => {

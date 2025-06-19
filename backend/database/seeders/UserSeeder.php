@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Str; // Pastikan ini sudah diimpor
 
 class UserSeeder extends Seeder
 {
@@ -16,41 +16,51 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hapus data pengguna lama untuk menghindari duplikasi
+        // Hapus data pengguna lama untuk menghindari duplikasi saat seeding ulang
+        // HANYA JIKA ANDA INGIN MENGHAPUS SEMUA USER SETIAP KALI SEEDER DIJALANKAN.
+        // Hati-hati jika sudah ada data asli di produksi!
         User::query()->delete();
 
-        // Siapkan data pengguna yang spesifik
+        // Siapkan data pengguna dengan peran (role) yang spesifik
         $usersData = [
-            ['name' => 'Budi Santoso', 'email' => 'budi.santoso@cmlabs.co', 'is_admin' => true],
-            ['name' => 'Citra Lestari', 'email' => 'citra.lestari@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Doni Firmansyah', 'email' => 'doni.firmansyah@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Eka Putri', 'email' => 'eka.putri@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Fajar Nugraha', 'email' => 'fajar.nugraha@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Gita Wulandari', 'email' => 'gita.wulandari@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Hendra Setiawan', 'email' => 'hendra.setiawan@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Indah Permata', 'email' => 'indah.permata@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Joko Prasetyo', 'email' => 'joko.prasetyo@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Kartika Dewi', 'email' => 'kartika.dewi@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Lukman Hakim', 'email' => 'lukman.hakim@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Maya Sari', 'email' => 'maya.sari@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Nanda Pratama', 'email' => 'nanda.pratama@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Olivia Ratna', 'email' => 'olivia.ratna@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Pandu Wijaya', 'email' => 'pandu.wijaya@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Rina Amelia', 'email' => 'rina.amelia@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Samsul Arifin', 'email' => 'samsul.arifin@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Tika Hartono', 'email' => 'tika.hartono@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Umar Said', 'email' => 'umar.said@cmlabs.co', 'is_admin' => false],
-            ['name' => 'Vina Yuliana', 'email' => 'vina.yuliana@cmlabs.co', 'is_admin' => false],
+            // Super Admin (Hak akses tertinggi, bisa melakukan semua)
+            ['name' => 'Super Admin', 'email' => 'super.admin@cmlabs.co', 'role' => 'super_admin'],
+
+            // HR Admin (Mengelola karyawan, gaji, dll.)
+            ['name' => 'Budi Santoso (HR)', 'email' => 'budi.santoso@cmlabs.co', 'role' => 'hr_admin'],
+            ['name' => 'Kartika Dewi (HR)', 'email' => 'kartika.dewi@cmlabs.co', 'role' => 'hr_admin'],
+
+            // Manager (Mengelola tim, menyetujui permintaan bawahan)
+            ['name' => 'Doni Firmansyah (Manager)', 'email' => 'doni.firmansyah@cmlabs.co', 'role' => 'manager'],
+            ['name' => 'Fajar Nugraha (Manager)', 'email' => 'fajar.nugraha@cmlabs.co', 'role' => 'manager'],
+
+            // Employee (Karyawan biasa)
+            ['name' => 'Citra Lestari (Employee)', 'email' => 'citra.lestari@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Eka Putri (Employee)', 'email' => 'eka.putri@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Gita Wulandari (Employee)', 'email' => 'gita.wulandari@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Hendra Setiawan (Employee)', 'email' => 'hendra.setiawan@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Indah Permata (Employee)', 'email' => 'indah.permata@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Joko Prasetyo (Employee)', 'email' => 'joko.prasetyo@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Lukman Hakim (Employee)', 'email' => 'lukman.hakim@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Maya Sari (Employee)', 'email' => 'maya.sari@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Nanda Pratama (Employee)', 'email' => 'nanda.pratama@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Olivia Ratna (Employee)', 'email' => 'olivia.ratna@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Pandu Wijaya (Employee)', 'email' => 'pandu.wijaya@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Rina Amelia (Employee)', 'email' => 'rina.amelia@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Samsul Arifin (Employee)', 'email' => 'samsul.arifin@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Tika Hartono (Employee)', 'email' => 'tika.hartono@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Umar Said (Employee)', 'email' => 'umar.said@cmlabs.co', 'role' => 'employee'],
+            ['name' => 'Vina Yuliana (Employee)', 'email' => 'vina.yuliana@cmlabs.co', 'role' => 'employee'],
         ];
 
         foreach ($usersData as $user) {
             User::create([
-                'id' => Str::uuid(),
+                'id' => Str::uuid(), // Asumsi 'id' adalah UUID
                 'name' => $user['name'],
                 'email' => $user['email'],
-                'password' => Hash::make('password'), // password default untuk semua user
+                'password' => Hash::make('password'), // Password default untuk semua user
                 'email_verified_at' => now(),
-                'is_admin' => $user['is_admin'],
+                'role' => $user['role'], // Menggunakan kolom 'role' yang baru
             ]);
         }
     }

@@ -594,6 +594,7 @@ class ComposerStaticInitd0d7e1e4d77aef2968ad5521d663c53a
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\Authenticate' => __DIR__ . '/../..' . '/app/Http/Middleware/Authenticate.php',
         'App\\Http\\Middleware\\BypassAuth' => __DIR__ . '/../..' . '/app/Http/Middleware/BypassAuth.php',
+        'App\\Http\\Middleware\\CheckUserRole' => __DIR__ . '/../..' . '/app/Http/Middleware/CheckUserRole.php',
         'App\\Http\\Middleware\\HandleOptionsRequest' => __DIR__ . '/../..' . '/app/Http/Middleware/HandleOptionsRequest.php',
         'App\\Models\\Attendance' => __DIR__ . '/../..' . '/app/Models/Attendance.php',
         'App\\Models\\CheckClockSetting' => __DIR__ . '/../..' . '/app/Models/CheckClockSetting.php',

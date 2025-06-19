@@ -19,7 +19,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken; // Ini biasanya ada di web group
 
 // Jangan lupa tambahkan use untuk middleware BypassAuth Anda
-use App\Http\Middleware\BypassAuth; // <-- Pastikan ini ada!
 use App\Http\Middleware\HandleOptionsRequest;
 
 class Kernel extends HttpKernel
@@ -57,12 +56,10 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            BypassAuth::class, // <-- Tambahkan ini di awal group 'api'
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             SubstituteBindings::class,
-            // Jika ada middleware autentikasi lain seperti 'auth:sanctum', biarkan saja
-            // BypassAuth akan dieksekusi duluan dan mengabaikannya jika AUTH_ENABLED=false
+            'auth:sanctum', 
         ],
     ];
 
@@ -74,9 +71,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        // Anda tidak perlu mendaftarkan BypassAuth di sini jika sudah di group 'api'
-        // Tapi jika Anda ingin menggunakannya di route spesifik di luar group 'api',
-        // Anda bisa mendaftarkannya di sini dan menggunakannya di route Anda.
-        // Contoh: 'bypass.auth' => \App\Http\Middleware\BypassAuth::class,
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'role' => \App\Http\Middleware\CheckUserRole::class,
     ];
 }
